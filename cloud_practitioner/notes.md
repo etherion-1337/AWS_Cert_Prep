@@ -2,4 +2,6 @@
 
 This note summarised the preparation course by Stephane Maarek on Udemy.
 
+# What is Cloud Computing ?
+
 
