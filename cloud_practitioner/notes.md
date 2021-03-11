@@ -70,4 +70,34 @@ Problem solved by the Cloud:
 5) High-availability and fault-tolerance        
 6) Agility: rapidly develop, test and launch software applications   
 
+## The Different Types of Cloud Computing     
 
+1) Infrastructure as a Service (IaaS)       
+Provide building blocks for cloud IT      
+Provide networking, computers, data storage space in its raw form      
+Highest level of flexibility     
+Easy parallel with traditional on-premises IT      
+e.g. EC2     
+
+2) Platform as a Service (PaaS)          
+Don't need to mamage infrastructure           
+Just focus on the deployment and management of our applications           
+
+3) Software as a Service (SaaS)       
+Completed product that is run and managed by the service provider.      
+
+A simple visualisation that shows how each service need to managed each components:    
+
+<img src="images/diff_service.png" width="700">
+
+Some examples:     
+1) IaaS: AWS EC2, GCP, Azure      
+2) PaaS: AWS Beanstalk, Heroku             
+3) SaaS: AWS Rekognition for ML, Gmail, Dropbox, Zoom     
+
+AWS Pricing of the Cloud has 3 pricing fundamentals:      
+1) **Compute: Pay for compute time**     
+2) **Storage: Pay for data stored in the Cloud**      
+3) **Networking: Pay for data transfer OUT of the Cloud**, i.e. any data goes into the Cloud is free.       
+
+## AWS Cloud Overview
