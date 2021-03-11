@@ -55,6 +55,19 @@ Five characteristics of Cloud Computing:
 5) Measured service.          
 
 Six advantages of Clould Computing:      
+1) Trade capital expense (CAPEX) for operational expense (OPEX): pay-on-demand means no need to own hardware. Reduce Total Cost of Ownership (TCO) and OPEX.           
+2) Massive economies of scale: many people are using the service, so the price is low due to AWS is more efficient when the scale is large.       
+3) Stop guessing capacity: scale based on actual usage.     
+4) Increase speed and agility.      
+5) Stop spending money running and maintaining data centers.
+6) Go global in minutes: leverage the AWS global infrastructure.         
 
+Problem solved by the Cloud:      
+1) Flexibility: change resource types when needed.      
+2) Cost-Effectiveness: pay as you go      
+3) Scalability: accomodate larger loads                 
+4) Elasticity: scale out and scale in when needed       
+5) High-availability and fault-tolerance        
+6) Agility: rapidly develop, test and launch software applications   
 
 
