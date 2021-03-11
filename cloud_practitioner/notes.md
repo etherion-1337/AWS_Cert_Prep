@@ -4,4 +4,8 @@ This note summarised the preparation course by Stephane Maarek on Udemy.
 
 # What is Cloud Computing ?
 
+## Traditional IT Overview 
+
+<img src="images/web_site.png" width="700">
+
 
