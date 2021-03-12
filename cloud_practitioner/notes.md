@@ -112,10 +112,33 @@ AWS Global Infrastructure:
 How to choose which AWS Region ?        
 **Compliance** with data governance and legal requirements: data never leaves a region without explicit permission. So if the government requires data stay in the country, we should launch our application within that country.       
 **Proximity** to customers: reduced latency.       
-**Available services within a Region**: new services and new features might not be available in every Region. 
+**Available services within a Region**: new services and new features might not be available in every Region.     
+**Pricing**: pricing varies region to region and is transparent in the serice pricing page.       
 
 2) AWS Availability Zones       
+
+Each Region has many Availability Zones. (usually 3, min is 2, max is 6, they are blue dots in the AWS map).     
+e.g. AWS Region: Sydney: ap-southeast-2         
+we will have 3 Availability Zones: ap-southeast-2a, ap-southeast-2b, ap-southeast-2c.       
+
+Each Availability Zones is one or more discrete data centers with redundant power, networking and connectivity. They are separated from each other so they are isolated from disasters. These Availability Zones are connected with high bandwidth, ultra-low latency networking. They are thus linked together to form the Region.          
+
 3) AWS Data Centers         
+
 4) AWS Edge Locations/ Points of Presence           
 
-Within each Region we have Availability Zones (blue dot in the AWS map). 
+Amazon has 216 Points of Presence (205 Edge Locations and 11 Regional Caches) in 84 cities across 42 countries. It is helpful to deliver content to end users with lower latency.       
+  
+AWS has Global Services:      
+Identity and Access Management (IAM)        
+Route 53 (DNS service)       
+CloudFront (Content Delivery Network)      
+WAF (Web Application Firewall)          
+
+**Most** AWS services are Region-scoped:       
+Amazon EC2 (IaaS)     
+Elastic Beanstalk (PaaS)      
+Lambda (Function as a Serice)     
+Rekognition (SaaS)
+
+We can check out the AWS Region Table to see if a service is available in our Region. 
