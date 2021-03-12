@@ -101,3 +101,21 @@ AWS Pricing of the Cloud has 3 pricing fundamentals:
 3) **Networking: Pay for data transfer OUT of the Cloud**, i.e. any data goes into the Cloud is free.       
 
 ## AWS Cloud Overview
+
+AWS Global Infrastructure:     
+1) AWS Regions      
+
+**Regions** (orange dot in the AWS map) include locations like Singapore Beijing Sydney etc, and they are all around the world. These regions are connected through the networks. Regions can have names like us-east-1, eu-west-3, etc. A Region is a cluster of data centers. 
+
+**Most AWS services are region-scoped**, this means that if we use one service at Region A and attempt to use the same service in Region B, it will be like a new time using the service.         
+
+How to choose which AWS Region ?        
+**Compliance** with data governance and legal requirements: data never leaves a region without explicit permission. So if the government requires data stay in the country, we should launch our application within that country.       
+**Proximity** to customers: reduced latency.       
+**Available services within a Region**: new services and new features might not be available in every Region. 
+
+2) AWS Availability Zones       
+3) AWS Data Centers         
+4) AWS Edge Locations/ Points of Presence           
+
+Within each Region we have Availability Zones (blue dot in the AWS map). 
