@@ -141,4 +141,18 @@ Elastic Beanstalk (PaaS)
 Lambda (Function as a Serice)     
 Rekognition (SaaS)
 
-We can check out the AWS Region Table to see if a service is available in our Region. 
+We can check out the AWS Region Table to see if a service is available in our Region. Or we can go to AWS Global Infrastructure (just google it) and see AWS Regional Services then we can access which services are available in which Regions. If the Region we are at does not have certain services we can switch to another Region.    
+
+## Shared Responsibility Model & AWS Acceptable Policy    
+
+Customer: Responsible for the security **IN** in the Cloud. This includes security, our data, our OS, our network and firewall configuration.     
+
+AWS: Responsible for the security **of** the Cloud. In the CCP exam, there *will* be questions about the shared responsibility. 
+
+<img src="images/aws_share_responsibility.png" width="700">
+
+AWS Acceptable Use Policy      
+No illgal, harmful or offensive use or content       
+No security violation     
+No network abuse     
+No E-mail or other message abuse
