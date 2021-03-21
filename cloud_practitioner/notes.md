@@ -147,7 +147,7 @@ We can check out the AWS Region Table to see if a service is available in our Re
 
 Customer: Responsible for the security **IN** in the Cloud. This includes security, our data, our OS, our network and firewall configuration.     
 
-AWS: Responsible for the security **of** the Cloud. In the CCP exam, there *will* be questions about the shared responsibility. 
+AWS: Responsible for the security **OF** the Cloud. In the CCP exam, there *will* be questions about the shared responsibility. 
 
 <img src="images/aws_share_responsibility.png" width="700">
 
@@ -158,3 +158,43 @@ No network abuse
 No E-mail or other message abuse
 
 # IAM - Identity and Access Management
+
+This is a **Global** service. This is because in IAM we are going to create our users and assign them to group.    
+
+**Root account** created by default when we create AWS account, this shouldn't be used or shared. This account is only used to setup other account.      
+
+We should create **Users**, they are people within your organisation.     
+
+Group can only contain users, not other groups. Some users don't have to belong to a group and some users can be in multiple groups.        
+
+The reasons for users/groups is to give them various permissions. **Users** and **Groups** can be assigned JSON documents called *policies*.   
+
+An example:     
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "ec2:Describe*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "elasticcloadbalancing:Describe*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:ListMetrics",
+                "cloudwatch:GetMetricsStatistics",
+                "cloudwatch:Describe*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Through these policies we define the permissions of the users. In AWS, we apply **least privilege principle**: don't give more permissions than a user needs. 
