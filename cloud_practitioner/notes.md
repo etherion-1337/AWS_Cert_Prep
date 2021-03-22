@@ -197,4 +197,57 @@ An example:
 }
 ```
 
-Through these policies we define the permissions of the users. In AWS, we apply **least privilege principle**: don't give more permissions than a user needs. 
+Another example for the policy: AdminstratorAccess: (Note the star means everything)             
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Through these policies we define the permissions of the users. In AWS, we apply **least privilege principle**: don't give more permissions than a user needs.      
+
+For users, we can add tags, where we can mark the users and add in some attributes.   
+
+After log in we can notice that if the user accout is something like `stephane@stephane-ccp`, this means that this account is logged in as IAM user. If the user account is just `stephane-ccp` then this is logged in with root user.      
+
+To grant permissions to User, we can either add the user into a group (which has the group policy, so this user will inhereit this group policy) or assign a policy directly to the user. We can also create our own custom policy either use the GUI or write in JSON.      
+
+## IAM MFA Overview
+
+To protect the AWS account, we have 2 defense mechanisms:      
+
+1) IAM Password Policy (helpful against brute force attack)         
+
+Set minimum password length      
+Requires specific character types: upper/lower case letters, numbers or non-alphanumeric characters.       
+Allow all IAM users to change their own passwords      
+Require users to change their password after some time       
+Prevent password reuse                 
+
+2) Multi Factor Authentication - MFA        
+
+On AWS this is a must and very recommended to use it. **We want to protect Root Account and IAM users**.      
+MFA = password you know + security device you own         
+
+MFA devices options in AWS:         
+1) Virtual MFA device:       
+Google Authenticator: phone only   
+Authy: multi-device, and supports multiple tokens on a single device.       
+
+2) Universal 2nd Factor (U2F) Security Key:      
+YubiKey by Yubico (3rd party): support for multiple root and IAM users using a single security key                
+
+3) Hardware Key Fob MFA Device:    
+Gemalto (3rd party)      
+
+4) Hardware Key Fob MFA Device for AWS GovCloud (US):           
+SurePassID (3rd party)        
+
