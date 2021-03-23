@@ -251,3 +251,4 @@ Gemalto (3rd party)
 4) Hardware Key Fob MFA Device for AWS GovCloud (US):           
 SurePassID (3rd party)        
 
+new content from windows
