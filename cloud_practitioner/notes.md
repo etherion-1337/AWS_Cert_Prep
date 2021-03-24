@@ -245,10 +245,186 @@ Authy: multi-device, and supports multiple tokens on a single device.
 2) Universal 2nd Factor (U2F) Security Key:      
 YubiKey by Yubico (3rd party): support for multiple root and IAM users using a single security key                
 
-3) Hardware Key Fob MFA Device:    
+3.1) Hardware Key Fob MFA Device:    
 Gemalto (3rd party)      
 
-4) Hardware Key Fob MFA Device for AWS GovCloud (US):           
+3.2) Hardware Key Fob MFA Device for AWS GovCloud (US):           
 SurePassID (3rd party)        
 
-new content from windows
+## AWS CLI    
+
+How can users access AWS ? There are 3 options:    
+1) AWS Management Console (protected by password + MFA, for Root Account or other users)       
+2) AWS Command Line Interface (CLI): protected by access keys      
+3) AWS Software Developer Kit (SDK): this is mainly for code, also protected by access keys    
+
+Access keys are generated through the AWS Console. Users manage their own access keys and these keys are **private**.    
+Access key have 2 components: Access Key ID (username) and Secret Access Key (password).   
+
+We have to install (OS specific) client and configure the CLI with the Access Key ID and the Secret Access Key in order to use command line to access AWS.    
+
+## AWS CloudShell
+
+There is an alternative to install the CLI and configure it, this is called CloudShell. At the top right corner of the AWS Console there is a `terminal` icon we can launch. This is basically CLI in the cloud with pre-installed tools, storage (1 GB per AWS region) and saved files/settings.     
+
+We can directly run AWS command directly in the CloudShell instead on the local CLI. e.g. `aws --version` to check the version of the AWS CLI installed or `aws iam list-users` to list the IAM users.     
+
+The credentials used by the CloudShell is the same credentials as the user we logged in to the console with, at the moment we launch the CloudShell.    
+
+## IAM Roles for AWS Services
+
+Some AWS services will need to perform actions on our behalf and on our account. We have to assign permissions to AWS services with IAM Roles.    
+
+IAM Roles are just like users, but they are intended to be used *not* by physical people, but instead used by AWS Services.    
+
+A quick example will be we created an EC2 instance (virtual server), and this EC2 instance would like to perform some action on AWS. To do so we need to give permissions to this EC2 instance. We will create an IAM Roles and together with the EC2 instance (as one entity), they can access AWS.     
+
+Some common roles includes: EC2 Instance Roles, Lambda Function Roles, Roles for CloudFormation.      
+
+## IAM Security Tools    
+
+IAM Credentials Report (account level):      
+We can create this report at the account level. This is a report that lists all your account's users and the status of their various credentials.    
+
+IAM Access Advisor (user level):            
+Access advisor shows the service permissions granted to a user and when those services were last used. We can use this information to revise your policies based on principle of least privilege.    
+
+## IAM Best Practices
+
+Do not use the Root Account except for AWS account setup      
+One physical user = One AWS user       
+**Assign users to groups** and assign permissions to groups (such that we manage permissions at a group level)           
+Create a strong password policy       
+Use and enforce the use of MFA              
+Create and use Roles for giving permissions to AWS services           
+Use Access Keys for Programmatic Access (CLI/SDK)      
+Audit permissions of your account with the IAM Credential Reports     
+Never share IAM users and Access keys     
+
+## Shared Responsibility Model for IAM
+
+AWS is responsible for everything they do include:      
+Infrastructure (global network security)           
+Configuration and vulnerability analysis            
+Compliance validation          
+
+For IAM, we are responsible for:     
+User, Groups, Roles, Policies management and monitoring         
+Enable MFA on all accounts          
+Keys are rotated often           
+Use IAM tools to apply appropriate permissions     
+Analyse access patterns and review permissions          
+
+In short, AWS is responsible for the infrastructure and we are responsible of how we use the infrastructure.           
+
+## IAM Summary
+
+Users: mapped to a physical user, has password for AWS Console         
+Groups: contains users only (it is best to group users together)     
+Policies: JSON document that outlines permissions for users or groups        
+Roles: if we are within AWS, we can use roles to give permissions to AWS services to perform tasks      
+Security: MFA + password policy        
+Access Keys: access AWS using the CLI or SDK      
+Audit: IAM Credential Reports and IAM Access Advisor          
+
+# EC2 - Elastic Compute Cloud
+
+*Before we start our journey in AWS services like EC2, we should set up AWS Cost budget just in case*.       
+
+## EC2 Basics
+
+One of the most popular AWS service and it is a Infrastructure as a Service (IaaS).       
+
+It is comprised of many things (and capabilities) at a high level:       
+-> You can rent virtual machinese on EC2 (they are called EC2 instances)     
+-> You can store data in on their virual drives (they are called EBS volumes)     
+-> You can distribute load across machines (Elastic Load Balancer, ELB)         
+-> You can scale services using auto-scaling group (ASG)         
+
+Knowing how EC2 works is *fundamental* to understand how Cloud works.      
+
+EC2 sizing & configuration option: what can we choose for our instances (virtual servers) ?     
+
+-> Operating System (OS): Linux or Windows (*NO* Mac)       
+-> How much compute power & cores (CPU)       
+-> How much random-access memory (RAM)            
+-> How much storage space: Network-attached (EBS & EFS) or hardware-attached (EC2 Instance Store)           
+-> The Network card that is attached to the EC2 instance: speed of the card, public IP address        
+-> Firewall rules: **security group**              
+-> Bootstrap script (configure at first launch): Configuration script needs to be run at first launch, this is called EC2 User Data           
+
+The `t2.micro` instance is included in the AWS free-tier. It has 1 vCPU, 1 GiB Mem and EBS storage.      
+
+## Create an EC2 Instance with EC2 User Data to have a Website (hands-on)
+
+1. Log in AWS Console, search for EC2, go to EC2 Console    
+2. Choose region (e.g. closest to you)
+3. Go to `Instances` on the right panel and `Launch Instance`
+4. Choose Amazon Machine Image (AMI), we can choose from Quick Start and select Amazon Linux 2 AMI (64-bit x86) which is free-tier eligible.  
+5. Choose an Instance Type (e.g. t2.micro for free tier)
+6. Configure Instance Details: Under `User Data` we can run a user data which is only run at the first boot of the instance. (an example script is given, which is going to launch a web server onto our EC2 instance and write a file to it)
+7. Add Storage (check `Delete on Termination`)
+8. Add tags
+9. Configure Security Group: create a new security group and Add Rule (HTTP, port 80)
+10. Review and launch (will be prompted to use a key pair (for SSH)) 
+11. Create a new key-pair (public-private key) and download the key pair
+
+We can then use the public IPv4 address to access the website. To stop the instance, we can right click the instance and `Stop Instance`. To get rid of the instance, choose `Terminate Instance`.       
+
+Note that if we stop an instance and restart it again, the public IPv4 **is going to change**.   
+
+## EC2 Instance Types Basics
+
+AWS has the following naming convention (example):     
+m5.2Xlarge    
+m: instance class, in this case a general purpose instance      
+5: generation of the instance (AWS improves them over time)         
+2xlarge: size within the instance class         
+
+**For exam we need to know this**, for various EC2 Instance Types:              
+1. General Purpose        
+Great for a diversity of workloads such as web servers or code repositories              
+Balance between: Compute, Memory and Networking     
+t2.micro is a General Purpose EC2 Instance (free tier)             
+
+2. Compute Optimized        
+Great for compute-intensive tasks that require high performance processors:      
+Batch processing workloads       
+Media transcoding      
+High performance web server              
+High performance computing (HPC)            
+Scientific modeling and machine learning            
+Dedicated gaming servers               
+Currently all the Compute Optimized EC2 Instance start with `c`, e.g. c5 or c6.     
+
+3. Memory Optimized
+Fast performance for workloads that process large data sets in memory (RAM)       
+Use cases includes:         
+Floating point number calculations         
+Graphic processing                
+Data pattern matching        
+These instances starts with `r`.             
+
+4. Storage Optimized
+Great for storage-intensive tasks that require high, sequential read and write access to large data sets on local storage     
+Use cases include:        
+High frequency online transaction processing (OLTP) systems    
+Relational & NoSQL databases            
+Cache for in-memory databases (e.g. Redis)       
+Data warehousing applications                 
+Distributed file systems           
+These instance starts with `i`, `d` or `h1`.       
+
+
+
+
+
+
+# TO DO
+set up Auth on Root User      
+set up CLI on Mac       
+create IAM roles      
+security report      
+set up AWS cost budget          
+create an EC2 instance
+    
