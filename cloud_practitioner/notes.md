@@ -415,6 +415,66 @@ Data warehousing applications
 Distributed file systems           
 These instance starts with `i`, `d` or `h1`.       
 
+## Security Groups & Classic Ports Overview
+
+Security Groups are the fundamental of network security in AWS.             
+They control how traffic is allowed into or out of our EC2 Instances.    
+Security Groups only contains *allow* rules, i.e. what is allowed to go in or go out.    
+Security Groups rules can reference by IP address (i.e. where is your computer) or by Security Groups (i.e. Security Groups can reference each other).                
+
+For example we are on our computer (i.e. public internet) and we would like to access our EC2 Instance. We will have to create a Security Group around our EC2 Instance (that is the firewall around it) and this Security Group is going to have rules that control which inbound traffic is allowed into the EC2 Instance and if the EC2 Instance can perform some Outbound traffic.      
+
+Security Groups are acting as a "firewall" on EC2 Instance. They regulate:          
+1. Access to Ports
+2. Authorised IP ranges: IPv4 and IPv6 (e.g. 0.0.0.0/0 means any IP address is authorised)
+3. Control of inbound network (i.e. from others to the EC2 Instance)
+4. Control of outbound network (i.e. from EC2 Instance to others)
+
+A quick example of Security Group works is shown below:           
+<img src="images/security_firewall.png" width="700">     
+
+For unauthorised inbound traffic, it will be a timeout error. By default for any Security Group, it will allow all outbound traffic out of the EC2 Instance. For example, if our EC2 Instance try to access a website, the Security Group is going to allow it.     
+
+Classic Port we need to know (**EXAM**):        
+1. 22 = SSH (Secure Shell) - log into a EC2 Instance on Linux
+2. 21 = FTP (File Transport Protocol) - upload files into a file share
+3. 22 = SFTP (Secure File Transport Protocol) - upload files using SSH
+4. 80 = HTTP - access unsecured websites
+5. 443 = HTTPS  - access secured websites
+6. 3389 = RDP (Remote Desktop Protocol) - log into a Windows instance
+
+The Security Groups (i.e. firewall) can be attached to multiple EC2 Instances.     
+
+## SSH Overview
+
+<img src="images/ssh_summary.png" width="700">
+
+## SSH with Mac
+
+When creating the EC2 Instance, we have created a key pair and download it (e.g. `ec2tutorial.pem`). We will need this key pair to SSH into this instance.      
+```
+ssh -i ec2tutorial.pem ec2-user@35.180.100.144
+```
+`ec2-user` is basically the Linux user in Amazon Linux machine. `35.180.100.144` is the IPv4 Public IP of the EC2 Instance.      
+
+The above command will **fail**. This is because the first time we download the file, the permission is 0644 for the file. And this is too open for the private key, this means that the private key can leak, and it is accessable by others and it is a bad permission. The remedy is to change the file permission via:      
+```
+chmod 0400 ec2tutorial.pem
+```
+Run the SSH command again and we will be able to SSH into the EC2 instance. Once we are inside we can query the user (`whoami`) or ping a website (`ping google.com`)          
+
+Note that in Windows 10 the `chmod` command does not exist. We will have to go to the property of the `.pem` file. We cab go to the Security tab and disable inherentence then remove all other user except yourself.        
+
+To exit we can just press `exit` or `ctrl + d` to close the connection. (or `ctrl + c` or type `exit`)      
+
+Note that on Windows when we use PuTTY, we need the PuTTygen to convert the key pair, which is in `.pem` to `.ppk` format so that PuTTY can use. Then after launching PuTTY and put in the public IPv4 of the EC2 Instance, we need to go to Connection -> SSH -> Auth to link the `.ppk` file.            
+
+## EC2 Instance Connect
+
+There is another way to connect to an EC2 Instance directly from AWS. We can click Connect in the AWS EC2 dashboard (where the list of EC2 Instance is shown). We can connect via EC2 Instance Connect after use a username. Note that this methods do not work with all type of AMIs in AWS. At the backend, it upload a temporary SSH key on your EC2 Instance for you. This methods ultimately still rely on SSH, so if we remove SSH rules from the Security Groups setting we will meet a timeout error if we use EC2 Instance Connect. So even though this method is based on browser, port 22 still needs to be opened for this method
+
+
+
 
 
 
@@ -426,5 +486,7 @@ set up CLI on Mac
 create IAM roles      
 security report      
 set up AWS cost budget          
-create an EC2 instance
+create an EC2 instance       
+edit Security Groups           
+mac SSH
     
