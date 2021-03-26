@@ -480,12 +480,7 @@ There is another way to connect to an EC2 Instance directly from AWS. We can cli
 
 
 
-# TO DO
-set up Auth on Root User      
-set up CLI on Mac       
-create IAM roles      
-security report      
-set up AWS cost budget          
+# TO DO     
 create an EC2 instance       
 edit Security Groups           
 mac SSH
