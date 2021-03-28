@@ -480,8 +480,6 @@ There is another way to connect to an EC2 Instance directly from AWS. We can cli
 
 
 
-# TO DO     
-create an EC2 instance       
-edit Security Groups           
-mac SSH
+# TO DO         
+
     
