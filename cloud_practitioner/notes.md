@@ -502,7 +502,7 @@ Recommended for **short-term** and **un-interrupted workloads**, where you canno
 
 **EC2 Reserved Instances**:       
 Up to 75% discount compared to On-Demand.        
-Reservation period: 1 year = + discount | 3 years = +++ discount        
+Reservation period: 1 year = + discount | 3 years = +++ discount (ONLY 1 or 3 years, not any time in between)       
 Purchasing options: no upfront | partial upfront = + discount | All upfront = ++ discount        
 Reserve a specific instance type (t2.micro etc)      
 
@@ -540,7 +540,7 @@ Since AWS shares all their server with everyone, this will ensure no one is usin
 **EC2 Dedicated Instances**:      
 These are for EC2 Instances running on hardware that is dedicated to you.        
 May share hardware with other instances in the same account.         
-No control over instance placement (hardware control). So this is more like a software-version of Dedicated Host. 
+No control over instance placement (hardware control). So this is more like a software-version of Dedicated Host.           
 <img src="images/dedicated_host.png" width="700">      
 
 Which purchasing option is right for me ?       
@@ -552,11 +552,113 @@ Dedicated: we book entire building of the resort.
 An example of cost comparison using m4.large instance:    
 <img src="images/m4_large.png" width="700">   
 
+## Shared Responsibility Model for EC2
+
+**AWS**:              
+Infrastructure (global network security): responsible for all data centers, infrastruture and the security of them      
+Isolation on physical hosts: in the case of Dedicated Hosts         
+Replace faulty hardware       
+Compliance validation: making sure they are still compliant with the regulations that they have agreed to       
+
+**User**:             
+We are responsible for the security *in* the Cloud            
+Security Groups Rules: we define the rules for allowing other people to access EC2 Instances or not           
+Operating-system patches and updates: we own the entire virtual machine in the EC2 Instance, so we have to do the patches and updates ourself.          
+Software and utilities installed on the EC2 Instance        
+IAM Roles assigned to EC2 & IAM user access management        
+Data security on your instance        
+
+## EC2 Summary
+
+EC2 Instance: AMI (OS) + Instance Size (CPU + RAM) + Storage + Security Groups + EC2 User Data (bootstrap script that runs when EC2 Instance first started)      
+
+Security Groups: Firewall attached to the EC2 Instance, defines which ports and IP addresses get to access the instance.      
+
+EC2 User Data: Script launched at the first start of an instance      
+
+SSH: a way for us to start a terminal into our EC2 instances (to start issuing commands on port 22)             
+
+EC2 Instance Role: link to IAM roles, to have our EC2 Instance issue commands agaist IAM             
+
+Purchasing Options: On-Demand, Spot, Reserved (Standard + Convertible + Scheduled), Dedicated Host, Dedicated Instance
+
+# EC2 Instance Storage
+
+## EBS Overview
+
+An EBS (Elastic Block Store) Volume is a *network* drive you can attach to your instances while they run.         
+It allows your instances to persist data, even after their termination: we can re-create the instances and mount the same EBS Volume from before and we will get back our data.              
+They can only be **mounted to one instance at a time** (at the CCP exam level)      
+They are bound to **a specific availability zone** when we create an EBS Volume: you cannot have an EBS Volume created in US-East-1A and attach to an instance in US-East-1B            
+
+Analogy: think of them as a "network USB stick"             
+Free tier: 30GB of free EBS storage of type General Purpose (SSD) or Magnetic per month         
+
+EBS Volume:            
+1. network drive (i.e. not a physical drive)            
+-> it uses the network to communicate the instance, which means there might be a bit of latency from one computer to reach another server                
+-> can be detached from an EC2 Instance and attached to another one quickly    
+2. locked to an Availability Zone (AZ)        
+-> an EBS volume in us-east-1a cannot be attached to us-east-1b             
+-> to move a volume across from different AZ, we need to snapshot it            
+3. Have provisioned capacity (i.e. we have to provision capacity in advance): size in GBs, and IOPS (IO operations per second)           
+
+An EBS example is given below, at CCP level, one EBS can only be attached to one EC2 Instance, but multiple EBS volume can be attached to one EC2 Instance:               
+<img src="images/ebs_eg.png" width="700">   
 
 
+## EBS Hands On
+
+In the EC2 services, when we select the EC2 Instance, we can check the `Root Device` and `Block Devices`, and they both link the to same EBS Volume. When we click on them there will be an EBS ID (we can also access the EBS Volume under Elastic Block Store at the side bar).             
+
+We can also create a stand-alone EBS volume in EC2 service. We will have to select the same Availability Zone as our instance. After creating the EBS Volume, it will appear in the `Elastic Block Store` under `Volumes`. We can then attach this volume to an instance.                 
+
+If we terminate the EC2 Instance, the EBS Volumes which do not have "Delete on Termination" set to True will persist after the instance is terminated. By default, the root EBS Volume was created with termination in mind.       
+
+## EBS Snapshots Overview
+
+We can make a backup (snapshot) of our EBS volume at a point in time. We will be able to backup the state of it and even if the EBS volume is terminated later on, we can restore it from that backup.       
+It is *not* necessary to detach volume to do snapshot, but *recommended*, just to make sure everything is clean on the EBS volume.      
+We can also copy snapshots across Availability Zones or Region: we can transfer data in a different region to leverage on the global infrastructure of AWS.       
+
+A simple illustration: the snapshot of the EBS volume will exist in your Region and can be used to restore into a EBS volume in another Availability Zone.                         
+<img src="images/ebs_snapshot.png" width="700">           
+
+We can create the snapshot in EC2 service and the snapshots can be seen under `Elatic Block Store` (at the side bar) under `Snapshots`.      
+
+We can copy snapshot into a new snapshot. This new snapshot can be in *ANY* Region that we want.     
+
+We can create an EBS volume from the snapshot, and we can create the volume in a different Availability Zones (but same Region from the original EBS volume)            
+
+## AMI Overview
+
+AMI = Amazon Machine Image           
+
+They represent a customisation of an EC2 Instance       
+-> add our own software, configuration, operating system, monitoring              
+-> Faster boot / configuration time because all our software that we want to install is pre-packaged through AMI              
+
+AMI are built for a **specific region**, and can be copied across Regions. 
+
+We can launch EC2 Instances from:             
+-> A Public AMI: AWS provided            
+-> Your own AMI: you make and maintain them yourself            
+-> An AWS Marketplace AMI: An AMI someone else made (and potentially someone sells them)               
+
+AMI Process (from an EC2 Instance)               
+-> start an EC2 instance and customize it      
+-> stop the instance (for data integrity)        
+-> build an AMI: this will create EBS snapshots behind the scenes              
+-> finally we can launch instances from other AMIs       
+
+Simple illustration on creating AMI and then use it to launch an EC2 instance:              
+<img src="images/custom_ami.png" width="700">
 
 
 
 # TO DO         
+EBS hands-on       
+EBS snapshots hands-on           
+
 
     
