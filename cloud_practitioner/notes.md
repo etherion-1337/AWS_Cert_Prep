@@ -652,13 +652,123 @@ AMI Process (from an EC2 Instance)
 -> finally we can launch instances from other AMIs       
 
 Simple illustration on creating AMI and then use it to launch an EC2 instance:              
-<img src="images/custom_ami.png" width="700">
+<img src="images/custom_ami.png" width="700">                    
+
+To create an AMI from existing EC2 Instance, we right click -> image -> create image.     
+
+After the AMI is created, we can go to Images (at the sidebar) -> AMI, select the AMI and create an EC2 Instance. Go to `Launch Instance` and instead of selecting existing public AMI, we can choose My AMIs. We still needs to select instance type (e.g. t2.micro) but we don't need to input "User Data". This can save a lot of time (e.g. configure and install software on our other EC2 Instances).     
+
+## EC2 Image Builder Overview
+
+It is used to automate the creation of Virtual Machine or container images             
+-> automate the creation, maintain, validate and test EC2 AMIs              
+
+This service can be run on a schedule (weekly, whenever packages are updated etc.)                      
+
+A simple illustration of the EC2 Image Builder process      
+<img src="images/ec2_img_builder.png" width="700">       
+From the EC2 Image Builder Service, it is going to create an EC2 instance called Builder EC2 Instance. And this EC2 instance is going to build components and customise software (e.g. install Java, update CLI). Once this is done, an AMI will be created out of that EC2 Instance. Then EC2 Image Builder will automatically create a test EC2 instance from that AMI and run a bunch of tests that we define in advance. Once tested, the AMI is distributed. Even though EC2 Image Builder is a regional service, it is possible to take that AMI and distribute it to multiple regions.        
+
+This is a free service and we only pay for the underlying resources. This means that if we created an EC2 Instance in this process, we are going to pay for these instances. And when the AMI is created and distributed, we are going to pay for the storage for that AMI wherever it has been created and wherever it has been distributed.         
+
+## EC2 Image Builder Hands On
+
+To use the service we can go to `EC2 Image Builder` services then create Image piplines. We can specify pipeline details in step 1 (scheduled run or manual)             
+
+In step 2 we choose recipe which defines how the source image is going to be customised. We can create the output image type as either AMI or Docker image. For source image we can either select from images created by AWS or enter a custom AMI ID. For the demo we choose Amazon Linux 2 as image OS and Amazon Linux 2 x 86 as the Image name. In the Components section, we can choose how to customise our image ? After selecting pre-build AWS components, we can arrange the order it will be installed. After which we can select which tests we want to run.        
+
+In step 3 we define infrastructure configuration, this is optional. The setting here specify infrastructure details for the instances that will run in our AWS account. We can create a new infrastructure configuration and create an IAM role. We can create a role for EC2 instance and attach the necessary policies. We can get the policies from checking the service defaults.               
+
+In step 4 We can set new distribution setting to distribute the image to different regions (other than the region where the AMI is created).      
+
+After executing the pipeline, there will be a Builder Instance in the EC2 Instances followed by a Test Instance. This Test Instance is actually launched from the new AMI (built after the Builder EC2 Image). 
+
+## EC2 Instance Store
+
+EBS volumes are **network drives** with good but "limited" performance         
+If we need a high-performance hardware disk, use EC2 Instance Store. EC2 Instance is a virtual machine but it is attached to a real hardware server and some of these servers do have disk space that is attached directly with a physical connection onto the server.      
+
+They have better I/O performance       
+EC2 Instance Store lose their storage if they are stopped (ephemeral) i.e. the EC2 Instance that has an Instance Store are stopped or terminated                
+User case: Good for buffer / cache / scratch data / temporary content but NOT for long-term storage              
+Risk of data loss if hardware fails -> Backups and Replication are our responsibility              
+
+If we see very high performance hardware attached volume for EC2 Instance, think local EC2 Instance Store.
+
+## EFS Overview
+
+A third type of storage we can attach to an EC2 Instance: Elastic File System (EFS)            
+
+EFS is a managed NFS (network file system) that can be mounted on **100s of EC2** at a time. Recall that EBS Volume attached to only 1 EC2 Instance at a time. So EFS makes it a shared network file system.         
+
+EFS works only with Linux EC2 instances and works across multiple Availability Zones. i.e. EFS can be attached to instances in different AZ.        
+
+Highly available, scalable, expensive (3x gp2 EBS Volume), pay per use, no capacity planning         
+
+<img src="images/efs.png" width="700">      
+
+
+We can move an EBS across AZ through a snapshot but it will be not be instant. EFS can be access and shared by multiple instances at the same time. i.e. all the instances can mount the same EFS drive using a mount target.       
+
+<img src="images/efs_ebs.png" width="700">     
+
+
+## Shared Responsibility Model for EC2 Storage    
+
+**AWS**:           
+Infrastructure       
+Replication for data for EBS Volumes & EFS drives      
+Replacing faulty hardware            
+Ensure their employees cannot access your data         
+
+
+**Customer**:               
+Setting up backup / snapshot procedures        
+Setting up data encryption            
+Responsibility of any data on the drives              
+Understanding the risk of using EC2 Instance Store           
+
+
+## EC2 Instance Storage - Summary   
+
+EBS Volumes:              
+-> network drives attached to one EC2 Instance at a time (at the CCP level)              
+-> are tied or mapped to an Availability Zones             
+-> can use EBS Snapshots for backups / transferring EBS  Volumes across AZ                 
+
+
+AMI: create ready-to-use EC2 Instances with our customisations. We can create AMI from an EBS snapshots of an EC2 Instance.                   
+
+EC2 Image Builder: automatically build, test and distribute AMIs.      
+
+EC2: Instance Store:                 
+-> High performance hardware disk attached to our EC2 Instance             
+-> Lost if our instance is stopped / terminated               
+
+EFS: network file system, can be attached to 100s of instances in a region     
+
+## Section Clean up     
+
+We can go to EC2 Dashboard to have an overview of all the resources we are using so far. (AMI we need to deregistering)
+
+
+
+
+
+
+
+
+
 
 
 
 # TO DO         
 EBS hands-on       
-EBS snapshots hands-on           
+EBS snapshots hands-on      
+AMI images hands-on     
+EC2 Image Builder hands-on           
+
+
 
 
     
