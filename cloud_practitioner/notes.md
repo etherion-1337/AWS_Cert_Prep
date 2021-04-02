@@ -752,6 +752,56 @@ EFS: network file system, can be attached to 100s of instances in a region
 We can go to EC2 Dashboard to have an overview of all the resources we are using so far. (AMI we need to deregistering)
 
 
+# ELB & ASG - Elastic Load Balancing & Auto Scalling Groups
+
+## High Availability, Scalability, Elasticity     
+
+**Scalability** means that an application / system can handle greater loads by adapting.        
+There are two kinds of scalability in the Cloud:  
+1. Vertical Scalability
+2. Horizontal Scalability (= elasticity)         
+
+Scalability is linked but different to High Availability.       
+
+**Vertical Scalability**       
+Vertical Scalability means increasing the size of the instance.          
+For example, your application runs on t2.micro. Scaling that application *vertically* means running it on a t2.large, i.e. we change the size of our instance.         
+Vertical scalability is very common for non-distributed system, such as a database. If we want to increase the performance of our database, we just increase the size of our database.           
+There is usually a limit to how much you can vertically scale (hardware limit, even though the modern limits can be very very high)        
+
+**Horizontal Scalability**            
+Horizontal Scalability means increasing the number of instances / systems for your applications.         
+Horizontal Scaling implies that we need to have a distributed system.      
+This is very common for web applications / modern applications (usually design them with horizontal scalability in mind).       
+It is easy to horizontally scale thanks to cloud offeringss such as AWS EC2.         
+
+**High Availability**        
+High Availability usually goes hand in hand with horizontal scaling           
+High Availability means running your application / system in at least 2 Availability Zones on AWS        
+The goal of high availability is to survive a data center loss (disaster)           
+
+High Availability & Scalability for EC2:         
+Vertical Scaling: increase instance size (= scale up / down)          
+-> from: t2.nano - 0.5GB of RAM, 1 vCPU        
+-> to: u-12tb1.metal - 12.3 TB of RAM, 448 vCPUs          
+
+Horizontal Scaling: Increase number of instances (= scale out / in)        
+-> Auto Scaling Group       
+-> Load Balancer        
+
+High Availability: Run instances for the same application across multi AZ           
+-> Auto Scaling Group multi AZ         
+-> Load Balancer multi AZ            
+
+Scalability vs Elasticity vs Agility (Exam !)       
+Scalability: ability to accomodate a larger load by making the hardware stronger (scale up), or by adding nodes (scale out)        
+
+Elasticity: (more cloud native) once a system is scalable, elasticity means that there will be some "auto-scaling" so that the system can scale based on the load. This is "cloud-friendly": pay-per-use, match demand, optimize costs            
+
+Agility: (not related to scalability - distractor) new IT resources are only a click away, which means that you reduce the time to make those resources available to your developers from weeks to just minites.          
+
+## Elastic Load Balancing Overview
+
 
 
 
