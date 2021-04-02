@@ -763,9 +763,7 @@ We can go to EC2 Dashboard to have an overview of all the resources we are using
 
 
 # TO DO         
-EBS snapshots hands-on      
-AMI images hands-on     
-EC2 Image Builder hands-on           
+   
 
 
 
