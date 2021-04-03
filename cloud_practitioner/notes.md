@@ -830,11 +830,60 @@ AWS has 4 kinds of load balancers:
 -> Application Load Balancer (HTTP / HTTPS only) - Layer 7            
 -> Network Load Balancer (ultra-high performance, allows for TCP, a lower level protocol) - Layer 4         
 -> Classic Load Balancer (slowly retiring) - Layer 4 & 7             
--> Gateway Load Balancer (*New*, added in on Nov 10th 2020)          
+-> Gateway Load Balancer (*New*, added in on Nov 10th 2020)           
+
+## Application Load Balancer (ALB) Hands On    
+
+Create two EC2 Instances in two availability zones and they will have two different IPv4 Public Addresses. It is tedious to access these addresses if we have multiple EC2 Instances. We can use ALB to balance the load.       
+
+Go to `Load Balancer` at the sidebar to create a load balancer. We will register our existing EC2 Instances into a Target Group.        
+
+## Auto Scaling Groups (ASG) Overview       
+
+Now we have an application that can be load balanced through a load balancer. But how do we create, automatically, these servers at the backend ? We can use an Auto Scaling Group.               
+
+In real-life, the load on your websites and application can change over time (high traffic during day time, but not during night time).     
+In the cloud, we can create and get rid of servers very quickly.         
+So the goal of an ASG is to:         
+-> Scale out (add EC2 instances) to match an increased load           
+-> Scale in (remove EC2 instances) to match a decreased load           
+-> Ensure we have a minimum and maximum number of machines running            
+-> Automatically register (or deregister) new instances to a load balancer           
+-> Replace unhealthy instances       
+
+Cost saving: only run at an optimal capacity (principle of the cloud)          
+ASG in AWS:          
+<img src="images/asg.png" width="700">           
+
+ASG with a load balancer:       
+<img src="images/asg_lb.png" width="700">           
 
 
+## Auto Scaling Groups (ASG) Hands On     
+
+We can setup the EC2 configuarations in ASG directly when creating launch template.        
+
+Deleting ASG will automatically delete EC2 Instances that is managed by it. (Deleting EC2 Instances directly will cause ASG to replace these instances according to the desired instances specified.)       
+
+## ELB & ASG Summary      
+
+High Availability: applications in multiple AZ       
+Scalability: vertical and horizontal        
+Elasticity: ability to scale up and down base on demand            
+Agility: concept in the Cloud that enable you to work faster as we can delete and create resources very quickly            
+
+Elastic Load Balancer (ELB):           
+-> Distribute traffic across backend EC2 Instances, can be multi-AZ          
+-> Supports health check        
+-> 3 types: Application LB (HTTP - L7), Network LB (TCP - L4), Classic LB (old)              
+
+Auto Scaling Groups (ASG):     
+-> Implement Elasticity for your application, across multiple AZ (horizontal scaling and elastic)         
+-> Scale EC2 instances based on the demand on your systems, replace unhealthy instances            
+-> Integrated with the ELB           
 
 
+# Amazon S3
 
 
 
