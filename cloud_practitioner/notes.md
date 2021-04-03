@@ -904,7 +904,7 @@ S3 Use Cases:
 
 Amazon S3 Overview - **Buckets**:           
 Amazon S3 allows people to store objects (files) in "buckets" (directories)                  
-Buckets must have a **globally unique name (across all regions all accounts)**               
+Buckets must have a **globally unique name (across all regions all accounts, not only your accounts)**               
 Buckets are defined at the region level                 
 S3 looks like a global service but buckets are created in the *region*           
 Naming convention:          
@@ -928,10 +928,79 @@ Metadata (list of text key / value pairs - system or user metadata)
 Tags (Unicode key / value pair - up to 10) - useful for security / lifecycle            
 Version ID (if versioning is enabled)               
 
+## S3 Hands On       
 
- 
+Upon uploading the object, we can select the object and go to `Object action` and open it. However direct access through the `Object URL` will not work as our bucket is not public yet so access it through web browser will be denied.       
+When opening it through `Object action` it will open a special URL called a pre-signed URL and it contains my AWS credentials into the URL.      
 
+## S3 Security: Bucket Policy      
 
+There are different components of S3 Security:          
+1. User based            
+We have defined IAM users, and we will attach IAM policies - which API calls should be allowed for a specific user from IAM console.     
+2. Resource based        
+Bucket Policies - bucket wide rules from the S3 console attached directly to your S3 buckets - allows cross accounts (or public requests and so on)            
+Object Access Control List (ACL) - finer grain           
+Bucket Access Control List (ACL) - less common         
+
+An IAM principal can access an S3 object if:          
+the user IAM permissions (attached to the IAM principal so the user or the group of the role can allow access the S3 bucket) allow it OR the resource policy ALLOWs it            
+AND there is no explicit DENY           
+This means that if you give someone access directly through IAM, or if we give someone access through S3 objects bucket policy, then we are good to go.      
+
+3. Encryption: encrypt objects in Amazon S3 using encryption keys       
+
+Example 1: Public Access - Use Bucket Policy           
+<img src="images/s3_eg1.png" width="700">         
+We have to attach an S3 bucket policy to our S3 buckets, which is going to allow public access           
+
+Example 2: User Access to S3 - IAM permissions           
+<img src="images/s3_eg2.png" width="700">          
+IAM user wish to access S3 buckets. We attach an IAM policy to the user, saying the user can access the S3 buckets.           
+
+Example 3: EC3 Instance access - use IAM Roles              
+<img src="images/s3_eg3.png" width="700">           
+The EC2 Instance wants to access S3 buckets. We create EC2 Instance role and attach IAM permissions to that EC2 Instance Role.         
+
+Example 4: Cross-Account Access - Use Bucket Policy         
+<img src="images/s3_eg4.png" width="700">          
+User from another AWS account want to access S3 buckets. We create an S3 bucket policy which will allow cross account access.         
+
+S3 Bucket Policies:        
+JSON based policies (just like IAM policies)       
+-> Resources: buckets and objects           
+-> Actions: set of API to Allow or Deny        
+-> Effect: Allow or Deny          
+-> Principal: The account or user to apply the policy to      
+
+Use S3 bucket for policy to:          
+-> Grant public access to the bucket         
+-> Force objects to be encrypted at upload            
+-> Grant access to another account (Cross Account)             
+
+```
+{
+    "Version": "2017-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicRead",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::examplebucket/*:
+            ]
+        }
+    ]
+}
+```
+
+Bucket settings for Block Public Access:      
+During setting up we have the `Block all public access` options (4 or 5 of them). These settings were created to prevent company data leaks.       
+If you know your bucket should never be public, leave these on (by default).          
+Can be set at the account level to ensure all S3 buckets within our account will never be made public.           
 
 
 
