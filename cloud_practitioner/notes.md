@@ -802,6 +802,37 @@ Agility: (not related to scalability - distractor) new IT resources are only a c
 
 ## Elastic Load Balancing Overview
 
+The first service on AWS that allows us to be more elastic and this is the Elastic Load Balancing.      
+
+Load Balancer is a server that will forward the internet traffic down to multiple servers (EC2 Instances) downstream. They are also called the backend EC2 Instances.         
+
+The Load Balancer will be publicly exposing for our users. There are multiple EC2 Instances behind that Load Balancer. User 1 will be talking to the Load Balancer and will be directed to one of these EC2 Instances. The EC2 Instances will reply back with something and the User 1 will get some response. This is same for User 2 and User 3.             
+
+<img src="images/load_balancer.png" width="700">           
+
+Why use a load balancer ?         
+-> Spread load across multiple downstream instances          
+-> Expose a single point of access (DNS) to your application      
+-> Seamlessly handle failures of downstream instances        
+-> Do regular health checks to your instances (if one of the instance is failing , the load balancer will not direct traffic to that instance, i.e. hide the failure of the EC2 Instances with the load balancer)        
+-> Provide SSL termination (HTTPS) for your websites         
+-> High availability across zones (making our applications highly available)          
+
+Why use an Elastic Load Balancer ?            
+An ELB (Elastic Load Balancer) is a *managed load balancer*.           
+-> So we don't need to be provisioning servers               
+-> AWS guarantees that it will be working        
+-> AWS takes care of upgrades, maintenance, high availability              
+-> AWS provides only a few configuration knobs (for the behavior of the load balancer)           
+It costs less to setup your own load balancer but it will be a lot more effort on your end (maintenance, integrations)      
+
+AWS has 4 kinds of load balancers:             
+-> Application Load Balancer (HTTP / HTTPS only) - Layer 7            
+-> Network Load Balancer (ultra-high performance, allows for TCP, a lower level protocol) - Layer 4         
+-> Classic Load Balancer (slowly retiring) - Layer 4 & 7             
+-> Gateway Load Balancer (*New*, added in on Nov 10th 2020)          
+
+
 
 
 
