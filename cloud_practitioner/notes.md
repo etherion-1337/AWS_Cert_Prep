@@ -345,7 +345,7 @@ Knowing how EC2 works is *fundamental* to understand how Cloud works.
 
 EC2 sizing & configuration option: what can we choose for our instances (virtual servers) ?     
 
--> Operating System (OS): Linux or Windows (*NO* Mac)       
+-> Operating System (OS): Linux or Windows (there is MacOS now)       
 -> How much compute power & cores (CPU)       
 -> How much random-access memory (RAM)            
 -> How much storage space: Network-attached (EBS & EFS) or hardware-attached (EC2 Instance Store)           
@@ -883,7 +883,55 @@ Auto Scaling Groups (ASG):
 -> Integrated with the ELB           
 
 
-# Amazon S3
+# Amazon S3   
+
+Amazon S3 is a more cognitive storage type and is the center of many building blocks in AWS.          
+It is advertised as "infinitely scaling" storage. This means that you can store as many objects as you want onto Amazon S3.           
+Many website use Amazon S3 as a backbone.         
+Many AWS services uses Amazon S3 as an integration as well (e.g. if we do an EBS snapshot, then that snapshot was actually stored in Amazon S3).            
+The CCP exam requires "deeper" knowledge about S3.         
+
+S3 Use Cases:           
+-> Backup and storage          
+-> Disaster Recovery: copy our data on Amazon S3 across different regions (high availability)           
+-> Archive: archive data onto Amazon S3           
+-> Hybrid Cloud Storage: extend on-premise onto Amazon S3         
+-> Application hosting         
+-> Media hosting         
+-> Data lakes & big data analytics (directly on Amazon S3)          
+-> Software delivery         
+-> Static website            
+
+Amazon S3 Overview - **Buckets**:           
+Amazon S3 allows people to store objects (files) in "buckets" (directories)                  
+Buckets must have a **globally unique name (across all regions all accounts)**               
+Buckets are defined at the region level                 
+S3 looks like a global service but buckets are created in the *region*           
+Naming convention:          
+-> No uppercase        
+-> No underscore          
+-> 3-63 characters long          
+-> Not an IP             
+-> Must start with lowercase letter or number            
+
+Amazon S3 Overview - **objects**:         
+Objects (files) have a Key             
+The Key is the FULL path to the object (e.g.):           
+-> s3://my-bucket/my_file.txt (key is `my_file.txt`)              
+-> s3://my-bucket/my_folder/another_folder/my_file.txt (key is `my_folder/another_folder/my_file.txt`)               
+The Key is composed of prefix (`my_folder/another_folder/`) + object name (`my_file.txt`)              
+There is no concept of "directories: within buckets, just keys with very long names that contains slashes.           
+Object values are the content of the body:          
+-> Max object size is 5TB (5000GB)        
+-> If uploading more than 5GB, must use "multi-part upload"           
+Metadata (list of text key / value pairs - system or user metadata)         
+Tags (Unicode key / value pair - up to 10) - useful for security / lifecycle            
+Version ID (if versioning is enabled)               
+
+
+ 
+
+
 
 
 
