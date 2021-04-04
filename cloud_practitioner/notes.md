@@ -1023,8 +1023,26 @@ We will need a `index.html` at the root of the bucket to change the bucket into 
 
 ## S3 Versioning Overview      
 
+We can enable versioning for our files in Amazon S3          
+It is enabled at the **bucket level**             
+Same key overwrite will increment the "version": 1,2,3 ... i.e. anytime we update a file, it will get a new version.       
+It is best practice to version your buckets          
+-> Protect against unintended deletes (ability to restore a version)           
+-> Easy roll back to previous version (e.g. something wrong with the files)         
+Notes:       
+Any file that is not versioned prior to enabling version will have version "null"       
+Suspending versioning does not delete the previous versions            
 
+## S3 Versioning Hands On     
 
+After enable versioning, if we delete an object (with no prior versions, i.e. the version is "null"), it is not permenently deleted, but was added a delete marker to it. This means we can undo the delete later on.      
+
+## S3 Server Access Logging    
+
+For audit purpose, we may want to **log all access to S3 buckets**         
+Any request made to S3, from any account, authorized or denied, will be logged into *another S3 Bucket* 
+That data can be analyzed using data analysis tools        
+Very helpful to come down to the root cause of an issue, or audit usage, view suspicious patterns, etc.        
 
 
 
