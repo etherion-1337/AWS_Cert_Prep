@@ -1002,6 +1002,27 @@ During setting up we have the `Block all public access` options (4 or 5 of them)
 If you know your bucket should never be public, leave these on (by default).          
 Can be set at the account level to ensure all S3 buckets within our account will never be made public.           
 
+## S3 Security: Bucket Policy Hands On    
+
+Using AWS Policy Generator to generate the Bucket Policy. Note that after copying the Amazon Resource Name (ARN), we need to add `/*` at the back because the Action we choose (GetObject) applies to the objects in the bucket.         
+
+## S3 Website Overview          
+
+One of the reason why we made our objects public is to be able to host websites onto Amazon S3.                
+S3 is a great way to host static websites and have them accessible on the www.              
+The website URL will be:       
+-> `<bucket-name>.s3-website-<AWS-region>.amazonaws.com`            
+OR (depend on region)     
+-> `<bucket-name>.s3-website.<AWS-region>.amazonaws.com`         
+
+If you get a 403 (Forbidden) error, make sure the bucket policy allows public reads.         
+
+## S3 Website Hands On      
+
+We will need a `index.html` at the root of the bucket to change the bucket into a website. Under bucket's property, there is a "Static website hosting" that we can use.       
+
+## S3 Versioning Overview      
+
 
 
 
