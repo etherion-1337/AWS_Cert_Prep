@@ -1357,8 +1357,32 @@ Note: many databases technologies could be run on EC2, but you must handle yours
 
 ## RDS & Aurora Overview      
 
-RDS = *Relational* Database Service 
+RDS = *Relational* Database Service          
+It's a managed DB service for DB use SQL as a query language           
+It allows you to create databases in the cloud that are managed by AWS            
+-> Postgres               
+-> MySQL               
+-> MariaDB               
+-> Oracle         
+-> Microsoft SQL Server            
+-> Aurora (AWS Proprietary database)           
 
+Advantage over using RDS versus deploying DB on EC2              
+RDS is a managed service:         
+Automated provisioning, OS patching         
+Continuous backups and restore to specific timestamp (Point in Time Restore)       
+Monitoring dashboards            
+Read replicas for improved read performance          
+Multi AZ setup for DR (Disaster Recovery)             
+Maintenance windows for upgrades       
+Scaling capability (veritcal or horizontal)                  
+Storage backed by EBS (gp2 or Io 1)              
+
+But you can't SSH into your instances               
+
+RDS Solution Architecture:             
+<img src="images/rds_sa.png" width="700">          
+Load balancing layer will be taking the web requests, the backend EC2 instances doing the application logic, the RDS doing reads and writes of the database.                  
 
 
 
