@@ -1044,8 +1044,96 @@ Any request made to S3, from any account, authorized or denied, will be logged i
 That data can be analyzed using data analysis tools        
 Very helpful to come down to the root cause of an issue, or audit usage, view suspicious patterns, etc.        
 
+## S3 Replication Overview   
 
+We can enable replication for our extra buckets. It can be a Cross Region Replication (CRR) or Same Region Replication (SRR).        
+e.g. bucket in eu-west-1 -> Asynchronous replication -> bucket in us-east-1          
 
+Must enable versioning in source and destination         
+The buckets can be in different accounts       
+Copying is asynchronous      
+Must give proper IAM permissions to S3 to copy the files over        
+
+CRR - Use Case: compliance, lower latency access, replication across accounts         
+SRR - Use Case: log aggregation, live replication between production and test accounts            
+
+Note that object before we enabling replication are not replicated.      
+
+## S3 Storage Classes Overview      
+
+Now we have stored our files on Amazon S3 but we have different options to store our files on different storage class. These can give us cost saving.          
+
+Amazon S3 Standard - General Purpose (so far we have been using)        
+Amazon S3 Standard - Infrequent Access (IA)        
+Amazon S3 Standard One Zone-Infrequent Access (only in one AZ)         
+Amazon S3 Intelligent Tiering: if we don't know where to put between frequent or infrequent access           
+Amazon Glacier: if you know you have backups and archives          
+Amazon Glacier Deep Archive: backups and archives can take long time to retrieve         
+Amazon S3 Reduced Redundancy Storage (deprecated - omitted)          
+
+The exam will ask you, based on the situation. which of the 6 storage classes is going to be the most adaptive for your solution.         
+
+**S3 Durability and Availability:**              
+Durability: how often you will lose a file         
+High durability (99.999999999% 11 9's) of objects across multiple AZ. i.e. if you store 10,000,000 objects with Amazon S3, you can on average expect to incur a loss of a single object once every 10,000 years          
+Same for all storage classes          
+
+Availability: how readily available a servce is (in this case, S3)           
+S3 Standard has 99.99% availability, which means it will not be available 53 minutes a year              
+Varies depending on storage class           
+
+**S3 Standard - General Purposes**           
+99.99% availability          
+Used for frequently accessed data           
+Low latency and high throughput       
+Sustain up to 2 concurrent facility failures             
+Use Cases: Big Data analytics, mobile & gaming applications, content distribution           
+
+**S3 Standard - Infrequent Access (IA)**           
+Suitable for data that is less frequently accessed, but requires rapid acccess when needed             
+99.9% availability (so lower than the general purposes class)         
+Lower cost compared to Amazon S3 Standard, but retrieval fee when we need to access the file           
+Sustain 2 concurrent facility failures             
+Use Cases: As a data store for disaster recovery, backups               
+
+**S3 Intelligent-Tiering**              
+99.9% availability           
+Same low latency and high throughput performance of S3 Standard             
+Cost-optimized by automatically moving objects between two access tiers based on changing access patterns:           
+-> frequent access          
+-> infrequent access           
+Resilient against events that impact an entire AZ.                
+
+**S3 One Zone - Infrequent Access (IA)**          
+Same as IA but data is stored in a single AZ           
+99.5% availability         
+Low latency and high throughput performance            
+Lower cost compared to S3-IA (by 20%)           
+Use Cases: Storing secondary backup copies of on-premise data, or storing data you can recreate              
+
+**Amazon Glacier & Glacier Deep Archive**          
+(very) Low cost object storage (in GB/Month) meant for archiving / backup         
+Data is retained for the longer term (years)       
+Various retrieval options of time + fees for retrieval:             
+Amazon Glacier - cheap, 3 ways to retrieve the data:            
+1. Expedited (1 to 5 minutes)              
+2. Standard (3 to 5 hours)          
+3. Bulk (5 to 12 hours) (multiple files)             
+
+Amazon Glacier Deep Archive - cheapest of all S3 Storage tier:        
+1. Standard (12 hours)        
+2. Bulk (48 hours)          
+
+Comparison among all the S3 Storage Classes:         
+<img src="images/s3_storage_class.png" width="700">            
+
+S3 - Moving between storage classes:             
+You can transition objects between storage classes (using transition rules or lifecyle rules)          
+For infrequently accessed object, move them to "STANDARD_1A"           
+For archive objects you don't need in real-time, GLACIER or DEEP_ARCHIVE.             
+
+Moving objects can be automated using a **lifecycle configuration**.            
+<img src="images/s3_storage_class_cycle.png" width="700">     
 
 
 # TO DO         
