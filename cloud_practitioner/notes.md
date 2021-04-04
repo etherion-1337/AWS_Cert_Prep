@@ -1295,6 +1295,71 @@ Storage Gateway: hybrid solution to extend on-premises storaga to S3
 
 # Databases & Analytics
 
+## Databases Introduction    
+
+Storing data on disk (EFS, EBS, EC2 Instance Store, S3) can have its limits.         
+Sometimes you want to store data in a database        
+You can structure the data       
+You build indexes to efficiently query / search through the data       
+With EFS, EBS, EC2 Instance Store we can do per files operations, with databases, its going to be more structured           
+You define **relationships between your datasets**        
+
+Databases are *optimized for a purpose* and come with different features, shapes and constraints         
+For the exam, we need to understand which database is going to fit best at the use case given to you by the question.          
+
+**Relational Databases**:            
+Looks like Excel spreadsheets, with links between them          
+Can use the SQL language to perform queries / lookups          
+<img src="images/rs_database.png" width="700">              
+
+**NoSQL Databases**:              
+NoSQL = Non-SQL = non-relational databases          
+NoSQL databases are newer kind and are purpose built for specific data models and have flexible schemas for building modern applications. (schema is basically the shape of the data)      
+Benefits:       
+Flexibility: easy to evolve data model       
+Scalability: designed to scale-out (horizontal scaling) by using distributed clusters (relational database is not easy to add server to scale it, they can do vertical scaling)         
+High-performance: optimized for a specific data model           
+Highly functional: types optimized for the data model              
+Examples: key-value, document, graph, in-memory, search databases          
+
+NoSQL data example: JSON            
+JSON - JavaScript Object Notation      
+JSON is a common form of data that fits into a NoSQL model          
+Data can be nested         
+Fields can change over time           
+Support for new types: arrays, etc.                  
+```
+{
+    "name": "John",
+    "age": 30,
+    "cars" [
+        "Ford",
+        "BMW",
+        "Fiat"
+    ],
+    "address": {
+        "type": "house",
+        "number": 23,
+        "street": "Dream Road"
+    }
+}
+```
+
+**Databases & Shared Responsibility on AWS**:            
+AWS offers use to **manage** different databases         
+Benefits include:         
+-> Quick Provisioning, High Availability, Vertical and Horizontal Scaling           
+-> Automated Backup & Restore, Operations, Upgrades           
+-> Operating System Patching is handled by AWS           
+-> Monitoring, alerting          
+
+Note: many databases technologies could be run on EC2, but you must handle yourself the resiliency, backup, patching, high availability, fault tolerance, scaling, etc.            
+
+## RDS & Aurora Overview      
+
+RDS = *Relational* Database Service 
+
+
 
 
           
