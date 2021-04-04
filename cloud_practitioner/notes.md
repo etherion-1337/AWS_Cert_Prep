@@ -1181,7 +1181,7 @@ Two flavours:
 1. Snowball Edge Storage Optimized           
 80TB of HDD capacity for block volume and S3 compatible object storage          
 2. Snowball Edge Compute Optimized               
-42TB of HDD capacity for block volume and S3 compatible object storage            
+42TB of HDD capacity for block volume and S3 compatible object storage (provides powerful computing resources)           
 
 Use cases: large data cloud migrations, DC decommission, disaster recovery             
 
@@ -1198,7 +1198,103 @@ Each Snowmobile has 100PB of capacity (use multiple in parallel)
 High security: temperature controlled, GPS, 24/7 video surveillance             
 Better than Snowball if you transfer more than 10 PB            
 
-<img src="images/snow_family.png" width="700">
+Summary:              
+<img src="images/snow_family.png" width="700">                 
+
+Snow Family - Usage Process         
+1. Request Snowball devices from the AWS console for deliver          
+2. Install the snowball client / AWS OpsHub on your servers                
+3. Connect the snowball to your servers and copy files using the client             
+4. Ship back the device when you're done (goes to the right AWS facility)           
+5. Data will be loaded into an S3 bucket              
+6. Snowball is completely wiped according to the highest security measures              
+
+Data migration used to be the only use case for Snow Family, now we can do Edge Computing.       
+
+Edge Computing means we process data while it is being created on an edge location.         
+Edge location is anywhere that does not have internet. e.g. truck on the road, ship on the sea, mining station underground.            
+They can produce data but may not have internet connectivity.            
+
+These locations may have:        
+limited / no internet access        
+limited / no easy access to computing power          
+
+We setup a Snowball Edge / Snowcone device to do edge computing.         
+Use cases of Edge Computing:           
+Preprocess data        
+Machine learning at the edge            
+transcoding media streams           
+Eventually (if need be) we can ship back the device to AWS (for transferring data for example)          
+
+Snow Family - Edge Computing           
+1. Snowcone (smaller)              
+2 CPUs, 4 GB of memory, wired or wireless access           
+USB-C power using a cord or the optional battery             
+2. Snowball Edge - Compute Optimized            
+52 vCPUs, 208 GiB of RAM              
+Optional GPU (useful for video processing or machine learning)             
+42 TB usable storage           
+3. Snowball Edge - Storage Optimized           
+up to 40 vCPUs, 80 GiB of RAM           
+Object storage clustering available          
+
+All: can run EC2 Instances & AWS Lambda functions (using AWS  IoT Greengrass)            
+Long-term deployment options: 1 and 3 years discounted pricing              
+
+AWS OpsHub: historically, to use Snow Family devices, you needed a CLI.          
+Today we can use AWS OpsHub (a software you install on your computer / laptop) to manage your Snow Family Device             
+-> unlocking and configuring single or clustered devices              
+-> transferring files           
+-> launching and managing instances running on Snow Family Devices               
+-> Monitor device metircs (storage, capacity, active instances on your devices)          
+-> Launch compatible AWS services on your devices (e.g. EC2 Instances, AWS DataSync)               
+
+## Stoage Gateway Overview         
+
+AWS is pushing for "hybrid cloud"          
+-> part of your infrastructrue is on-premises           
+-> part of your instrastructure is on the cloud          
+
+This can be due to:         
+-> long cloud migrations (you have on-premises infra first and later decided to migrate to cloud)          
+-> security requirements          
+-> compliance requirements           
+-> IT strategy           
+
+S3 is a proprietary storage technology (unlike EFS / NFS), so how do we expose the S3 data on-premise ? Use **Storage Gateway**             
+
+AWS Storage Cloud Native Options:             
+<img src="images/storage_option.png" width="700">         
+
+AWS Storage Gateway will bridge between on-premise data and cloud data in S3.            
+Hybrid storage service to allow on-premises to seamlessly use the AWS Cloud               
+
+Use cases: disaster recovery, backup & restore, tiered storage            
+
+Types of Storage Gateway:           
+1. File Gateway           
+2. Volume Gateway         
+3. Tape Gateway      
+
+No need to knw the types for exam, but we need to know that the Storage Gateway allows you to bridge whatever happens on-premises directly into the AWS Cloud. So under the scene, the Storage Gateway will be using Amazon EBS, S3, Glacier.          
+
+## Amazon S3 - Summary      
+
+Buckets vs Objects: bucket need global unique name, tied to a region             
+S3 security: IAM policy, S3 Bucket Policy (public access), S3 Encryption             
+S3 Websites: host a static website on Amazon S3          
+S3 Versioning: multiple versions for files, prevent accidental deletes          
+S3 Access Logs: log requests made within your S3 bucket           
+S3 Replication: same-region or cross-region, must enable versioning           
+S3 Storage Classes: Standard, IA, IZ-IZ, Intelligent, Glacier, Glacier Deep Archive               
+S3 Lifecycle Rules: transition objects between classes         
+S3 Glacier Vault Lock / S3 Object Lock: WORM (Write Once Read Many)               
+Snow Family: import data onto S3 through a physical device, edge computing                     
+Storage Gateway: hybrid solution to extend on-premises storaga to S3            
+
+
+# Databases & Analytics
+
 
 
           
