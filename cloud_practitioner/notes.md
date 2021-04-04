@@ -1384,6 +1384,24 @@ RDS Solution Architecture:
 <img src="images/rds_sa.png" width="700">          
 Load balancing layer will be taking the web requests, the backend EC2 instances doing the application logic, the RDS doing reads and writes of the database.                  
 
+**Amazon Aurora**               
+Aurora is a proprietary technology from AWS (not open sourced)               
+It works the same way as RDS and it supports **PostgreSQL** and **MySQL**                 
+Aurora is "AWS cloud optimized" and claims 5x performance improvement over MySQL on RDS, over 3x the performance of Postgres on RDS                   
+Aurora storage automatically grows in increments of 10GB, up to 64TB             
+Aurora costs more than RDS (20% more), but more efficient.               
+Not in the free tier (but RDS is)                 
+From the exam perspective, RDS and Aurora are going to be the two ways for you to create relational database on AWS. They are both managed but Aurora is going to be more cloud native where RDS is going to be running the technologies directly as a managed service.             
+
+## RDS Hands On            
+This part is not tested in exam           
+After creating the DB, we can create a snapshot of it and we can restore it into a new database, with possibly another instnace class (veritcal scaling).             
+We can also copy the database into another region. We can also share this snapshot with other account or export it to S3 for later usage.          
+
+
+
+
+
 
 
           
