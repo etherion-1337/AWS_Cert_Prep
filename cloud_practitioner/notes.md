@@ -1133,8 +1133,77 @@ For infrequently accessed object, move them to "STANDARD_1A"
 For archive objects you don't need in real-time, GLACIER or DEEP_ARCHIVE.             
 
 Moving objects can be automated using a **lifecycle configuration**.            
-<img src="images/s3_storage_class_cycle.png" width="700">     
+<img src="images/s3_storage_class_cycle.png" width="700">        
 
+Note that the "Lifecycle Rules" (and also "Replication Rules") are under individual bucket (under the "Management" tab)          
+
+## S3 Glacier Vault Lock & S3 Object Lock        
+
+S3 Object Lock:          
+-> Adopt a WORM (Write Once Read Many) model. i.e. write the file once to your S3 bucket, and then block that object version to be deleted for a specific amount of time, so no one can touch it.          
+
+Glacier Vault Lock:            
+-> Adopt a WORM model          
+-> Create a lock policy and that lock policy prevents future edits to that file so that it no longer can be changed. And also no one can delete that policy (even admin).           
+-> Helpful for compliance and data retention (e.g. after put into the bucket, make sure noone will ever delete it and we will retrieve it in 7 years time)          
+
+## Shared Responsibility Model for S3    
+
+**AWS**          
+Infrastructure (global security, durability, availability, sustain concurrent loss of data in two facilities)           
+Configuration and vulnerability analysis           
+Compliance validation            
+
+**User**          
+S3 Versioning        
+S3 Bucket Policies         
+S3 Replication Setup        
+Logging and Monitoring         
+S3 Storage Classes (optimised for cost saving)            
+Data encryption at rest and in transit          
+
+## AWS Snow Family          
+
+Highly-secure, portable devices to **collect and porcess data at the edge**, and **migrate data into and out of AWS**.        
+So 2 use cases:         
+Data migration: Snowcone, Snowball Edge, Snowmobile            
+Edge Computing: Snowcone, Snowball Edge          
+
+Data Migrations with AWS Snow Family             
+Large amount of data takes long time to transfer. Challenges: limited connectivity, limited bandwidth, high network cost, shared bandwidth (can't maximise the line), connection stability       
+AWS Snow Family: offline devices to perform data migrations -> if it takes more than a week to transfer over the network, use Snowball devices. (AWS will send you an actual physical device and then we load your data onto it, and we send it back to AWS)         
+
+**Snowball Edge** (for data transfer) is a huge box: move TBs or PBs of data in or out of AWS.            
+Alternative to moving data over the network (and paying network fees)            
+Pay per data transfer job             
+Provide block strorage and Amazon S3-compatible object storage           
+Two flavours:        
+1. Snowball Edge Storage Optimized           
+80TB of HDD capacity for block volume and S3 compatible object storage          
+2. Snowball Edge Compute Optimized               
+42TB of HDD capacity for block volume and S3 compatible object storage            
+
+Use cases: large data cloud migrations, DC decommission, disaster recovery             
+
+**AWS Snowcone** is a much smaller device: small, portable computing, anywhere, rugged & secure, withstand harsh environments.           
+Light and secured (2.1 kg)      
+Device used for edge computing, storage and data transfer          
+8TBs of usable storage           
+Use Snowcone where Snowball does not fit (space-constrained environment)             
+Must provide your own battery / cables         
+Can be sent back to AWS offline, or connect it to internet and use **AWS DataSync** to send data.             
+
+**AWS Snowmobile** is an actual truck: transfer exabytes of data (1EB = 1,000PB = 1,000,000 TBs)           
+Each Snowmobile has 100PB of capacity (use multiple in parallel)               
+High security: temperature controlled, GPS, 24/7 video surveillance             
+Better than Snowball if you transfer more than 10 PB            
+
+<img src="images/snow_family.png" width="700">
+
+
+          
+
+ 
 
 # TO DO         
    
