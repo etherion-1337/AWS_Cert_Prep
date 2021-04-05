@@ -1562,12 +1562,87 @@ Great for knowledge graphs (Wikipedia), fraud detection, recommendation engines,
 
 From exam's perspective, anytime we see anything related to graph database, think Neptune.         
 
+## Amazon QLDB Overview        
+
+QLDB = Quantum Ledger Database           
+
+A ledger is a book **recording financial transactions**             
+
+Fully Managed, Serverless, High available, Replication across 3 AZ        
+
+Used to **review history of all the changes made to your application data** over time          
+
+**Immutable** system: no entry can be removed or modified, cryptographically verifiable          
+
+Behind the scenes a journal, it has a sequence of modifications. Everytime a modification is made, there is a cryptographic hash that is computed which guarantees that nothing has been deleted or modified. This can be verified by anyone using the database.             
+Extremely helpful for financial transcations              
+<img src="images/qldb.png" width="700">            
+
+2-3x better performance than common ledger blockchain frameworks, maipulate data using SQL             
+
+Difference with Amazon Managed Blockchain: **no decentralization component**, in accordance with financial regulation rules. This means that this is a central database owned by Amazon that allows you to write this journal.              
+
+From exam's perspective, anytime we see financial transaction or ledger, think QLDB.            
+
+## Managed Blockchain Overview     
+
+Blockchain makes it possible to build applications where multiple parties can execute transaction **without the need for a trusted, central authority**.                
+
+Amazon Managed Blockchain is a managed service to:              
+-> join public blockchain networks            
+-> or create your own scalable private network             
+-> Compatible with frameworks Hyperledger Fabric & Ethereum             
+
+From exam perspective, anytime we see blockchain / Hyperledger Fabric / Ethereum, think Amazon Managed Blockchain, which is also a **de-centralised** blockchain.             
 
 
- 
+## DMS Overview           
+
+DMS = Database Migration Service          
+
+Once we extract the data from the source DB, we will run an EC2 instance that will be running the DMS software. The DMS will insert the data back to the target DB.          
+<img src="images/dms.png" width="300">            
+
+Quickly and securely migrate databases to AWS, resilient, self healing           
+The source DB remains available during the migration           
+
+Supports:           
+Homogeneous migrations: e.g. Oracle to Oracle (same database technology for the source and target DB)            
+Heterogeneous migrations: e.g. Microsoft SQL Server to Aurora         
+
+## Glue Overview
+
+Managed **extract, transform, and load (ETL)** service (exam !)              
+
+Useful to prepare and transform data for analytics          
+
+Fully serverless service (traditionally we will use a server to do ETL)           
+
+Note that we will provide a script in Glue service to do a transformation on the data            
+<img src="images/glue.png" width="700">             
+
+Glue Data Catalog: catalog of datasets. Can be used by Athena, Redshift, EMR (central repository to store structural and operational metadata for data assets in AWS Glue)                
+
+## Databases & Analytics Summary in AWS           
+
+Relational Databases - OLTP (Online Transaction Processing): RDS & Aurora (SQL)           
+(for RDS) Difference between Multi-AZ, Read Replicas, Multi-Region (and their use cases)          
+In-memory Database: ElastiCache        
+Key/Value Database: DynamoDB (serverless) & DAX (cache for DynamoDB)          
+Warehouse - OLAP (Online Analytics Processing): Redshift (SQL)            
+Hadoop Cluster: EMR               
+Athena: query data on S3 (serverless & SQL)            
+QuickSight: dashboards on your data (serverless)          
+DocumentDB: "Aurora for MongoDB" (JSON - NoSQL database)             
+Amazon QLDB: Financial Transactions Ledger (immutable journal, cryptographically verifiable, centralised)             
+Amazon Managed Blockchain: managed Hyperledger Fabric & Ethereum blockchains (de-centralised)           
+Glue: Managed ETL and Data Catalog service             
+Database Migration: DMS                 
+Neptune: graph database                
+
 
 # TO DO         
-DynamoDB hands-ON   
+
 
 
 
