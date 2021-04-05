@@ -1398,10 +1398,135 @@ This part is not tested in exam
 After creating the DB, we can create a snapshot of it and we can restore it into a new database, with possibly another instnace class (veritcal scaling).             
 We can also copy the database into another region. We can also share this snapshot with other account or export it to S3 for later usage.          
 
+## RDS Deployments Options       
+
+When we deploy RDS databases, we need to understand that we have multiple architectural choices we can make.                  
+
+RDS Read Replicas:         
+Say we have our application that reads from our main RDS database and we want to scale the read workloads, i.e. we have more and more applications that needs to read more data from RDS. We can create Read Replicas.          
+This means that we have some copies of your RDS database that are going to be created. And our applications can read from these Read Replicas.                 
+So we have distributed the reads to different RDS databases.            
+-> We can create up to 15 Read Replicas.                   
+-> Writing data is only done to the *main database*.                  
+<img src="images/rds_read_replica.png" width="700">                
 
 
+Multi-AZ:                    
+Failover in case of AZ outage (high availability)                     
+The application still reads/writes to the main RDS database. But we are going to setup a replication cross AZ. This is a Failover database.              
+In case the main RDS database crashes, RDS will trigger a failover. The application will failover to the Failover database in a different AZ.                  
+The Failover DB is not accessable until there is an issue with the main database.                
+Can only have 1 other AZ as failover.                        
+<img src="images/rds_multi_az.png" width="700">                   
+
+Multi-Region (Read Replicas):                 
+For example we have the main RDS in eu-west-1 and we create a Read Replica in us-east-2. So application in us-east-2 can read locally.                 
+But anytime this application (in us-east-2) needs to write data, the writes will happen cross region and so we need to write the data to eu-west-1.                 
+-> Disaster recovery in case of region issue                 
+-> Local performance for global reads (less latency as the database is local)                     
+-> Replication cost (since we are replicating data across region)                
+<img src="images/rds_multi_region.png" width="700">
+
+## ElastiCache Overview            
+
+Second type of database we will see on AWS is the Amazon ElastiCache. It is as the same way RDS to get managed Relational Databases.                        
+ElastiCache is to get managed Redis or Memcached                   
+Caches are **in-memory databases** with high performance, low latency.                
+In exam if there is mention about *in-memory* database, we have to think ElastiCache.              
+Helps **reduce load off databases for read intensive workloads** (if we have an RDS database and we are doing alot of query on it and they are the same query all the time, it will put abit of pressure on the RDS. So we use a cache to reduce the pressure off the database by making sure the queries are directly going onto my in-memory database through ElastiCache).                                                
+
+AWS takes care of OS maintenance / patching, optimization, setup, configuration, monitoring, failure recovery and backups.                   
+
+ElastiCache Solution Architecture - Cache:                 
+<img src="images/elasticache_sa.png" width="700">                                
+The ELB will go to your EC2 Instances and they will read / write data from Amazon RDS database, which is slow. There will be some caching into an Amazon ElastiCache database.                
+This is fast because it is in-memory.  So with ElastiCache it wil take pressure off from the main RDS database. (we want to save the queries somewhere else)                          
+
+## DynamoDB Overview           
+
+Fully Managed Highly available with replication across 3 AZ                 
+NoSQL database - **NOT a relational database**                   
+Scales to massive workloads, distributed "serverless" database (we don't provision any servers, with RDS or ElastiCache we need to provision an instance type. There are still servers at the backend for DynamoDB but we don't see them)                              
+It scales with millions of requests per seconds, trillions of rows, 100s of TB of storage                  
+Fast and consistent in performance                 
+**Single-digit millisecond latency - low latency retrieval** (Key words in the exam: serverless, low latency, single-digit millisecond latency)                         
+Integrated with IAM for security, authorization and administration               
+Low cost and auto scaling capability                
+
+DynamoDB - type of data: it is a key / value database                    
+<img src="images/dynamodb_data.png" width="700">                   
+It has a primary key (consist of 1 or 2 columns: partition key and sort key) and the attributes where you can define your own columns for your data.              
+All items are row by row.                    
+
+DynamoDB Accelerator - DAX                
+Both can be used in the exam. This is Fully Managed **in-memory cache** for DynamoDB. (this is a cache specifically for DynamoDB)                 
+
+Say our application want to access DynamoDB. For this if you want to cache the most frequently read objects then we can use DAX as a cache in between. (DAX is made only for DynamoDB and we will not be using ElastiCache. We could but DAX is already really well integrated with DynamoDB)             
+**10X performance improvment** - single-digit millisecond latency to microseconds latency - when accessing your DynamoDB tables.               
+Secure, highly scalable and highly available           
+<img src="images/dax.png" width="700">                 
+
+Difference with ElastiCache at the CCP level:         
+**DAX is only used for and is integrated with DynamoDB**, while ElastiCache can be used for other databases                     
 
 
+## Redshift Overview               
+
+Redshift is based on PostgreSQL, but **it's not used for OLTP (Online Transaction Processing)** (this is what RDS is good for)                   
+It is **OLAP - Online Analytical Processing** (analytics and data warehousing)                  
+In exam, look out for keywords like: database needs to be a warehouse and to do analytics on it.                 
+
+With Redshift, we don't load data continuously, load data once every hour, not every second.                  
+
+It is really good at analysing data and making some computation: 10x better performance than other data warehouse, scale to PBs of data                  
+
+**Columnar** storage of data (instead of row based) (exam will ask)                  
+
+Massively Parallel Query Execution (MPP), highly available                
+
+Pay as you go based on the instances provisioned             
+
+Has a SQL interface for performing the queries              
+
+BI tools such as AWS Quicksight or Tableau integrated with it (if you want to create dashboard on top of our data)              
+
+## Amazon EMR Overview   
+
+EMR = Elastic MapReduce              
+So EMR is not really a database, it helps creating Hadoop clusters (Big Data) to analyze and process vast amount of data               
+The clusters can be made of **hundreds of EC2 Instances**                 
+Also supports Apache Spark, HBase, Presto, Flink etc on top of the Hadoop clusters.               
+EMR takes care of all the provisioning and configuration                
+Auto-scaling and integrated with Spot instances                   
+
+Use Cases: data processing, machine learning, web indexing, big data, etc.                      
+
+From exam's perspective, anytime we see Hadoop cluster, it is going to be Amazon EMR.                       
+
+## Athena Overview              
+
+Fully Serverless database with SQL capabilities               
+It is used only for 1 thing: query data in S3                
+
+With Athena, we don't pay for the database but we pay per query.                   
+
+Output results put back to S3.             
+
+It is secured through IAM.               
+
+Use Cases: one-time SQL queries, serverless queries on S3, log analytics                
+
+From exam's perspective, anytime we see serverless database to perform queries on Amazon S3, this is going to be Athena.                 
+
+
+## Amazon QuickSight                
+
+Serverless machine learning-powered business intelligence service to create interactive dashboards.                   
+Fast, automatically scalable, embeddable, with per-session pricing                       
+
+Use Cases: business analytics, building visualizations, perform ad-hoc analysis, get business insights using data                       
+
+Integrated with RDS, Aurora, Athena, Redshift, S3.
 
 
           
@@ -1409,7 +1534,7 @@ We can also copy the database into another region. We can also share this snapsh
  
 
 # TO DO         
-   
+DynamoDB hands-ON   
 
 
 
