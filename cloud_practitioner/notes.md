@@ -1528,8 +1528,41 @@ Use Cases: business analytics, building visualizations, perform ad-hoc analysis,
 
 Integrated with RDS, Aurora, Athena, Redshift, S3.
 
+## DocumentDB Overview     
 
-          
+Aurora is an "AWS-implementation" of PostgreSQL / MySQL        
+DocumentDB is the same for MongoDB (which is a NoSQL database)         
+
+It is based on MongoDB technology and hence compatible with MongoDB.       
+
+MongoDB is used to store, query, and index JSON data        
+
+Similar "deployment concept" as Aurora        
+Fully Managed, highly available with replication across 3 AZ         
+
+Aurora storage automatically grows in increments of 10GB, up to 64TB           
+
+Automatically scaled to workloads with millions of requests per second             
+
+In exam, anything related to MongoDB, think DocumentDB. Anything related to NoSQL databases, think DocumentDB and also DynamoDB.            
+
+## Neptune Overview         
+
+Fully managed **graph** database           
+A popular **graph dataset** would be a social network           
+
+Highly available across 3 AZ, with up to 15 Read Replicas         
+Build and run applications working with highly connected datasets - optimized for those complex and hard queries            
+
+Can store up to billions of relations and query the graph with milliseconds latency              
+
+Highly available with replications across multiple AZ       
+
+Great for knowledge graphs (Wikipedia), fraud detection, recommendation engines, social networking           
+
+From exam's perspective, anytime we see anything related to graph database, think Neptune.         
+
+
 
  
 
