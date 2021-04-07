@@ -1859,7 +1859,210 @@ Has high availability but no auto-scaling, limited AWS integrations
 (exam) unless exam ask for someone with little cloud experience and want to start quickly with low and predictable pricing, think Lightsail. Otherwise it is always a wrong answer.                      
 
 
-## Other Compute - Summary
+## Other Compute - Summary    
+
+Docker: container technology to run applications               
+
+ECS: run Docker containers on EC2 instances (have to provision these EC2 instances in advance)                
+
+Fargate:              
+-> run Docker containers without provisioning the infrastructure                
+-> serverless offering (no EC2 instance)                      
+
+ECR: Private Docker Images Repository           
+
+Batch: run batch jobs on AWS across managed EC2 instances (the batch jobs run on top of ECS service)                   
+
+Lightsail: predictable & low pricing for simple application & DB stacks (most like a distractor in the exam)                    
+
+**Lambda Summary**:                    
+Lambda is serverless, Function as a Service, seamless scaling, reactive                
+Two components for billing:              
+-> by the time run x by the RAM provisioned              
+-> by the number of invocations                
+
+Language Support: many programming languages except (arbitrary) Docker (we need to implement a specific runtime API, for arbitrary Docker we use ECS/Fargate)                 
+
+Invocation time: up to 15 minutes              
+
+Use cases:                 
+-> create thumbnails for images uploaded onto S3 (e.g.)                   
+-> run a serverless cron job                   
+
+API Gateway: expose Lambda functions as HTTP API             
+
+# Deployment & Managing Infrastructure at Scale       
+
+## CloudFormation Overview               
+
+CloudFormation is a declarative way of outlining your AWS Infrastructure, for any resources (most of them are supported)                           
+
+For example, within a CloudFormation template, you say:                
+-> I want a security group                
+-> I want two EC2 Instances using this security group                 
+-> I want an S3 bucket                
+-> I want a load balancer (ELB) in front of these machines                     
+
+Then CloudFormation creates those for you, in the **right order**, with the **exact configuration** that you specify.                
+
+**Benefits of AWS CloudFormation**:                      
+1. Infrastructure as code                  
+No resources are created manually, which is excellent for control (we will never ever create resources manually, like in this course so far)                     
+Changes to the infrastructure are reviewed through code (great way to operate in cloud)                  
+2. Cost               
+Each resources within the stack is tagged with an identifier so you can easily see how much a stack costs you                  
+You can estimate the costs of your resources using the CloudFormation template                        
+Saving strategy: e.g. in Dev, you could automation delete of templates at 5pm and recreated at 8am safely.                                    
+3. Productivity                     
+Ability to destroy and re-create an infrastructure on the cloud on the fly             
+Automated generation of Diagram for your templates                      
+Declarative programming (no need to figure out ordering and orchestration)                 
+4. Don't re-invent the wheel                 
+Leverage existing templates on the web               
+Leverage the documentation                    
+5. Supports (almost) all AWS resources:                     
+Everything we see in this course is supported              
+You can use "custom resources" for resources that are not supported              
+
+CloudFormation Stack Designer:              
+we can see all the resources and the relations between components                   
+
+(exam), CloudFormation is going to be used when we have infrastructure as code, when we need to repeat architecture in a different environment / region / AWS account. 
+
+## Beanstalk Overview         
+
+When we have deployed a web application in AWS, we typically adopt a 3-tier architecture, shown below:            
+<img src="images/three_tier_web_app.png" width="700">                    
+Our user talk to a load balancer (that could be in multi-AZ). The load balancer will forward traffic to multiple EC2 instances managed by an auto scaling group. These EC2 instances will store the data somewhere so they will use a database (such as Amazon RDS). If an in-memory database or in-memory cache is needed, then they can use ElastiCache to store or retrieve session data and cached data.                          
+
+This architecture we can reproduce easily manually or through CloudFormation. But there is a better way.        
+
+Developer problems on AWS:                   
+Don't want to manage infrastructure, just deploying code.            
+Configuring all the database, load balancers, etc is troublesome and we have scaling concerns.               
+
+Most web app have the same architecture (ALB + ASG)                   
+
+All the developers want is for their code ro run.             
+
+Possibly, consistently across different applications and environments.                    
+
+AWS Elastic Beanstalk:                            
+Elastic Beanstalk is a developer centric view of deploying an application on AWS.           
+It uses all the component's we have seen before: EC2, ASG, ELB, RDS, etc ...               
+But it's all in one view that's easy to make sense of.                  
+We still have full control over the configuratioj                   
+
+From a cloud perspective, **Beanstalk == Platform as a Service (PaaS)**                   
+**Beanstalk is free but you pay for the underlying instances**.                     
+
+Elastic Beanstalk:                      
+-> Managed Service                 
+Instance configuration / OS is handled by Beanstalk            
+Deployment strategy is configuration but performed by Elastic Beanstalk                
+Capacity provisioning done by Beanstalk              
+Load balancing & auto-scaling is done by Beanstalk            
+Application health-monitoring & responsiveness included in the Beanstalk dashboard                   
+-> As developers we just worry about the application code                      
+-> **Three** architecture models with Beanstalks:                  
+1. single instance deployment: good for dev environment                            
+2. LB _ ASG: great for production or pre-production web applications                
+3. ASG only: great for non-web apps in production (workers, etc.)                  
+
+It supports many platforms: Go, Java SE, Python, Ruby, Single/Multi-Container Docker, Preconfigured Docker. If not supported, you can write your custom platform (advanced)                     
+
+Beanstalk does have a full monitoring suite available within the service itself. So there are **health agents** on each EC2 instances that is going to push metrics to CloudWatch.              
+Checks for app health, publishes health events.              
+
+## CodeDeploy Overview                    
+
+It is also a way for us to deploy our application automatically.                  
+CodeDeploy is abit more permissive. It doesn't need to be using Beanstalk or CloudFormation (i.e. completely independent).              
+
+It works with EC2 Instances, and so we can have many EC2 instances being upgraded (in the case of updating application in EC2 instance).                   
+It also works with On-Premises Servers.           
+It is a *hybrid* service (cloud and on-premises)                         
+Servers / Instances must be provisioned and configured ahead of time with the CodeDeploy Agent (that will be assisting us to do the upgrades).             
+This service automatically upgrading version of application in EC2 instances in a single interface.              
+
+## AWS CodeCommit                  
+
+Before pushing the application code to servers, it needs to be stored somewhere.            
+Developers usually store code in a repository, using the Git technology.                   
+A famous public offering is Github, AWS's competing product is CodeCommit                     
+
+-> Source-control service that hosts Git-based repositories                   
+-> Makes it easy to collaborate with others on code                 
+-> The code changes are automatically versioned                   
+
+Benefits:              
+-> fully managed               
+-> scalable & highly available                     
+-> private, secured, integrated with AWS                 
+
+## CodeBuild Overview                
+
+Code building service in the cloud                   
+Compiles source code, run tests, and produces packages that are ready to be deployed (by CodeDeploy for example)                       
+e.g. flow                            
+Say the code is in CodeCommit, CodeBuild will retrieve this code from CodeCommit, run some script that we have to define, build the code and then we will have ready-to-deploy artifact.                        
+<img src="images/code_build.png" width="700">                       
+Benefits:                 
+Fully managed, serverless               
+Continuously scalable & highly available                    
+Secure              
+Pay-as-you-go pricing - only pay for the build time                     
+
+## CodePipeline Overview                    
+
+How do we know that CodeCommit and CodeBuild are connected ?                     
+We can connect them with CodePipeline                       
+
+CodePipeline orchestrate the different steps to have the code automatically pushed to production.           
+code => build => test => provision => deploy                
+basis for CICD (Continuous Integration & Continuous Delivery)                    
+<img src="images/code_pipeline.png" width="700">                            
+CodePipeline will take the code from CodeCommit, build it with CodeBuild, deploy it with CodeDeploy and maybe deployed into a Elastic Beanstalk environment.                   
+It is fully managed, compatible with CodeCommit, CodeBuild, CodeDeploy, Elastic Beanstalk, CloudFormation, Github, 3rd-party services (GitHub ...) & custom plugins.                     
+Fast deliver & rapid updates.              
+At the core of CICD services within AWS.                               
+
+
+## CodeArtifact Overview                   
+
+Software packages depend on each other to be built (also called code dependencies), and new ones are created.           
+
+Storing and retrieving these dependencies is called **artifact management**.                 
+Traditionally you need to setup your own artifact management system (e.g. on S3 or some other custom software in EC2 Instances).                          
+
+CodeArtifact is a secure, scalable, and cost-effective artifact management for software development          
+Works with common dependency management tools (e.g. pip).                    
+
+Developers and CodeBuild can then retrieve dependencies straight from CodeArtifact                     
+
+## CodeStar Overview                          
+
+**Unified UI** to easily manage software development activities **in one place**.                 
+Behind the scene CodeStart will create a CodeCommit repo, a CodeBuild build process, a CodeDeploy, a CodePipeline.                      
+"Quick way" to get started to correctly set-up CodeCommit, CodePipeline, CodeBuild, CodeDeploy, Elastic Beanstalk, EC2, etc.                      
+Can edit the code "in-the-cloud" direclty using **AWS Cloud9**.                          
+
+## Cloud9 Overview                    
+
+AWS Cloud9 is a cloud IDE (Integrated Development Environment) for writing, running and debugging code.          
+
+A cloud IDE can be used within a web browser with no setup necessary.                         
+
+Also allos for code collaboration in real-time (pair-programming)                 
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1883,7 +2086,9 @@ Has high availability but no auto-scaling, limited AWS integrations
 # TO DO         
 
 Lambda hands on                  
-Lightsail hands on
+Lightsail hands on             
+CloudFormation hands on                
+Beanstalk hands on                 
 
 
 
