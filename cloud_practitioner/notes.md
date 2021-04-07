@@ -1935,7 +1935,7 @@ we can see all the resources and the relations between components
 
 ## Beanstalk Overview         
 
-When we have deployed a web application in AWS, we typically adopt a 3-tier architecture, shown below:            
+When we have deployed a **web application** in AWS, we typically adopt a 3-tier architecture, shown below:            
 <img src="images/three_tier_web_app.png" width="700">                    
 Our user talk to a load balancer (that could be in multi-AZ). The load balancer will forward traffic to multiple EC2 instances managed by an auto scaling group. These EC2 instances will store the data somewhere so they will use a database (such as Amazon RDS). If an in-memory database or in-memory cache is needed, then they can use ElastiCache to store or retrieve session data and cached data.                          
 
@@ -1970,13 +1970,19 @@ Application health-monitoring & responsiveness included in the Beanstalk dashboa
 -> As developers we just worry about the application code                      
 -> **Three** architecture models with Beanstalks:                  
 1. single instance deployment: good for dev environment                            
-2. LB _ ASG: great for production or pre-production web applications                
+2. LB + ASG: great for production or pre-production web applications                
 3. ASG only: great for non-web apps in production (workers, etc.)                  
 
 It supports many platforms: Go, Java SE, Python, Ruby, Single/Multi-Container Docker, Preconfigured Docker. If not supported, you can write your custom platform (advanced)                     
 
 Beanstalk does have a full monitoring suite available within the service itself. So there are **health agents** on each EC2 instances that is going to push metrics to CloudWatch.              
-Checks for app health, publishes health events.              
+Checks for app health, publishes health events.          
+
+Note that Beanstalk uses CloudFormation to do the provisoning.           
+
+CloudFormation vs Beanstalk:        
+CF is used to deploy infrastructure as code, so we can depoly anything on CF (not only EC2 instances). CF is infrastructure focused.                             
+Beanstalk is a platform as a service, and is more application focused. Developer just focus on the application.         
 
 ## CodeDeploy Overview                    
 
@@ -2030,7 +2036,6 @@ CodePipeline will take the code from CodeCommit, build it with CodeBuild, deploy
 It is fully managed, compatible with CodeCommit, CodeBuild, CodeDeploy, Elastic Beanstalk, CloudFormation, Github, 3rd-party services (GitHub ...) & custom plugins.                     
 Fast deliver & rapid updates.              
 At the core of CICD services within AWS.                               
-
 
 ## CodeArtifact Overview                   
 
