@@ -1641,9 +1641,249 @@ Database Migration: DMS
 Neptune: graph database                
 
 
+# Other Compute Services: ECS, Lambda, Batch, Lightsail     
+
+## What is Docker ?          
+
+Docker is a software development platform to deploy apps             
+Apps are packaged in **containers** that can be run on any OS             
+Apps run the same, regardless of where they are run             
+-> any machine            
+-> no compatibility issues            
+-> predictable behavior                
+-> less work             
+-> easier to maintain and deploy             
+-> works with any language, any OS, any technology                     
+
+Scale containers up and down very quickly (seconds)                
+
+An example of Docker on EC2 Instance, varies docker running Java/NodeJS all in one EC2 Instance:                     
+<img src="images/docker.png" width="700">                          
+
+Docker images are stored in Docker Repositories                       
+Public: Docker Hub                
+-> find base image for many technologies or OS              
+-> Ubuntu            
+-> MySQL                
+
+Private: Amazon ECR (Elastic Container Registry)                   
+
+Docker vs Virtual Machines:               
+<img src="images/docker_vm.png" width="700">                  
+
+Resources are shared with the host => many containers on one server                   
+
+On the left it is what happen when we create EC2 Instances and host various Apps on it (in this case there are 3 EC2 Instance).            
+On the right is when we use Docker, once the Docker Daemon is running, we can have many containers running.                         
+
+## ECS, Fargate & ECR Overview                 
+
+ECS = Elastic Container Service                       
+
+Launch Docker containers on AWS.          
+
+We need the docker to run on somewhere and so we **must provision & maintain the infrastructure (the EC2 Instances)** yourself. This means that we need to create EC2 Instances in advance.                
+
+AWS takes care of starting / stopping containers and has integrations with the Application Load Balancer (if you want to create a web application on ECS)                       
+
+<img src="images/ecs.png" width="700">                     
+We have multiple EC2 Instances, we need to create these EC2 Instances in advance. They are will be running different containers by the ECS service.                     
+Anytime there is a new Docker Container, it will be smart enough to find on which EC2 Instance to place that Docker Container.                  
+From exam's perspective, anytime we want to run Docker Containers on AWS, think of ECS.                         
+
+**Fargate**               
+Also used to launch Docker containers on AWS                      
+
+**You do not provision the infrastructure (no EC2 Instances to manage) - simpler**                
+
+Serverless offering !               
+
+AWS just runs containers for you based on the CPU / RAM you need
+
+<img src="images/fargate.png" width="700">             
+If we have a new container, Fargate will automatically run the container for us (we don't exact know where, but it will be run)                
+We don't manage any EC2 Instances with Fargate.                  
+
+**Elastic Container Registry (ECR)**                               
+We need a place to store all the Docker Images so that they can be run on AWS.                
+Private Docker Registry on AWS               
+This is where you **store your Docker Images** so they can be run by ECS or Fargate                        
+<img src="images/ecr.png" width="700">             
+
+## Serverless Introduction                
+
+Serverless is a new paradigm (catchy word) in which the developers don't have to manage servers anymore             
+
+Developer just deploy code or functions                  
+
+Initially, Serverless == FaaS (Function as a Service)                 
+
+Serverless was pioneered by AWS Lambda (each functions will be run independently by the Lambda service) but now also includes anything that's managed, e.g. dababases, messaging, storage, etc.                   
+
+It means you just don't manage / provision / see them (of course there will be server at the backend or things will not run)                   
+
+So far in the course, we have serverless services like:                   
+S3: we used it as a storage layer (we don't manage any server, just uploading files)                  
+DynamoDB: just create table directly          
+Fargate: just run Docker Containers             
+Lambda: run functions in the cloud                         
+
+## Lambda Overview              
+
+If we use EC2 services:                       
+-> we have virtual servers in the cloud              
+-> limited by RAM and CPU             
+-> continuously running            
+-> scaling means intervention to add / remove servers                     
+
+With Amazon Lambda, there is a new way to think about it:                
+-> we have virtual functions - no servers to manage             
+-> limited by time - intended for short executions                
+-> run on-demand              
+-> scaling is automated                
+
+Benefits of AWS Lambda:                
+1. Easy Pricing:            
+-> pay per request and compute time                
+-> free tier (every month) of 1,000,000 AWS Lambda requests and 400,000 GBs of compute time                  
+2. integrated with the whole AWS suite of services                 
+3. **event-driven**: functions get invoked by AWS when needed (reactive kind of service)            
+4. integrated with many programming languages                  
+5. easy monitoring through AWS CloudWatch             
+6. easy to get more resources per functions (up to 3GB of RAM)                       
+7. increasing RAM will also improves CPU and network                
+
+AWS Lambda language support:                            
+Node.js, Python, Java, C# (.NET Core), Golang, C# / Powershell, Ruby, Custom Runtime API (community supported, e.g. Rust)             
+Lambda Container Image: the image must implement the Lambda Runtime API        
+Note (exam !): ECS/ Fargate is preferred for running arbitrary Docker images                   
+
+e.g. Serverless Thumbnail creation                
+<img src="images/lambda_thumbnail.png" width="700">                                
+Say we have a S3 bucket and we add image to it. The S3 bucket will trigger a Lambda function once the image is uploaded. That Lambda function will change it into a thumbnail.                 
+It will push the thumbnail back to the S3 bucket or it will push some of the metadata into DynamoDB.           
+Fully event-driven and serverless !                         
+This can scale really well and we don't provision any server.                       
+
+e.g. Serverless CRON job                   
+CRON allows to create a schedule (e.g. every hour) and it will run a script.                          
+By default, a CRON job is run on an Linux AMI. But since it is serverless, we will not be running on EC2 Instance.                 
+Instead we use CloudWatch Events (or EventBridge, also serverless) will be triggering every one hour our Lambda function to perform a task.                    
+Effectively we are launching a scirpt every hour through a Lambda function.                                 
+
+AWS Lambda Pricing (exam !):                         
+Pay per **calls**:                
+-> first 1,000,000 requests are free                     
+-> $0.20 per 1 million requests thereafter ($0.0000002 per request)                       
+also need to pay per **duration** (increment of 100ms)                            
+-> 400,000 GB-second of compute time per month is FREE == 400,000 seconds if function is 1GB RAM                                  
+-> after that $1 for 600,000 GB-seconds                      
+
+It is usually very cheap to run AWS Lambda so it's very popular                       
+
+## Amazon API Gateway                       
+
+From exam's perspective, this is a use case for building a serverless HTTP API.                  
+
+With serverless technology we are using Lambda to do CRUD (Creaing, Reading, Updating, Deleting) data from DynamoDB.                      
+Now we want external clients to be able to access our Lambda function. But a Lambda function is not exposed as an API right away.                  
+We need to expose it through an API Gateway, which is going to provide the client with the rest HTTP API.                      
+The API Gateway will proxy the request to your Lambda function which will execute the transformations on your data.                       
+
+<img src="images/api_gateway.png" width="700">                  
+
+API Gateway is used as a fully managed service for developers to easily create, publish, maintain, monitor, and secure APIs.                  
+
+**Serverless** and scalable                   
+
+Supports RESTful APIs and WebSocket APIs for real time streaming of data                   
+
+Support for security, user authentication, API throttling, API keys, monitoring.                                 
+
+(exam) create serverless API, think API Gateway and Lambda                          
+
+## Batch Overview               
+
+**Fully managed** batch processing at **any scale**                  
+Efficiently run 100,000s of computing batch jobs on AWS                    
+
+A "batch" job is a job with a start and an end (opposed to continuous)                       
+
+Batch will dynamically launch **EC2 Instances** or **Spot Instances** (to accommodate with the load that you have to run these batch jobs)                 
+
+AWS Batch provisions the right amount of compute / memory                 
+
+We just submit or schedule batch jobs and AWS Batch does the rest              
+
+Batch jobs are defined as **Docker Images** and **run on ECS** (anything that can run on ECS can be run on Batch)                 
+
+Helpful for cost optimizations (auto scale with the right number of EC2 Instances or Spot instances) and focusing less on the infrastructure                         
+
+e.g. process images submitted by users into S3 in a batch way               
+When image is put into S3, this will trigger a batch job.               
+The Batch will automatically have an ECS cluster made of EC2 Instances or Spot Instances and Batch will make sure that there are right amount of instances to accommodate the load of batch jobs.          
+These instances will be running your Docker images that will be doing your jobs.                       
+<img src="images/batch.png" width="700">                      
+
+**Batch vs Lambda**                    
+Lambda:            
+-> it has time limit (15 minutes)                
+-> only get access to a few programming languages               
+-> limited runtimes            
+-> limited temporary disk space               
+-> serverless                         
+Batch:                      
+-> no time limit              
+-> any runtime as long as it's packaged as a Docker image                 
+-> Rely on EBS / instance store (come with EC2) for disk space (can be a lot more than Lambda function)          
+-> NOT serverless, relies on EC2 (can be managed by AWS)                     
+
+## Lightsail Overview      
+
+Lightsail is kind of stand-alone service.                
+We can get virtual servers, storage, databases, and networking in one place                 
+Low and predictable pricing              
+Simpler alternative to using EC2, RDS, ELB, EBS, Route 53, etc.                  
+
+Great for people with **little cloud experience**              
+
+Can setup notifications and monitoring of your Lightsail resources             
+
+Use cases:                     
+simple web applications                 
+websites             
+Dev / Test environment                  
+
+Has high availability but no auto-scaling, limited AWS integrations                  
+
+(exam) unless exam ask for someone with little cloud experience and want to start quickly with low and predictable pricing, think Lightsail. Otherwise it is always a wrong answer.                      
+
+
+## Other Compute - Summary
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # TO DO         
 
-
+Lambda hands on                  
+Lightsail hands on
 
 
 
