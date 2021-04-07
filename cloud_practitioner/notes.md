@@ -1903,7 +1903,11 @@ For example, within a CloudFormation template, you say:
 -> I want an S3 bucket                
 -> I want a load balancer (ELB) in front of these machines                     
 
-Then CloudFormation creates those for you, in the **right order**, with the **exact configuration** that you specify.                
+Then CloudFormation creates those for you, in the **right order**, with the **exact configuration** that you specify.             
+
+Note that CloudFormation template can be supplied in `.yaml` format.           
+
+We can delete the stack in CloudFormation, it will automatically figure the order of which resources to be deleted. No need to go to individual services to delete resources (e.g. EC2 instance)
 
 **Benefits of AWS CloudFormation**:                      
 1. Infrastructure as code                  
@@ -2065,30 +2069,9 @@ Also allos for code collaboration in real-time (pair-programming)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # TO DO         
-
-Lambda hands on                  
-Lightsail hands on             
-CloudFormation hands on                
-Beanstalk hands on                 
+         
+                
 
 
 
