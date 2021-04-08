@@ -2064,10 +2064,72 @@ A cloud IDE can be used within a web browser with no setup necessary.
 
 Also allos for code collaboration in real-time (pair-programming)                 
 
+## Systems Manager (SSM) Overview        
+
+Helps you manage your fleet of **EC2 and On-Premises** systems at scale               
+Another **hybrid** AWS service              
+Quite a complex system but the high level idea is that it can operational insights about the state of your infrastructure         
+Suite of 10+ products             
+Most important features are (exam):                 
+-> Patching automation for enhanced compliance           
+-> Run commands across an entire fleet of servers                     
+-> Store parameter configuration with the SSM Parameter Store                  
+
+Works for both Windows and Linux OS               
+
+(exam) Anytime we see a way to patch your fleet of EC2 instances or On-Premises servers, think about SSM or if you want to run commands across ALL your servers, SSM will be the right way.                   
+
+How does SSM work ?                  
+<img src="images/ssm.png" width="700">                          
+We need to first install the SSM agent onto the systems we control.                    
+Installed by default on Amazon Linux AMI & some Ubuntu AMI                   
+These SSM agents will be reporting back to the SSM service in AWS                  
+If an instance cannot be controlled with SSM, it is probably an issue with the SSM agent             
+Thanks to the SSM agent, we can run commands, patch & configure our servers                   
+
+## OpsWorks Overview                
+
+*Chef* and *Puppet* (3rd party tools) help you perform server configuration automatically, or repetitive actions.                  
+They work great with EC2 & On-Premises VM              
+AWS OpsWorks = Managed Chef & Puppet               
+**It is an alternative to AWS SSM**           
+But only provision **standard AWS resources**:              
+EC2 Instances, Databases, Load Balancer, EBS volumes ...                  
+(exam) OpsWorks are simple to reason about, anytime you see **chef** or **Puppet**, you need to think about OpsWorks             
+
+It is quite similar to the 3-tier web application where we use Beanstalk to deploy our application.               
+The only reason why we would use OpsWorks in AWS if we already are using Chef and Puppets before migrating to AWS, and we want to reuse our Chef and Puppet templates to work on AWS.                     
+<img src="images/opsworks.png" width="700">                        
 
 
+## Deployment Summary            
 
+CloudFormation: (AWS only)              
+-> infrastructure as Code, works with almost all of AWS resources                
+-> use templates to repeat across Regions & Accounts             
 
+Beanstalk: (AWS only)               
+-> Platform as a Service (PaaS), limited to certain programming language or Docker            
+-> Deploy code consistently with a known architecture: e.g. ALB + EC2 + RDS               
+
+CodeDeploy: (hybrid tool, AWS + On-Premises)                
+-> deploy & upgrade any application onto servers                 
+
+Systems Manager (hybrid)
+-> patch, configure and run commands at scale across all your servers                 
+
+OpsWorks (hybrid)                  
+-> managed Chef and Puppet in AWS                  
+
+Developer Services - Summary:             
+
+CodeCommit: store code in private git repo (verion controlled)               
+CodeBuild: build and test code in AWS               
+CodeDeploy: deploy code onto servers               
+CodePipeline: orchestration of pipeline (from code to build to deploy)                    
+CodeArtifact: store software packages / dependencies on AWS              
+CodeStar: unified view for allowing developers to do CICD and code                           
+Cloud9: Cloud IDE with collaborations             
 
 
 
