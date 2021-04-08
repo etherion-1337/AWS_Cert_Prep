@@ -2169,7 +2169,7 @@ AWS Global Accelerator
 
 ## Route 53 Overview           
 
-Route 53 is a Managed DNS (Domain Name System)             
+Route 53 is a Managed DNS (Domain Name System). It is a **Global Service**.            
 
 DNS is a collection of rules and records which helps clients understand how to reach a server through URLs (think phone book)           
 
@@ -2207,6 +2207,66 @@ can do health check
 Disaster Recovery          
 DNS system will do health check on the primary, if the primary instance fail we will be redirected to the failovers              
 
+Note that you can buy a domain name within Route 53 ($12/year). 
+
+## CloudFront Overview            
+
+CloudFront is a content delivery network (CDN)              
+It is a **global service**.            
+(exam) anytime you see CDN, think CloudFront             
+
+Improves read performance, by caching the content of your website at the different edge locations.            
+
+Improves users experience (lower latency)            
+
+CloudFront is made of 216 Point of Presence globally, which correspond to the AWS edge locations around the world.           
+
+DDoS (attack at the same time) protection (because world wide), integration with Shield, AWS Web Application Firewall.           
+
+CloudFront - Origins (where it can cache from)            
+S3 bucket:         
+-> for distributing files and caching them at the edge              
+-> enhanced security with CloudFront **Origin Access Identity (OAI)**           
+-> CloudFront can be used as an ingress (to upload files to S3)              
+Custom Origin (HTTP):       
+-> Application Load Balancer         
+-> EC2 Instance        
+-> S3 website (must first enable the bucket as a static website)              
+-> any HTTP backend you want (or on-premises)                 
+
+CloudFront at a high level:              
+<img src="images/cloudfront_highlvl.png" width="700">                 
+We have edge locations (around the world) and then it will be connecting to your origin (S3 bucket or an HTTP server).        
+And when client connects and does an HTTP request into your edge location, then the edge location will see if it has it in the cache.          
+If it doesn't have in the cache it will go to the origin to get the request result. Once it retrieve the result it will be caching it into your local cache. So if another client request the same content from the same edge location,  then the edge location does not need to go to the origin.            
+
+e.g. CloudFront - S3 as an Origin                  
+<img src="images/cloudfront_eg.png" width="700">               
+S3 bucket is secured through CloudFront OAI. The connection from S3 to Edge will be private.                 
+
+CloudFront vs S3 Cross Region Replication               
+CloudFront:          
+-> using Global Edge network         
+-> the files are cached for a TTL (maybe a day)              
+-> amazing for static content that must be available everywhere              
+S3 Cross Region Replication:           
+-> must be setup for each region you want replication to happen            
+-> files are updated in near real-time (no caching)           
+-> read only           
+-> great for dynamic content that needs to be available at low-latency in few regions                 
+
+## S3 Transfer Acceleration           
+
+S3 buckets are only linked to one region, sometimes we want to transfer files from all around the world into 1 specific bucket.            
+
+S3 Transfer Acceleration increase transfer speed by transferring file to an AWS edge location which will forward the data to the S3 bucket in the target region.           
+
+High level of how it works:              
+<img src="images/s3_transfer_acc.png" width="700">               
+
+This is only used when you want to upload or download from this bucket that is far away from you.                  
+
+## AWS Global Accelerator           
 
 
 
