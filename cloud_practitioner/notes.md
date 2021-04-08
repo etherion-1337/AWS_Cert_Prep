@@ -2264,9 +2264,85 @@ S3 Transfer Acceleration increase transfer speed by transferring file to an AWS 
 High level of how it works:              
 <img src="images/s3_transfer_acc.png" width="700">               
 
-This is only used when you want to upload or download from this bucket that is far away from you.                  
+This is only used when you want to upload or download from this bucket that is far away from you.         
+
+Note: there is a speed test available.
 
 ## AWS Global Accelerator           
+
+Improve global application **availability** and **performance** using the AWS global network             
+
+Leverage the AWS internal network to optimize the route to your application (60% improvement)                 
+
+e.g. We have an application load balancer in India, and users all around the world want to access our application.             
+When they use the Global Accelerator, they are actually connected to an edge location and the edge location will be routing the traffic directly into India.                
+The traffic on the public interet only happens between America and the closest edge location. And it leverage on the private AWS network from the edge location to the your ALB.                       
+<img src="images/global_acc.png" width="700">              
+
+**2 Anycast IP** (static IP) are created for your application and traffic is sent through **Edge Locations**. We only access the application through these 2 IPs. Using these 2 IPs we will be directed to the correct edge location.                        
+The Edge locations send the traffic to your application.                     
+
+Global Accelerator comparison:                   
+<img src="images/global_acc_compare.png" width="700">                       
+
+AWS Global Accelerator vs CloudFront                 
+They both use the AWS global network and its edge locations around the world              
+Both services integrate with AWS Shield for DDoS protection              
+CloudFront - Content Delivery Network              
+-> cache content at the Edge (e.g. images and videos)           
+-> content is *served at the edge*             
+Global Acccelerator             
+-> no caching, *proxying packets* at the edge to applications running one one or more AWS regions, all request send back to the application         
+-> improves performance for a wide range of applications over TCP or UDP            
+-> good for HTTP use cases that require static IP addresses          
+-> good for HTTP use cases that required deterministic, fast regional failover              
+
+Note: it has a tool for speed test: direct internet vs Global Accelerator                     
+
+## AWS Outposts              
+
+Hybid Cloud: bussiness that keep an on-premises infrastructure alongside a cloud infrastructure               
+
+Two ways of dealing with IT systems:           
+One for the AWS cloud (using the AWS console, CLI, and AWS APIs)                
+One for their on-premises infrastructure                  
+
+AWS Outposts are "server racks" that offers the same AWS infrastructure, services, APIs & tools to build you own applications on-premises just as in the cloud.              
+
+AWS will come and setup and manage "Outposts Racks" within your on-premises infrastructure and you can start leveraging AWS services on-premises. These racks come pre-loaded with AWS services.             
+
+Difference between EC2 instance running in the cloud and an EC2 instances running in your own data center, is that now you are responsible for their physical security.             
+
+Benefits:       
+-> low-latency access to on-premises systems          
+-> local data processing         
+-> data residency        
+-> easier migration from on-premises to the cloud          
+-> fully managed service (AWS will manage the service for you)             
+-> works with EC2, EBS, S3, EKS, ECS, RDS, EMR               
+
+This service is extending cloud service onto your own infrastructure on-premises system.                
+
+## Leveraging the AWS Global Infrastructure Summary               
+
+Global DNS: Route 53            
+-> great to route users to the cloest deployment with least latency           
+-> great for disaster recovery strategies           
+ 
+Global Content Delivery Network (CDN): CloudFront               
+-> replicate part (static part) of your application to AWS Edge Locations - decrease latency             
+-> cache common requests - improved user experience and decreased latency            
+
+S3 Transfer Acceleration            
+-> accelerate global uploads & downloads into Amazon S3           
+
+AWS Global Accelerator               
+-> improve global application availability and performance using the AWS global network                  
+
+AWS Outposts:         
+-> deploy Outposts Racks in your own Data Centers to extend AWS services              
+
+
 
 
 
