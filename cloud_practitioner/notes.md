@@ -2131,7 +2131,81 @@ CodeArtifact: store software packages / dependencies on AWS
 CodeStar: unified view for allowing developers to do CICD and code                           
 Cloud9: Cloud IDE with collaborations             
 
+# Leveraging the AWS Global Infrastructure               
 
+## Why Global Application ?          
+
+A **global application** is an application deployed in **multiple geographies**.               
+On AWS: this could be Regions and / or Edge Locations           
+
+For users, this means decreased latency:             
+-> latency is the time it takes for a network packet to reach a server                
+-> deploy your applications closer to your users to decrease latency, better experience             
+
+Disaster Recovery (DR):                 
+-> if an AWS region goes down (earthquake ...), you can fail-over to another region and have your application still working             
+-> a DR plan is important to increase the availability of your application               
+
+Attack protection:               
+-> distributed global infrastructure is harder to attack             
+
+Regions: For deploying applications and infrastructure                        
+Availability Zones: Made of multiple data centers                 
+Edge Locations (Points of Presence): for content delivery as close as possible to users              
+
+Global DNS: Route 53           
+-> great to route users to the closest deployment with least latency             
+-> great for disaster recovery strategies           
+
+Global Content Delivery Network (CDN): CloudFront           
+-> replicate part of your application to AWS edge locations - decrease latency              
+-> cache common requests - improved user experience and decrease latency               
+
+S3 Transfer Acceleration           
+-> accelerate global uploads & downloads into Amazon S3             
+
+AWS Global Accelerator             
+-> improve global application availability and performance using the AWS global network                 
+
+## Route 53 Overview           
+
+Route 53 is a Managed DNS (Domain Name System)             
+
+DNS is a collection of rules and records which helps clients understand how to reach a server through URLs (think phone book)           
+
+In AWS, the most common records are:            
+www.google.com => 12.34.56.78 == A record (IPv4)            
+www.google.com => 2001:0db8:85a3:0000:0000:8a2e:0370:7334 == AAAA IPv6              
+search.google.com => www.google.com == CNAME: hostname to hostname                
+example.com => AWS resource == Alias (e.g. ELB, CloudFront, S3, RDS, etc.)                 
+(exam) no need to know all types of records               
+
+Route 53 - Diagram for A Record              
+<img src="images/route_53_1.png" width="700">                
+We have an Application Server that we've deployed that has a public IPv4.                  
+Ww want to access our application server using a normal URL.              
+We can create A Record in Route 53, so that when the web browser does a DNS request for `myapp.mydomain.com`, the DNS will reply back with an IP, then that IP can used by our web browser to the get the correct server and then get the HTTP Response from our server.                   
+
+(exam) Route 53 Routing Policies             
+Need to know them at a high-level for the CCP exam.                
+<img src="images/route_53_policy_1.png" width="700">          
+<img src="images/route_53_policy_2.png" width="700">           
+
+**Simple Routing Policy**:              
+no health check        
+web browser go into our DNS system, does a DNS query and gets an IPv4 for example as a result.             
+
+**Weighted Routing Policy**:           
+Allows us to distribute the traffic across multiple EC2 instances (some kind of load balancing)               
+can do health check            
+
+**Latency Routing Policy**:              
+It will look at where the user is located, and it will redirect the user to talk to the server that is close to them
+can do health check                
+
+**Failover Routing Policy**:         
+Disaster Recovery          
+DNS system will do health check on the primary, if the primary instance fail we will be redirected to the failovers              
 
 
 
