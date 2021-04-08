@@ -2343,6 +2343,28 @@ AWS Outposts:
 -> deploy Outposts Racks in your own Data Centers to extend AWS services              
 
 
+# Cloud Integration             
+
+## Cloud Integration Overview           
+
+When we start deploying multiple applications, they will inevitably need to communicate with one another           
+
+There are two patterns of application communication:         
+<img src="images/cloud_integration.png" width="700">         
+1. Synchronous communications (application to application)              
+integrate them synchronously as they talk directly to each other           
+2. Asynchronous / Event based (application to queue to application)              
+
+Synchronous between applications can be problematic if there are sudden spikes of traffic              
+What if you need to suddenly encode 1000 videos but usually it is 10 ?           
+
+In that case, it is better to **decouple** your applications:             
+using SQS: queue model               
+using SNS: pub/sub model             
+using Kinesis: real-time data streaming model (out of scope for CCP exam)            
+
+These services can scale independently from our application.              
+
 
 
 
