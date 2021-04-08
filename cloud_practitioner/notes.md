@@ -2365,6 +2365,109 @@ using Kinesis: real-time data streaming model (out of scope for CCP exam)
 
 These services can scale independently from our application.              
 
+## SQS Overview         
+
+Amazon SQS = Simple Queue Service            
+
+<img src="images/sqs.png" width="700">         
+
+We have producers send messages into that queue. Once the messages are stored in a queue, then they can be read by consumers who will be polling the queue (i.e. requesting messages from the queue). (In this example) Once the consumer polls messages, they will share the work so each consumer will get different messages and when they are done processing a message (e.g. processing a video), then they will delete the message from the queue.                  
+
+Amazon SQS - Standard Queue       
+Oldest AWS offering (over 10 years old)         
+Fully managed service (serverless), use to decouple applications          
+(exam) if you see decouple, think SQS            
+Scales from 1 message per second to 10,000s per second           
+Default retention of messages: 4 days, maximum of 14 days          
+No limit to how many messages can be in the queue         
+**Messages are deleted after they're used by consumers**               
+Low latency (less than 10 ms on publish and receive)         
+**Consumers share the work to read messages & scale horizontally**             
+
+SQS to decouple between application tiers           
+
+<img src="images/sqs_sa.png" width="700">             
+A classic solution architecture. We have a web server and they are taking requests through an application load balancer. They are served through EC2 instances in an auto scaling group. Say our users want us to process some videos. Then instead of sending it directly to the video application, we can instead insert messages into an SQS queue.              
+Then we will have a video processing layer made of an auto scaling group wiht EC2 instances. And these EC2 instances will be reading from the SQS queue and processing our videos.       
+The cool thing about it is that we can scale the second auto scaling group independently from the first one. The scaling can happen based on how many messages there are (e.g.) in the SQS queue.             
+
+## SNS Overview        
+
+What if you want to send one message to many receivers ? 
+
+<img src="images/sns.png" width="700">            
+
+The left part is a direct integration but it is quite complicated as we need to write four direct integration.             
+The right part is Pub/Sub type of integration in which we have a SNS topic and the buying service will be sending a message into our SNS topic. And the SNS topic will send the message to downstream.          
+
+SNS = Simple Notification Services           
+
+The "event **publishers**" only sends message to one SNS topic          
+As many "event **subscribers**" as we want to listen to the SNS topic notifications              
+Each subscriber to the topic **will get all the messages**            
+Up to 10,000,000 subscriptions per topic, 1000,1000 topics limit               
+
+SNS Subscribers can be:       
+-> HTTP/HTTPs (with delivery retries - how many times)              
+-> Emails, SMS messages, Mobile Notifications        
+-> SQS queue (fan-out pattern), Lambda Function (write your own integration)          
+
+(exam) anytime we see notification, subscribers, publishers, etc, think Amazon SNS.                
+
+## Kinesis Overview        
+
+For the exam: **Kinesis = real-time big data streaming**                
+
+It is a managed service to collect, process, and analyze real-time streaming data at any scale.         
+
+Too detailed for CCP exam but good to know:          
+Kinesis Data Streams: low latency streaming to ingest data at scale from hundreds of thousands of sources           
+Kinesis Data Firehose: load streams into S3, Redshift, ElasticSearch, etc           
+Kinesis Data Analytics: perform real-time analytics on streams using SQL             
+Kinesis Video Streams: monitor real-time video streams for analytics or ML               
+
+<img src="images/kinesis.png" width="700">            
+
+## Amazon MQ Overview          
+
+SQS, SNS are "cloud-native" services, and they are using proprietary protocols from AWS.              
+
+Traditional applications running from on-premise may use open protocols such as: MQTT, AMQP, STOMP, Openwire, WSS.            
+
+When migrating to the cloud, instead of re-engineering the application to use SQS and SNS, we can use Amazon MQ.          
+
+Amazon MQ = managed Apache ActiveMQ which has these protocols enabled by defaults               
+
+Amazon MQ doesn't "scale" as much as SQS / SNS         
+
+It is not serverless (it's like a database)                
+
+Amazon MQ runs on a dedicated machine (not serverless)                
+
+Amazon MQ has both queue feature (~SQS) and topic features (~SNS)               
+
+It is used if and only if a company is migrating to the cloud and needs to use one of these opem protocols.         
+Otherwise it should be using SQS or SNS as they are scaled much better and they are way more integrated with AWS.                
+
+## Cloud Integration Summary             
+
+SQS:               
+Queue service in AWS          
+Multiple Producers, messages are kept up to 14 days             
+Multiple Consumers share the read and delete messages when done            
+Used to **decouple** applications in AWS         
+
+SNS:                 
+Notification service in AWS            
+Subscribers: Email, Lambda, SQS, HTTP, Mobile ...              
+Multiple Subsribers, send all messages to all of them          
+No message retention              
+
+Kinesis: real-time data streaming, persistence and analysis             
+
+Amazon MQ: managed Apache MQ in the cloud (MQTT, AMQP ... protocols)                
+
+# Cloud Monitoring       
 
 
 
