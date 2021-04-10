@@ -3054,6 +3054,75 @@ Must first enable the AWS Config service
 
 <img src="images/security_hub.png" width="700">             
 
+## Amazon Detective Overview              
+
+GuardDuty, Macie and Security Hub are used to identify potential security issues or findings                 
+
+Amazon Detective **analyze, investigates, and quickly identifies the ROOT cause of security issues or suspecious activities** using ML and graphs             
+
+**Automatcally collects and process events** from VPC Flow Logs, CloudTrail, GuardDuty and create a unified view.                 
+
+Produces visualisations with details and context to get to the root cause                      
+
+## AWS Abuse               
+
+Report suspected AWS resources used for abusive or illegal purpose                  
+Abusive & prohibited behaviors are:            
+-> spam: receving undesired emails form AWS-owned IP address, websites & forums spammed by AWS resources                 
+-> port scanning: sending packets to your ports (from AWS) to discover the unsecured ones             
+-> Dos or DDoS attacks: AWS-owned IP addresses attempting to overwhelm or crash your servers / software             
+-> Intrusion attempts: logging in on your resources               
+-> Hosting objectionable or copyrighted content                
+-> Dustributing malware                
+
+Can contact AWS Abuse team               
+
+## Root User Privileges               
+
+Root User = Account Owner (created when the account is created)                 
+
+Has complete access to all AWS services and resources              
+
+Root user can do something even the most privileged created user in your account cannot do                  
+
+Do not use the root account for everyday tasks, even administrative tasks                
+
+(exam) Actions that can only be performed by root user:         
+-> **Change account settings**: account name, email address, root user password, root user access keys             
+-> view certain tax invoices            
+-> **Close your AWS account**           
+-> Restore IAM user permissions           
+-> **Change or cancel your AWS Support Plan**            
+-> **Register as seller in the Reserved Instance Marketplace**               
+-> Configure an Amazon S3 bucket to enable MFA              
+-> Edit or delete an Amazon S3 bucket policy that includes an invalid VPC ID or VPC endpoint ID              
+-> Sign up for GovCloud                     
+
+## Security and Comliance Summary                
+
+Shared Responsibility on AWS               
+Shield: Automatic DDoS Protection + 24/7 support for advanced               
+WAF: Firewall to filter incoming requests based on rules            
+Penetration Testing                   
+KMS: Encryption keys managed by AWS              
+CloudHSM: Hardware encryption, we managed encryption keys               
+Artifact: Get access to compliance reports such as PCI, ISO, etc              
+GuardGudy: Find malicious behavior with VPC, DNS & CloudTrail Logs (ML)             
+Inspector: For EC2 only, install agent and find vulnerabilities             
+Config: Track config changes and compliance against rules              
+Macie: Find sensitive data (e.g. PII data) in Amazon S3 bucket               
+CloudTrail: Track API calls made by users within account               
+AWS Security Hub: Gather security findings from multiple AWS accounts                
+Amazon Detective: Find the root cause of security issues or suspicious activities                
+AWS Abuse: Report AWS resources used for abusive or illegal purposes                
+Root user privieges:           
+-> change account settings            
+-> close your AWS account          
+-> change or cancel your AWS support plan           
+-> register as a seller in the Reserved Instance Marketplace                   
+
+
+
 
 
 
