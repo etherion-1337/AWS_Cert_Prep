@@ -2858,4 +2858,213 @@ DDoS Protection on AWS
 -> Combined with AWS Shield, provides attack mitigation at the edge locations                  
 5. Be ready to scale - leverage AWS Auto Scaling           
 
+Sample Reference Architecture for DDoS Protection:                 
 <img src="images/ddos_sample.png" width="700">                 
+Users will be routed through Route 53 (protected by Shield, so DNS is safe from DDoS attack), then we can use CloudFront Distribution to make sure your content is cached at the edge (also protected by Shield, and we can also filter through WAF). To serve the application we can use a load balancer in the public subnet that will scale for us. Then we should use EC2 instances in an auto scaling group to be able to scale to the higher demand.                
+
+AWS Shield            
+AWS Shield Standard:             
+-> Free service that is activated for every AWS customer                 
+-> Provides protection from attacks such as SYN/UDP Floods, Reflection attacks and other layer 3/ layer 4 attacks               
+AWS Shield Advanced:                
+-> Optional DDoS migigation service ($3,000 per month per organization)              
+-> Protect against more sophisticated attack on Amazon EC2, Elastic Load Balancing (ELB), Amazon CloudFront, AWS Global Accelerator, and Route 53.                
+-> 24/7 access to AWS DDoS response team (DRP)             
+-> Protect against higher fees during usage spickes due to DDoS           
+(exam) free version is activated by default for every customer.           
+
+AWS WAF - Web Application Firewall           
+Protects your web applications from common web exploits (Layer 7)                   
+**Layer 7 is HTTP (vs Layer 4 is TCP)**              
+Deploy on (HTTP friendly devices) **Application Load Balancer, API Gateway, CloudFront**                   
+Define Web ACL (Web Access Control List)            
+-> rules can include IP addresses, HTTP headers, HTTP body, or URI strings              
+-> Protects from common attack - SQL injection and Cross-Site Scripting (XSS)                 
+-> Size constraints, **geo-match (block countries)**                 
+-> **Rate-based rules (to count occurrences of events) - for DDoS protection**               
+
+# Penetration Testing              
+
+This is when you are trying to attack your own infrastructure to test your security.                
+
+AWS Customers are welcomed to carry out security assessments or penetration tests against their AWS infrastructure **wihtou prior approval for 8 services**:             
+1. Amazon EC2 instances, NAT Gateways, and Elastic Load Balancer                   
+2. Amazon RDS            
+3. Amazon CloudFront                 
+4. Amazon Aurora                
+5. Amazon API Gateways                
+6. AWS Lambda and Lambda Edge functions            
+7. Amazon Lightsail resources           
+8. Amazon Elastic Beanstalk environments                
+
+List can increase over time (not tested in CCP)                   
+
+Prohibited Activities:              
+DNS zone walking via Amazon Route 53 Hosted Zones               
+DoS, DDoS, Simulated DoS, Simulated DDoS                    
+Port flooding           
+Protocal flooding            
+Request flooding (login request flooding, API request flooding)               
+
+For any other simulated events, need to contact security team at AWS.                 
+
+(exam) we can do pen test on cloud, but anything look like a DDoS attack or a DNS zone walking or port flooding is not authorized.            
+
+## Encryption with KMS & CloudHSM               
+
+Two types of encryption: encryption at rest or encryption in transit.                 
+
+Data at rest vs Data in transit:                
+at rest: data stored or archived on a device. (hard disk, on a RDS instance, S3 Glacier Deep Archive)                      
+in transit:  data being moved form one locaiton to another location: (transfer from on-premises to AWS, EC2 to DynamoDB)              
+-> means data transferred on the network               
+
+<img src="images/encrypt.png" width="700">                    
+
+For this we use **encryption keys**                    
+
+AWS KMS (Key Management Service)             
+Anytime you hear "encryption" for an AWS service, it is most likely KMS               
+KMS = AWS manages the encryption keys for us (we just manage who can have access to these keys)             
+
+Encryption Opt-in:                
+EBS volumes: encryot volumes          
+S3 buckets: Server-sdie encryption of objects                 
+Redshift database: encryption of data                    
+RDS database: encryption of data          
+EFS drives: encryption of data                   
+
+Encryption automatically enabled:               
+CloudTrail logs           
+S3 Glacier                
+Storage Gateway              
+
+CloudHSM:          
+KMS => AWS manages the software for encryption                  
+CloudHSM => AWS provisions encryption **hardware**, but we are managing the keys ourselves            
+Dedicated Hardware (HSM = Hardware Security Module)               
+We managed your encryption keys entirely (not AWS)                
+
+HSM device is tamper resistant, FIPS 140-2 Level 3 compliance                  
+
+Types of Customer Master Keys (CMK):              
+1. Customer Managed CMK ($$$):              
+-> create, manage and used by the customer, can enable or disable                 
+-> possibility of rotation policy (new key generated every year, old key preserved)             
+-> possibility to bring-your-own-key          
+2. AWS managed CMK:              
+-> created, managed and used on the customer's behalf by AWS             
+-> used by AWS service (aws/s3, aws/ebs)            
+3. AWS owned CMK:                
+-> Collection of CMKs that an AWS service owns and manages to use in multiple accounts             
+-> AWS can use those to protect resources in your account (but you can't view the keys)              
+4. CloudHSM Keys (custom keystore):           
+-> keys are generated from your own CloudHSM hardware device              
+-> cryptographic operations are performed within the CloudHSM cluster               
+
+## Secrets Manager Overview                 
+
+Newer service, meant for storing secrets               
+Capability to force rotation of secrets every X days                 
+Automate generation of secrets on rotation (use Lambda)                
+
+Integration with Amazon RDS (MySQL, PostgreSQL, Aurora)              
+
+Secrets are encypted using KMS               
+
+(exam) anytime we see secret to be managing in RDS and to be rotated, think about Secrets Manager              
+
+## Artifact Overview          
+
+AWS Artifact (not really a service): Portal that provides customers with on-demand access to AWS compliance documentation and AWS agreements.               
+
+Artifact Reports - Allows you to download AWS security and compliance documents from 3rd party auditors.             
+
+Artifact Agreement - Allows you to review, accept and track the status of AWS agreement like Health Insurance Portability and Accountability Act (HIPAA), Business Associate Addendum (BAA)                           
+
+Can be used to support internal audit or compliance                
+
+## GuardDuty Overview              
+
+Intelligent Threat discovery to Protect AWS account              
+Uses Machine Learning Algorithms, anomaly detection, 3rd party data               
+One click to enable (30 days trial), no need to install software                 
+
+Input data includes:             
+CloudTrail Logs: unusual API calls, unauthorized deployments             
+VPC Flow Logs: unusual internal traffic, unusual IP address                   
+DNS logs: compromised EC2 instances sending encoding data within DNS queries                
+
+Can setup **CloudWatch Event rules** to be notified in case of findings                
+
+CloudWatch Events rules can target AWS Lambda or SNS                  
+
+<img src="images/guard_duty.png" width="700">                       
+
+## Inspector Overview               
+
+Automated Security Assessment for EC2 instances                             
+Analyze the running OS against **known vulnerabilities**
+Analyze against unintended network accessibility                   
+
+AWS Inspector Agnet must be installed on OS in EC2 instances               
+
+After the assessment, you get a report with a list of vulnerabilities                  
+
+## Config Overview                   
+
+Helps with **auditing and recording compliance of your AWS resources**                    
+Helps **recording configurations and changes over time**                
+
+Everytime we manually change some configuration, Config will track them. This configuration data can be stored in S3 (analyzed by Athena)            
+
+Questions that can be solved by AWS Config:              
+-> Is there unrestricted SSH access to my security groups ?             
+-> Do my buckets have any public access ?             
+-> How was my ALB configuration changed over time ?             
+
+Can receive alerts (SNS notifications) for any changes              
+AWS Config is a per-region service               
+Can be aggregated across regions and accounts               
+
+Note: not a free service               
+
+## Macie Overview                
+
+Fully managed data security and data privacy service that uses **machine learning and pattern matching to discover and protect your sensitive data in AWS**                  
+
+Macie helps identify and alert you to **sensitive data, suck as personally identifiable information (PII)**          
+
+In this example, it will be used to find the sensitive data in S3 buckets, that's all. (one click, specify the S3 buckets)              
+<img src="images/macie.png" width="700">                
+Note: integrations with SNS topic, etc.            
+
+## Security Hub Overview             
+
+**Central security tool** to manage security **across several AWS accounts** and **automate security checks**                
+
+Integrated dashboards showing current security and compliance status to quickly take actions                
+
+Automatically aggregates alerts in pre-defined or personal findings formats from various AWS services & AWS partner tools:             
+GuardDuty, Inspector, Macie, IAM Access Analyer, AWS System Manager, AWS Firewall Manager, AWS Partner Network Solutions            
+
+Must first enable the AWS Config service                   
+
+(exam) anytime we see security centralised place in multiple account, think Security Hub                 
+
+<img src="images/security_hub.png" width="700">             
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
