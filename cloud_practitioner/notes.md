@@ -3121,10 +3121,103 @@ Root user privieges:
 -> change or cancel your AWS support plan           
 -> register as a seller in the Reserved Instance Marketplace                   
 
+# Machine Learning            
 
+## Rekognition Overview             
 
+Find Object, people, text, scenes in images and videos using ML               
 
+Facial analysis and facial search to do user verification, people counting                  
 
+Create a database of "familiar faces" or compare against celebrities             
+
+Use case:            
+-> labeling        
+-> content moderation       
+-> text detection             
+-> face detection and analysis (gender, age range, emotions, etc)                 
+-> face serach and verification          
+-> celebrity recognition          
+-> pathing (e.g. for sports game analysis)                       
+
+## Transcribe Overview             
+
+Automatically **convert speech to text**                       
+
+Uses a deep learning pricess called **automatic speech recognition (ASR)** to convert speech to text quickly and accurately            
+
+Use case:           
+-> transcribe customer service calls           
+-> automate closed captioning and subtitling               
+-> generate metadata for media assets to create a fully searchable archive                    
+
+## Polly Overview           
+
+Polly is the opposite of Transcribe: turn text into lifelike speech using deep learning             
+
+Allowing you to create applications that talk             
+
+## Translate Overview           
+
+Natural and accurate **language translation**               
+
+Amazon Translate allows you to **localize content** - such as websites and applications - for international users, and to easily translate large volumes of text efficiently.               
+
+## Lex + Connect Overview        
+
+Amazon Lex: same technology that powers Alexa                 
+-> automatic Speech Recognition (ASR) to convert speech to text             
+-> Natural Language Understanding to recognize the intent of text, callers              
+-> helps build chatbots, call center bots         
+
+Amazon Connect:           
+-> receive calls, create contact flows, cloud-based **virtual contact center**              
+-> can integrate with other CRM systems or AWS           
+-> no upfront payments, 80% cheaper than traditional contact center solutions           
+
+<img src="images/lex_connect.png" width="700">                 
+
+## Comprehend Overview             
+
+**For NLP**          
+(exam) If you see NLP, think Amazon Comprehend             
+
+Fully managed and serverless service        
+
+Uses ML to find insights and relationships in text              
+-> language of the text              
+-> extract key phrases, places, people, brands, or events          
+-> sentiment analysis             
+-> analyses text using tokenization and parts of speech                  
+-> automatically organize a collection of text files by topic              
+
+Sample use cases:      
+-> analyze customer interactions (emails) to find what leads to a positive or negative experience              
+-> create and groups articles by topics that Comprehend will uncover               
+
+## SageMaker Overview             
+
+Fully managed service for developers / data scientists to build ML models                  
+
+Typically difficult to do all the processes in one place + provision servers               
+
+Machine learning process (simplified): predicting your exam score              
+<img src="images/sage_maker.png" width="700">             
+
+## Machine Learning Overview                
+
+Rekognition: face detection , labeling, celebrity recognition                
+Transcribe: audio to text            
+Polly: text to audio               
+Translate: translations           
+Lex: build conversational bots - chatbots            
+Connect: cloud contact center            
+Comprehend: NLP               
+SageMaker: ML for every developer and data scientist                   
+
+# Account Management, Billing & Support                
+
+## Organization Overview
 
 
 
