@@ -2800,3 +2800,62 @@ Direct Connect: direct private connection to AWS
 Transit Gateway: Connect thousands of VPC and on-premises network together                    
 
 # Security & Compliance       
+
+## Shared Responsibility Model: Reminders & Examples             
+
+AWS responsibility - **Security OF the Cloud**               
+-> Protecting infrastructure (hardware, software, facilities, and networking) that runs all the AWS services.                
+-> Managed services like S3, DynamoDB, RDS etc             
+
+Customer responsibility - **Security IN the Cloud**                  
+-> For EC2 instance, customer is responsible for management of the guest OS (including security patches and updates)
+, firewall & network configuration, IAM              
+-> Encrypting application data             
+
+Shared controls (customer and AWS):                
+-> Patch management (for RDS, AWS do the patch for us. for EC2, we do the OS patch ourself), Configuration management, Awareness & Training              
+
+e.g. RDS                   
+AWS Responsibility:                 
+-> Manage the underlying EC2 instance, disable SSH access                 
+-> Automated DB patching              
+-> Automated OS pathing             
+-> Audit the underlying instance and disks & guarantee its functions              
+
+Your responsibility:             
+-> Check the ports / IP / Security Group inbound rules in DB's Security Group           
+-> In-database user creation and permissions            
+-> Creating a database with or without public access             
+-> Ensure parameter groups or DB is configured to only allow SSL connections               
+-> Database encryption setting             
+
+e.g. S3             
+AWS Responsibility:             
+-> Guarantee you get unlimited storage          
+-> Guarantee you get encryption          
+-> Ensure separation of the data between different customers              
+-> Ensure AWS employees can't access your data         
+
+Your Responsibility:              
+-> Bucket configuration             
+-> Bucket policy / public setting          
+-> IAM user and roles              
+-> Enabling encryption              
+
+## DDoS Protection: WAF & Shield              
+
+DDoS: Distributed Denial-of-Service               
+
+The attacker will launch multiple masters server and these servers are going to launch bots and they are going to send requests to our application server. The application server will be overwhelmed and it will not be working anymore.                  
+<img src="images/ddos.png" width="700">                 
+
+DDoS Protection on AWS              
+1. AWS Shield Standard: protects against DDoS attack for your website and applications, for all customers at *no* additiomal costs          
+2. AWS Shield Advanced: 24/7 premium DDoS protection              
+3. AWS WAF (Web Application Firewall): Filter specific requests based on rules               
+4. CloudFront and Route 53:                 
+-> Availability protection using global edge network             
+-> Combined with AWS Shield, provides attack mitigation at the edge locations                  
+5. Be ready to scale - leverage AWS Auto Scaling           
+
+<img src="images/ddos_sample.png" width="700">                 
