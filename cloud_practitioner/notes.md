@@ -3219,8 +3219,60 @@ SageMaker: ML for every developer and data scientist
 
 ## Organization Overview
 
+*Global* service             
+
+By creating an organization, we can manage **multiple AWS accounts**                   
+
+The main accout is the *master* account and the rest is called *child* account              
+
+Cost Benefits:             
+-> **consolidated billing** across all accounts - single payment method (paid by the master account, no payment method for other accounts)            
+-> pricing benefits from **aggregated usage** (volume discount for EC2, S3 ...)             
+-> pooling of **Reserved EC2 instances** for optimal savings              
+
+API is available to **automate AWS account creation**               
+
+**Restric account privileges using Service Control Policies (SCP)**               
+
+Multi Account Strategies       
+Create accoutns per **department**, per **cost center**, per **dev/test/prod**, based on **regulatory restriction** (using SCP), for **better resource isolation (e.g. VPC)**, have **separate per-account service limits**, isolated account for **logging**          
+
+Multi Account vs One Account Multi VPC            
+Use tagging standards for billing purposes                 
+Enable CloudTrail on all accounts, send logs to central S3 account              
+Send CloudWatch Logs to central logging account               
+
+<img src="images/ou.png" width="700">                    
+
+Service Control Policies (SCP)             
+Whitelist or Blacklist IAM actions              
+Applied at the **OU** or **Account** level            
+Does not apply to the Master Account             
+SCP is applied to all the **Users and Roles** of the Account, including Root               
+SCP does not affect service-linked roles               
+-> service-linked roles enable other AWS services to integrate with AWS Organizations and cannot be restriced by SCP.           
+
+SCP must have an explicit Allow (does not allow anything by default) (actually Deny also)                 
+
+(exam) use case:             
+-> restric access to certain services (e.g cannot use EMR)                   
+-> enforce PCI compliance by explicitly disabling services                     
+
+A SCP example:               
+<img src="images/scp_eg.png" width="700">                
+
+SCP can be a JSON file (like IAM Policy)                 
+
+Note: Master Account in the organisation has a Star symbol                 
+
+Root OU is going to be the top most OU.               
+We can then create a new OU within the Root OU.              
+SCP of the subsequent OU will inheret the the SCP of the OU from above (or it is in)               
 
 
+
+
+**Tag Policies** (compared to SCP) is out of scope of CCP                 
 
 
 
