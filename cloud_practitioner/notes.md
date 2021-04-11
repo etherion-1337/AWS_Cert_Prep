@@ -3786,6 +3786,9 @@ Benefits:
 -> fully managed & secure, pay for what you use                  
 
 
+# AWS Architecting & Ecosystem            
+
+## AWS WhitePapers Well-Architected Framework
 
 
 
