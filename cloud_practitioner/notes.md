@@ -3252,7 +3252,7 @@ SCP is applied to all the **Users and Roles** of the Account, including Root
 SCP does not affect service-linked roles               
 -> service-linked roles enable other AWS services to integrate with AWS Organizations and cannot be restriced by SCP.           
 
-SCP must have an explicit Allow (does not allow anything by default) (actually Deny also)                 
+SCP must have an explicit Allow (does not allow anything by default) (actually Deny also, i.e. whitelist or blacklist)                 
 
 (exam) use case:             
 -> restric access to certain services (e.g cannot use EMR)                   
@@ -3269,14 +3269,370 @@ Root OU is going to be the top most OU.
 We can then create a new OU within the Root OU.              
 SCP of the subsequent OU will inheret the the SCP of the OU from above (or it is in)               
 
-
-
-
 **Tag Policies** (compared to SCP) is out of scope of CCP                 
 
+## AWS Contorl Tower Overview          
 
+Easy way to **set up and govern a secure and compliant multi-account AWS environment** based on best practices             
 
- 
+Benefits:             
+-> automate the set up of your environment in a few clicks              
+-> automate ongoing policy management using guardrails                
+-> detect policy violations and remediate them           
+-> monitor compliance through an interactive dashboard                
+
+AWS Control Tower runs on top of AWS Organizations:                 
+-> it automatically sets up AWS Organizations for you to organize accounts and implement SCPs                  
+
+Free service but need to pay for AWS services enabled by Control Tower             
+
+Once you have Control Tower, we can manage account/OU there (and not in AWS Organisation)              
+
+We can use Single-Sign On (SSO), we can sign in multiple account from SSO UI.               
+
+## Pricing Models of the Cloud              
+
+AWS has 4 pricing models:                
+1. **Pay as you go**: pay for what you use, remain agile, responsive, meet scale demands                    
+2. **Save when you reserve**: minimize risks, predictably manage budgets, comply with long-terms requirements               
+-> reservations are available for EC2 Reserved Instances, DynamoDB Reserved Capacity, ElastiCache Reserved Nodes, RDS Reserved Instance, Redshift Reserved Nodes                
+3. **Pay less by using more**: volume-based discount                
+4. **Pay less as AWS gros**: as infra and user grows, they have a volume and scale and they will pass on their economy of scale to users.                 
+
+Free service & free tier in AWS:               
+IAM, VPC, Consolidated Billing, Elastic Beanstalk (pay for resources created), CloudFormation (pay for resources created), Auto Scaling Groups (pay for resources created).               
+Free tier: t2.micro EC2 for a year. S3, EBS, ELB, AWS Data Transfer etc.                    
+
+Computing Pricing - EC2           
+Only charged for what you use           
+Number of instances          
+Instances configuration:          
+-> physical capacity (CPU etc)         
+-> region            
+-> OS and software           
+-> Instance type           
+-> Instance size           
+ELB running time and amount of data processed             
+Detailed monitoring             
+
+Different models for pricing on EC2:              
+1. On-demand instances:              
+-> minimum billing time of 60s           
+-> pay per second (Linux) or per hour (Windows)         
+2. Reserved instances (if you know you are going to use it for a long time):             
+-> up to 75% discount compared to the On-demand on hourly rate            
+-> 1 or 3 years commitment                
+-> All upfront, partial upfront, no upfront (cheaper if all upfront)                 
+3. Spot instances:                   
+-> up to 90% discount compared to On-demand on hourly rate               
+-> bid for unused capacity in EC2 instances                 
+4. Dedicated Host:          
+-> On-demand            
+-> Reservation of 1 or 3 yearss commitment           
+-> you are running alone on these host                    
+
+**Savings plans** as an alternative to save on sustained usage                 
+
+Computing Pricing - Lambda & ECS              
+Lambda:          
+-> pay per API call            
+-> pay per duration x RAM we have assigned             
+
+ECS:             
+-> EC2 Launch Type Model: No additional fees, you pay for AWS resources (EC2 instances under your ECS clsuters) stored and created in your application                
+
+Fargate:            
+-> Fargate Launch Type Model: (since we don't manage EC2 instances) pay for vCPU and memory resources allocated to your applications in your containers                
+
+Storage Pricing - S3                   
+**Storage class**: S3 Standard, S3 Infrequent Access, S3 One-Zone IA, S3 Intelligent Tiering, S3 Glacier and S3 Glacier Deep Archive            
+Number and size of objects: Price can be tiered (base on volume, bigger means pay less)             
+Number and type of requests (move in or out of AWS)                
+Data transfer OUT of the S3 region               
+S3 Transfer Acceleration             
+Lifecycle transition (between storage classes)              
+
+Similar service: EFS (pay per use, has infrequent access & lifecycle rules)                  
+
+Storage Pricing - EBS                   
+Volume type (based on performance)              
+Storage volume in GB per month **provisioned** (in advance, we don't pay per use with EBS, you pay for 200 GB whether you use it or not)               
+IOPS:           
+General Purpose SSD: Included          
+Provisioned IOPS SSD: Provisioned amount of IOPS                
+Magnetic: number of requests                
+
+Snapshots:         
+added data cost per GB per month              
+
+Data transfer:           
+Outbound data transfer are tiered for volume discounts               
+Inbound is free               
+
+Database Pricing - RDS             
+Per hour billing        
+Database characteristics             
+-> engine         
+-> size        
+-> memory class           
+Purchase type:        
+-> On-demand       
+-> Reserved instances (1 or 3 years) with required up-front               
+
+Backup Storage: there is no additional chage for backup storage up to 100% of your total database storage for a region                 
+(this should be free, if your database is not all the way up to full)             
+
+Additional storage (per GB per month)          
+Number of input and output requests per month          
+Deployment type (storage and I/O are variable):              
+-> single AZ        
+-> multiple AZ (RDS are AZ based)           
+
+Data transfer:           
+-> outbound data transfer are tiered for volume discounts          
+-> inbound is free           
+
+Content Deliver - CloudFront            
+CDN service and it is global.              
+Pricing is different across different geographic regions                 
+Aggregated for each edge location, then applied to your bill               
+Data transfer out (volume discount)                  
+Number of HTTP/HTTPS requests               
+
+Networking Costs in AWS per GB - Simplified               
+<img src="images/network_cost.png" width="700">               
+Use Private IP instead of Public IP for good savings and better network performance               
+Use same AZ for max savings (at the cost of high avilability)                 
+
+(exam) won't be testing on actual details of each service                    
+
+## Saving Plan Overview             
+
+Instead of reserving instances, just commit to spend a certain $ amount per hour for 1 or 3 years                  
+Easiest way to setup long-term commitments on AWS             
+
+Two types of Savings Plan              
+1. EC2 Savings Plan               
+-> up to 72% discount compared to On-Demand          
+-> **commit to usage of individual instance families in a region (e.g. C5 or M5)**               
+e.g. I am willing to spend $10 per hour for the next 3 years on the C5 type of instance              
+-> regardless of AZ, size (m5.xl to m5.4xl), OS or tenancy (shared or dedicated host)              
+-> all upfront, partial upfront, no upfront            
+2. Compute Savings Plan (even more flexible)          
+-> up to 66% discount compared to On-Demand            
+-> regardless of **Family, Region**, size, OS, tenancy, **compute options**                    
+-> compute options: EC2, Fargate, Lambda                 
+
+Set up from the AWS Cost Explorer console                  
+
+## Billing & Costing Tools Overview          
+
+Three categories (all included in exam):          
+1. Estimating costs in the cloud:              
+-> TCO Calculator          
+-> Simple Monthly Calculator / Pricing Calculator         
+2. Tracking costs in the cloud:            
+-> Billing Dashboard           
+-> Cost Allocation Tags          
+-> Cost and Usage Reports           
+-> Cost Explorer           
+3. Monitoring against costs plans you have:            
+-> Billing Alarms        
+-> Budgets                          
+
+## Estimating Costs in the Cloud - TCO Calculator & Pricing Calculator             
+
+AWS TCO (Total Cost Ownership) Calculator (**This tool is deprecated but might still appear in exam**):             
+AWS helps you reduce TCO by **reducing the need to invest in large capital expenditures** and providing a **pay-as-you-go** model.           
+
+The TCO Calculators allow you to **estimate the cost savings** when using AWS and provide a detailed set of reports that can be used in exective presentations. (e.g. cost from migrating on-premises infra into AWS)                   
+
+**Compare** the cost of your applications in an **on-premises** or traditional hosting environment to **AWS**: Server, Storage, Network, IT Labor             
+
+Four factors to be considred for TCO:               
+<img src="images/tco.png" width="700">              
+After inputing paramenter, you will get a PDF report (20+ pages and pretty grpah)                
+
+Simple Monthly Calculator / Pricing Calculator               
+
+Simple Monlth Calculator deprecated since 2020, repalced by Pricing Calculator                 
+
+Estimate the cost for your architecture solution               
+
+We input what we want to use for your architecture, it will calculate how much it will cost in like 12 months.              
+
+## Tracking Costs in the Cloud - Biulling Alarms & AWS Budgets               
+
+Billing Dashboard:          
+show you all the costs for the month, forecast for the month to date.                 
+High-level tool              
+
+Cost Allocation Tags           
+
+Use **cost allocation tags** to track your AWS costs on detailed level and group them together          
+**AWS generated tags**:             
+-> automatically applied to the resource you create         
+-> starts with Prefix **aws**: e.e.g `aws:createdBy`          
+**User-defined tags**:             
+-> defined by the user         
+-> starts with prefix **user**                    
+
+Tags are used for organizing resources:               
+EC2: instances, images, load balancer, etc           
+RDS, VPC resources, etc          
+Resources created by CloudFormation are all tagged the same way                
+
+Free naming, common tags are: Name, Environment, Team              
+
+Tags can be used to create Resource Groups:             
+Create, maintain, and view a collection of resources that share common tags             
+Manage these tags using the Tag Editor                    
+
+Cost and Usage Reports (csv format):             
+-> contains the **most comprehensive set of AWS cost and usage data available**, including additional metadata about AWS services, pricing and reservations (e.g. EC2 Reserved Instances)                   
+-> lists AWS usage for each service category used by an account and its IAM users in hourly or daily line items, as well as any tags that you have activated for cost allocation purposes               
+-> Can be integrated with Athena, Redshift or QuickSight                
+
+Cost Explorer:            
+
+Visualize, understand, and manage your AWS costs and usage over time              
+Create custom reports that analyze cost and usage data          
+Analyze your data at a high level: total costs and usage across all accounts                 
+Or Montly, hourly, resource level granularity                  
+Choose an optimal **Savings Plan**               
+(exam) **Forecast usage up to 12 months based on previous usage**                 
+
+## Monitoring Costs in the Cloud - Billing Alarms & AWS Budgets             
+
+Billing data metric is stored in **CloudWatch us-east-1**.                
+The data is aggregated for all your regions in AWS               
+
+If is for actual cost, not for projected costs.                 
+
+Intended a simple alarm (not as powerful as AWS Budgets)                       
+
+AWS Budgets             
+
+Create budget and **send alarms when costs (include forecasted cost) exceeds the budget**               
+3 types of budgets: Usage, Cost, Reservation              
+For Reserved Instances (RI):                
+-> track utilisation        
+-> supports EC2, ElastiCache, RDS, Redshift           
+Up to 5 SNS notifications per budget            
+Can filter by: Service, Linked Account, Tag, Purchase Option, Instance Type, Region, AZ, API Operation, etc.              
+Same options as AWS Cost Explorer         
+2 budgets are free, $0.02 / day / budget               
+
+## AWS Trusted Advisor            
+
+We would like to have a high-level account assessment, no need to install anything              
+
+**Analyze your AWS accounts and privdes recommendation** (it will analyze 5 types of problems on your account):          
+1. cost optimisation            
+2. performance              
+3. security           
+4. fault tolerance              
+5. service limits                
+
+Two tiers:            
+1. Core Checks and recommendations - all customers (Security, Service Limits only it seems)            
+-> can enable weekly email notification from the console           
+2. Full Trusted Advisor - Available for **Business & Enterprise** support plans                  
+-> ability to set CloudWatch alarms when reaching limits               
+-> **programmatic access using AWS Support API**                     
+
+Trusted Advisor Checks Example:             
+1. Cost Optimization:          
+-> low utilisation EC2 instances, idel load balancer, under-utilized EBS volumes                 
+-> reserved instances & savings plans optimizations               
+2. Performance:                
+-> high utilization EC2 instance, CloudFront CDN optimization           
+-> EC2 to EBS throughput optimization, Alias records recommendations                 
+3. Security:         
+-> MFA enabled on Root Account, IAM key rotation, exposed Access Keys                 
+-> S3 Bucket permissions for public access, security groups with unrestricted ports           
+4. Fault Tolerance:              
+-> EBS snapshots age, AZ Balance              
+-> ASG/RDS multi-AZ or not, ELB configuration, etc            
+5. Service Limits                
+
+## Support Plans for AWS              
+
+**Basic Support**: free               
+
+Customer Service & Communities - 24x7 access to customer service, documentation, whitepapers, and support forums.                
+AWS Trusted Advisor - Access to the 7 core Trusted Advisor checks and guidance to provision your resources following best practices to increase performance and improve security               
+AWS Personal Health Dashboard - a personalised view of the health of AWS services, and alerts when your resources are impacted.                
+
+**Developer Support**: All Basic Suport Plan +              
+
+**Business hours email access** to Cloud Support Associates               
+unlimited cases / 1 primary contact on your accounts             
+Case severity / response times:          
+-> general guidance: less than 24 bussiness hrs              
+-> system impaired: less than 12 bussiness hrs             
+
+Great for development, but as soon as we going for production workloads, we can upgrade          
+
+**Business Support** (24/7): 
+
+Intended to be used if you have **production workloads** 
+
+**Trusted Advisor**- full set of checks + API access                   
+**24x7 phone, email and chat access** to Cloud Support Engineers                
+unlimited cases / unlimited contacts                
+Access to Infrastructure Event Management **additional fee**            
+Case severity / response times:             
+-> general guidance: less than 24 bussiness hrs              
+-> system impaired: less than 12 bussiness hrs             
+-> **production system impaired**: less than 4 hours                 
+-> **production system down**: less than 1 hour             
+
+**Enterprise Support (24/7)**:           
+
+Intended to be used if you have **mission critical workloads**                   
+
+All of Business Support Plan + Access to a dedicated **Technical Account Manager (TAM)**                
+
+**Concierge Support Team** (for billing and account best practices)               
+
+**Infrastructure Event Management, Well-Architected & Operations Reviews**                      
+
+Case severity / response times:             
+-> general guidance: less than 24 bussiness hrs              
+-> system impaired: less than 12 bussiness hrs             
+-> **production system impaired**: less than 4 hours                 
+-> **production system down**: less than 1 hour              
+-> **Business-critical system down**: less than 15 minutes              
+
+## Account Best Practices Summary              
+
+Operate multiple accounts using **Organizations**              
+use **SCP (Service Control Policies)** to restrict account power               
+Easily setup multiple accounts with best-practices with **AWS Control Tower**              
+**Use Tags & Cost Allocation Tags** for easy management & billing               
+**IAM guidelines**: MFA, least-privilege, password policy, password rotation                
+**Config** to record all resources configurations & compliance over time                
+**CloudFormation** to deploy stacks across accounts and regions                     
+**Trusted Advisor** to get insights, Support Plan adapted to your needs                     
+Send Service Logs and Access Logs to **S3 or CloudWatch Logs** (maybe even seperate account for loggings)                 
+**CloudTrail** to record API calls made within your account                    
+**if your account is compromised**: change the root password, delete and rotate all password / key,contact the AWS support                 
+
+## Billing Summary (exam)             
+
+TCO Calulator: from on-premises to AWS (cost saving associated to this migration)                     
+Simple Monthly Calculator / Pricing Calculator: cost of services on AWS (based on the solution architecture you provide)                     
+Billing Dashboard: high level overview + free tier dashboard                
+Cost Allocation Tags: tag resources to create details on reports               
+Cost and Usage Reports: most comprehensive billing dataset               
+Cost Explorer: view current usage (details) and forecast usage (12 months)              
+Billing Alarms: in us-east-1 - track overall and per-service billing             
+Budgets: more advanced - track usage, costs, RI, and get alerts                    
+Savings Plans: easy way to save based on long-term usage of AWS                  
+
+# Advanced Identity
+
 
 
 
