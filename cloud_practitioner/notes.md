@@ -3633,6 +3633,160 @@ Savings Plans: easy way to save based on long-term usage of AWS
 
 # Advanced Identity
 
+## Cognito Overview (simplified)           
+
+It is a way for us to provide identity for your web and mobile applications users (potentially millions).          
+
+But we shouldn't create IAM users for them, IAM users are people belongs to your company and need to use AWS direclty.           
+
+We create users for your mobile and web apps in Cognito.           
+
+<img src="images/cognito.png" width="700">                
+
+The Amazon Cognito has its own internal database of users, and then our mobile and web applications will have an integrated login into Amazon Cognito.            
+
+(exam) if we thinking of building a web or mobile applications and you want to have a way to manage users on AWS, think Cognito.           
+
+## Directory Services Overview             
+
+What is Microsoft Active Directory (AD) ?            
+
+AD is found on any Windows server that has AD domain services.              
+
+It is a database of **objects**: User Accounts, Computers, Printers, File Shares, Security Groups                
+
+With AD, you have centralized security management, create account, assign permissions.                 
+
+If you log onto any of the machiens belong to the company, because they are connected to the domain controller, you can use this combination of users and password on any of these machine.               
+<img src="images/ad.png" width="700">                    
+
+AWS Directory Services              
+3 flavours (not tested in CCP)            
+1. AWS Managed Microsoft AD           
+-> create your own AD in AWS, manage users locally, supports MFA               
+-> establish "trust" connections with your on-premise AD               
+2. AD Connector         
+-> Directory Gateway (proxy) to redirect to on-premise AD            
+-> Users are managed on the on-premise AD                
+3. Simple AD       
+-> AD-compatible managed directory on AWS         
+-> cannot be joined with on-premise AD                    
+
+(exam) Directory Services is used whenver you hear about Active Directory               
+
+## Single Sign-On (SSO) Overview           
+
+Mostly used as a distractor.        
+
+Centrally manage Single Sign-On to access **multiple accounts** and **3rd party business applications**.              
+
+Integrated with AWS Organisations               
+
+When you have an organization, you can use SSO portal on top of it to log in all your accounts under your organizations.              
+
+**Supports SAML 2.0** markup           
+
+Integration with on-premise Active Directory                
+
+SSO with AD (not tested)                
+<img src="images/sso_ad.png" width="700">                 
+
+## Advanced Identity - Summary               
+
+IAM:          
+-> Identity and Access Management inside your AWS account             
+-> For users that you trust and belong to your company            
+
+Organizations:             
+-> manage multiple AWS accounts           
+-> restrict account power using SCP                   
+
+Cognito:              
+-> create a database of users for your mobile & web applications               
+
+Directory Services:          
+-> if we have an on-premises Microsoft Active Directory, then we can use Direcotry Services and integrate it with AWS to keep that facility                
+
+Single Sign-On (SSO):              
+-> one login for multiple AWS accounts & applications             
+
+
+# Other Services             
+
+## WorkSpaces Overview            
+
+Managed Desktop as a Service (DaaS) solution to easily provision Windows or Linux desktops               
+
+Great to eliminate managment of on-premise VDI (Virtual Desktop Infrastructure)                
+
+Fast and quickly scalable to thousands of users              
+
+Secured data - integrates with KMS          
+
+Pay-as-you-go service with monthly or hourly rates                       
+
+(exam) anything related to manage Desktop as a Service or Virtual desktop                  
+
+## AppStream 2.0 Overview              
+
+Desktop Application Streaming Service             
+
+Stream an application to any computer, without acquiring and provisioning infrastructure.            
+
+**The application is delivered from within a web browser**               
+
+e.g. we want to have the Blender application from within a web browser, we can use AppStream. (this service is application focused)              
+
+Amazon AppStream 2.0 vs WorkSpaces              
+Workspaces:           
+-> Fully managed VDI and desktop available (we can launch as many app as we want within your desktop)          
+-> the users connect to the VDI and open native or WAM applications               
+-> Workspaces are on-demand or always on                  
+
+AppStream 2.0:             
+-> Stream a desktop application to web browsers (no need to connect to a VDI)               
+-> works with any device (that has a web browser)               
+-> allow to configure an instance type per application type (CPU, RAM, GPU), e.g. for PhotoShop, i need more CPU/RAM/GPU                
+
+## Sumerian Overview                 
+
+Create and run virtual reality (VR), augmented reality (AR), and 3D applications            
+Can be used to quickly **create 3D models with animations**              
+Ready-to-use templates and assets - no programming or 3D expertise required              
+Accessible via a web-browser URLs or on popular hardware for AR/VR            
+
+## IoT Core Overview               
+
+IoT = Internet of Things: the network of internet-connected devices that are able to collect and transfer data                   
+
+AWS IoT Core allows you to **easily connect IoT devices to the AWS Cloud**              
+
+**Serverless, secure & scalable** to billions of devices and trillions of messages                  
+
+Your applications can communicate with your devices even when they are not connected               
+
+Integrates with a lot of AWS services (lambda, S3, SageMaker, etc.)              
+
+Build IoT applications that gather, process, analyze, and act on data.                 
+
+## Elastic Transcoder Overview               
+
+It is used to **convert media files stored in S3 into media files in the formats required by consumer playback devices (phone etc)**.             
+
+e.g.           
+we have a media file in S3 Bucket, then we run it through our Transcoding pipeline on Elastic Transcoder.               
+It is going to convert that video file into a bunch of different video files that are all going to be put into an S3 output bucket.           
+And that output bucket is going to have a bunch of files that are going to be compatible with a wide array of different devices.           
+<img src="images/transcoder.png" width="700">                          
+
+Benefits:           
+-> easy to use         
+-> highly scalable: can handle large volumes of media files and large file sizes                
+-> cost effective - duration-based pricing model           
+-> fully managed & secure, pay for what you use                  
+
+
+
 
 
 
