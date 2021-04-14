@@ -1686,7 +1686,8 @@ We need the docker to run on somewhere and so we **must provision & maintain the
 
 AWS takes care of starting / stopping containers and has integrations with the Application Load Balancer (if you want to create a web application on ECS)                       
 
-<img src="images/ecs.png" width="700">                     
+<img src="images/ecs.png" width="700">                      
+
 We have multiple EC2 Instances, we need to create these EC2 Instances in advance. They are will be running different containers by the ECS service.                     
 Anytime there is a new Docker Container, it will be smart enough to find on which EC2 Instance to place that Docker Container.                  
 From exam's perspective, anytime we want to run Docker Containers on AWS, think of ECS.                         
@@ -1700,7 +1701,8 @@ Serverless offering !
 
 AWS just runs containers for you based on the CPU / RAM you need
 
-<img src="images/fargate.png" width="700">             
+<img src="images/fargate.png" width="700">              
+
 If we have a new container, Fargate will automatically run the container for us (we don't exact know where, but it will be run)                
 We don't manage any EC2 Instances with Fargate.                  
 
@@ -1955,7 +1957,7 @@ AWS Elastic Beanstalk:
 Elastic Beanstalk is a developer centric view of deploying an application on AWS.           
 It uses all the component's we have seen before: EC2, ASG, ELB, RDS, etc ...               
 But it's all in one view that's easy to make sense of.                  
-We still have full control over the configuratioj                   
+We still have full control over the configuration                   
 
 From a cloud perspective, **Beanstalk == Platform as a Service (PaaS)**                   
 **Beanstalk is free but you pay for the underlying instances**.                     
@@ -2386,7 +2388,8 @@ Low latency (less than 10 ms on publish and receive)
 
 SQS to decouple between application tiers           
 
-<img src="images/sqs_sa.png" width="700">             
+<img src="images/sqs_sa.png" width="700">              
+
 A classic solution architecture. We have a web server and they are taking requests through an application load balancer. They are served through EC2 instances in an auto scaling group. Say our users want us to process some videos. Then instead of sending it directly to the video application, we can instead insert messages into an SQS queue.              
 Then we will have a video processing layer made of an auto scaling group wiht EC2 instances. And these EC2 instances will be reading from the SQS queue and processing our videos.       
 The cool thing about it is that we can scale the second auto scaling group independently from the first one. The scaling can happen based on how many messages there are (e.g.) in the SQS queue.             
@@ -2446,7 +2449,7 @@ Amazon MQ runs on a dedicated machine (not serverless)
 
 Amazon MQ has both queue feature (~SQS) and topic features (~SNS)               
 
-It is used if and only if a company is migrating to the cloud and needs to use one of these opem protocols.         
+It is used if and only if a company is migrating to the cloud and needs to use one of these open protocols.         
 Otherwise it should be using SQS or SNS as they are scaled much better and they are way more integrated with AWS.                
 
 ## Cloud Integration Summary             
@@ -2883,7 +2886,7 @@ Define Web ACL (Web Access Control List)
 -> Size constraints, **geo-match (block countries)**                 
 -> **Rate-based rules (to count occurrences of events) - for DDoS protection**               
 
-# Penetration Testing              
+## Penetration Testing              
 
 This is when you are trying to attack your own infrastructure to test your security.                
 
