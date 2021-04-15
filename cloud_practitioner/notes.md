@@ -3300,7 +3300,7 @@ AWS has 4 pricing models:
 2. **Save when you reserve**: minimize risks, predictably manage budgets, comply with long-terms requirements               
 -> reservations are available for EC2 Reserved Instances, DynamoDB Reserved Capacity, ElastiCache Reserved Nodes, RDS Reserved Instance, Redshift Reserved Nodes                
 3. **Pay less by using more**: volume-based discount                
-4. **Pay less as AWS gros**: as infra and user grows, they have a volume and scale and they will pass on their economy of scale to users.                 
+4. **Pay less as AWS grows**: as infra and user grows, they have a volume and scale and they will pass on their economy of scale to users.                 
 
 Free service & free tier in AWS:               
 IAM, VPC, Consolidated Billing, Elastic Beanstalk (pay for resources created), CloudFormation (pay for resources created), Auto Scaling Groups (pay for resources created).               
@@ -3464,7 +3464,7 @@ Estimate the cost for your architecture solution
 
 We input what we want to use for your architecture, it will calculate how much it will cost in like 12 months.              
 
-## Tracking Costs in the Cloud - Biulling Alarms & AWS Budgets               
+## Tracking Costs in the Cloud - Billing Alarms & AWS Budgets               
 
 Billing Dashboard:          
 show you all the costs for the month, forecast for the month to date.                 
