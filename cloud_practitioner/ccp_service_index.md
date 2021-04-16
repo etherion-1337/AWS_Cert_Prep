@@ -121,6 +121,19 @@
 
 ## Deployment & Managing Infrastructure at Scale
 
+58. CloudFormation: Infrastructure as code, template can be in yaml form            
+59. Beanstalk: platform as a service (PaaS), a developer centric view of deploying an application on AWS, with known architecture           
+60. CodeDeploy: deploy our code (application), hybrid service. can auto upgrade version of application in EC2 instance in a single interface           
+61. CodeCommit: code repository                 
+62. CodeBuild: retrieve code from CodeCommit and build the code and then we will avve ready-to-deploy artifact        
+63. CodePipeline: orchestrate different setps to have the code automatically push to production (e.g. CodeCommit -> CodeBuild->CodeDeploy->Beanstalk)                  
+64. CodeArtifact: artifact (dependencies) management, CodeBuild can retrieve dependencies from CodeArtifact          
+65. CodeStar: unified UI to easily manage SW development activites in one place. Behind the scene it will create CodeCommit repo, a CodeBuild build process, a CodeDeploy, a CodePipeline                      
+66. Cloud9: cloud IDE                  
+67. SSM (Systems Manager): manage fleet of EC2 and On-premises system at scale, run command across ALL your servers, patch your fleet of EC2 and On-premises servers, need install SSM Agent in the EC2 instances (Linux and Ubuntu has it by default)                    
+68. OpsWorks: managed Chef and Puppet, perform server configuration automatically               
+
+## Leveraging the AWS Global Infrastructure      
 
 
 
