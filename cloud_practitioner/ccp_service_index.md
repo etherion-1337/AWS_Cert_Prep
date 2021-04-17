@@ -135,6 +135,56 @@
 
 ## Leveraging the AWS Global Infrastructure      
 
+69. Route 53: global service, managed DNS (Domain Name System).           
+-> simple routing policy (only one with no health check)               
+-> weighted routing policy                
+-> latency routing policy          
+-> failover routing policy             
+70. CloudFront: contend delivery network (CDN), global service, improves performance by caching the content of your websites at different edge locations             
+71. S3 Transfer Acceleration: S3 bucket are linked to region, S3 Transfer Acceleration increase transfer speed by transfering files to an AWS edge location which will forward the dta to the S3 bucket in the target region (using private AWS network)                 
+72. AWS Global Accelerator: when we use this accelerator, we are connected to an edge location closest to us and that edge location will be routing traffic directly to the target instances via private AWS network                
+73. AWS Outposts: "server racks" that offers the same AWS infra, services, API and tools to build your own application on-premises just as in the cloud. This service extend cloud service onto your own infrastructure on-premises system             
+
+
+## Cloud Integration          
+
+74. SQS (Simple Queue Service): fully managed serverless service to decouple applications. Producers will send message into a queue and stored there, then they can be read by consumers who will be polling the queue (i.e. requesting message from the queue), message will be deleted after they are used by consumers                
+75. SNS (Simple Notification Services:): event publisher only sends message to one SNS topic, and the SNS topic will send the message to downstream event subscribers                
+76. Kinesis: real-time big data streaming          
+77. Amazon MQ: managed Apache ActiveMQ which enable traditional protocols such as MQTT, AMQP, STOMP, Openwire, WSS etc, only used if company is migrating to the cloud and needs to use one of these open protocols           
+
+## Cloud Monitoring           
+78. CloudWatch: provides metrics for every service in AWS (CPUUtilization, NetworkIn, etc), can create CloueWatch dashboards to view all metrics at the same time               
+79. CloudWatch Alarm: used to trigger notification for any metrics (once above a threshold, trigger a CloudWatch Alarm action such as EC2 actions or ASG action or SNS notification)             
+80. CloudWatch Logs: the logs collect from various services like Beanstalk/ECS/Lambda, enable real-time monitoring of logs. Needs CloudWatch log agents on EC2 machines or on-premises servers, hybrid service, by default no logs from EC2 instance go to CloudWatch              
+81. CloudWatch Event/EventBridge: a way for us to react to events happening within AWS, used to do scheduled CRON jobs or reactive job (send message when IAM user sign in), in the console we choose the service we would trigger the event (EC2 instance change) and target (send message to SNS topic)                
+82. CloudTrail: enabled by default, provides governance, and audit for your AWS account. Get an history of events / API calls made within your AWS account (console, SDK, CLI, AWS services)              
+-> CloudTrail Insights: detect unusual activity in your account: bursts of IAM actions etc, events are stored for 90 days in CloudTrail, if want more need log them to S3              
+83. X-ray: do tracing and get visual analysis of your application, troubleshoot performance, understand dependencies in the architecture, review request behaviour etc               
+84. Service Health Dashboard: shows health of the services for all regions and all services, RSS feed you can subscribe to           
+85. Personal Health Dashboard: provides alerts and remediation guidance when AWS is experiencing events that may inpact you or what you have deployted, personalised view into the performances and availability of the AWS services underlying your AWS resources, global service                 
+
+## VPC & Networking   
+
+86. VPC (Virtual Private Cloud): private network to deploy your resources (regional resrouces)                
+-> public subnet: accessible from the internet, can have EC2 instances or Load Balancer                          
+-> private subnet: not accessible from the internet, can place your database             
+-> Route table: define access to internet and between subnet             
+87. Internet Gateway: helps VPC instances connect to internet, used by instances in the public subnet         
+88. NAT Gateway (AWS managed) or NAT Instances (self-managed): allow instance in the private subnet to access internet (patching etc) without exposing itself, this gateway is in the public subnet and instance in private subnet need to connect to it                  
+89. NACL (Network Access Control List): first line of defense for EC2 instances, a firewall which controls traffic in and out subnet, attached to subnet level, rules only include IP address. NACL is stateless (return traffic must be explicitly allowed by rules) Security Groups (stateful, return traffic auto allowed) is 2nd line of defense, can include IP and other SGs.        
+90. VPC Flow Logs: a log of all the I traffic going through your interfaces.                  
+91. VPC Peering: connect two VPC, privately using AWS's netowrk, make them behavior as if they are in the same network. VPC Peering connection is NOT transitive.                  
+92. VPC Endpoints: allow us to connect AWS services (usually all public services) privately instead of public internet network            
+-> VPC Endpoint Gateway: S3 and DynomoDB           
+-> VPC Endpoint Interface: the rest               
+93. Site to Site VPN: connect on-premises data center to VPC over public internet, uses CGW (Customer Gateway) on premisis and VGW (Virtual Private Gateway) at AWS            
+94. Direct Connect (DX): establish a phyical connection between on-premises data cent and AWS, private network, 1 month to establish.                       
+95. Transit Gateway: VPC can be connected by peer connection, VPN/DX and can be complicated, Transit Gateway can have peering connectiong between thousand of VPC and on-premises with hub-and-spoke (star) connections                   
+
+## Security & Compliance        
+
+
 
 
 
