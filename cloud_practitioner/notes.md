@@ -3007,7 +3007,7 @@ CloudWatch Events rules can target AWS Lambda or SNS
 ## Inspector Overview               
 
 Automated Security Assessment for EC2 instances                             
-Analyze the running OS against **known vulnerabilities**
+Analyze the running OS against **known vulnerabilities**                
 Analyze against unintended network accessibility                   
 
 AWS Inspector Agnet must be installed on OS in EC2 instances               
@@ -3036,7 +3036,7 @@ Note: not a free service
 
 Fully managed data security and data privacy service that uses **machine learning and pattern matching to discover and protect your sensitive data in AWS**                  
 
-Macie helps identify and alert you to **sensitive data, suck as personally identifiable information (PII)**          
+Macie helps identify and alert you to **sensitive data, such as personally identifiable information (PII)**          
 
 In this example, it will be used to find the sensitive data in S3 buckets, that's all. (one click, specify the S3 buckets)              
 <img src="images/macie.png" width="700">                

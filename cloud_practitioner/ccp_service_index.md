@@ -184,6 +184,105 @@
 
 ## Security & Compliance        
 
+96. AWS Shield              
+-> Standard: protect against DDoS attack for your website and applications, free and activated by default, layer3/4(TCP) attacks           
+-> Advanced: 24/7 premius DDoS protection, EC2/ELB, CloudFront etc                  
+97. AWS WAF (Web Application Firewall): fileter requests based on rules, layer 7 (HTTP), defined Web ACL (Access Control List): geo-matching, rate-based rules (to count occurrence in evvent)               
+98. Pennetration Testing: can carry out on 8 services without prior approval. cannot do DNS zone walking/DDoS/Port flooding/protocal flooding/request flooding.               
+99. Amazon KMS (Key Management Serivce): AWS managed the encryption keys for ys (we manage who can access to these keys)           
+100. CloudHSM (Hardware Security Module): dedicated hardware provided by AWS. They provision this hardware but we managing key ourselves.             
+101. Secrets Manager: meant for storing secrets, secrets to be managed in RDS                
+102. Artifact: a portal that provides customers with on-demand access to AWS compliance documentation            
+-> Artifact Reports: allows you to download AWS security and compliance documents from 3rd party auditors            
+-> Artifact Agreement: review, accept, and track status of AWS agreement like HIPPA, BAA etc                         
+103. GuardDuty: use ML algorithm for threat discovery to protect AWS account, input from CloudTrail, VPC Flow Log, DNS log. Can setup CloudWatch Event rules for notification with Lambda or SNS             
+104. Inspector: automated security assessment for EC2 instance, running OS against known vulnerability, against inintended network accessibility, must install Inspector Agent on OS in EC2 instances, you will get a report after accessment.                       
+105. Config: auditing and recording compliance of your AWS account, record configurations and changes over time, can be stored in S3, can receive alert                   
+106. Macie: use ML and pattern matching to identify and alert you to sensitive , such as personally identifiable information (PII) in your storage like S3.               
+107. Security Hub: central security tool to manage security across several AWS account and automate security checks.                   
+108. Amazon Detective: analyse, investigate, and quickly identify ROOT cause of security issue or suspecious using ML and graphs, auto collects and process events from VPC Flow Logs, GuardDuty and create a unified view.                    
+109. Root user privileges:        
+-> change account setting     
+-> close AWS account            
+-> change or cancel AWS support plan           
+-> register as seller in the Reserved Instance Marketplace                 
+
+## Machine Learning              
+
+110. Rekognition: CV, find object, people, text in images and videos, facial search/analysis            
+111. Trascribe: speech -> text, using automatic speech recognition (ASR)               
+112. Polly: text -> speech, create application that talk              
+113. Translate: natual and accurate language translation, allows you to localize content               
+114. Lex + Connect: create call center/chatbot              
+-> Lex: same tech that powers Alexa, ASR, NLP, can build chatbot           
+-> Connect: virtual contact center, can receive calls, create contact flow etc.                 
+115. Comprehend: NLP, fully managed and serverless service. extract info, sentiment analysis etc.                   
+116. SageMaker: fully managed service for developer to build ML pipeline/model                 
+
+## Account Management, Billing & Support                
+
+117. Organization: manage multiple AWS account, API is available for aumoated AWS account creation          
+-> SCP (Service Control Policies): restric account privileges, JSON format, applied at OU or Account level, enforce PCI compliance by explicitly disable services             
+-> Master account in the organisation not affected by SCP                      
+118. AWS Control Tower: easy way to setup and goven a secure and compliant multi-account AWS environment based on best practice, runs on top of Organisation (it auto setup Organisation for you in the process), can use SSO (Single-Sign On)               
+119. Saving Plan:               
+-> EC2 Saving Plan: commit to usage of individual instances families in a region (e.g. C5 or M5), up to 72% discount              
+-> Compute Saving Plan: very flexible, regardless of Family, Regiom, size, OS, tenancy, compute options (EC2, Fargate, Lambda), up to 66% discount            
+120. TCO (Total Cost Ownership) Calculator: estimate the cost saving when using AWS, compared to your applications on-premises, can be used for executive presentations              
+121. Cost and Usage Reports: csv, most comprehensive set of AWS cost and usage data available, list each service category used by an account and its IAM users.                         
+122. Cost Explorer: visualise, understand and manage AWS costs and usage over time, can be used to choose an optimal Savings Plan, and forecast usage up to 12 months based on previous usage                  
+123. Billing Alarm: billing data metric is stored in CloueWatch in us-east-1, just simple alarm                  
+124. AWS Budget: create budget and send alarms when costs (including forecasted cost) exceeds budget                         
+125. AWS Trusted Advisor: analyse your AWS accounts and provides recommendations (analyse 5 types of problems on your account)              
+-> basic tier: Core Checks and recommendation (seems like only Security and Service Limits)                 
+-> Full Trusted Advisor (Business & Enterprise Support Plans): programatic access using AWS Support API               
+126. Support Plan for AWS:               
+-> **Basic**: free, 24x7 access to customer service, documentation etc               
+-> **Developer**: great for development, business hour email access to Cloud Supoort Associates               
+--> general guidance: less than 24 business hr              
+--> system impaird: less than 12 business hr               
+-> **Business** (24/7): if you have production workloads            
+--> 24x7 phone, email and chat access to Cloud Support Engineers               
+--> Production system impaired: less than 4 hr            
+--> Production system down: less than 1 hr                
+-> **Enterprise** (24/7): if you have mission critical workload              
+--> Business-critical system down: less than 15 minutes           
+--> access to a dedicated TAM (Technical Account Manager)            
+--> Concierge Support Team                   
+--> Infrastructure Event Management, Well-Architected & Operations Reviews
+
+## Advanced Identity                
+
+127. Cognito: to provide identity for your web and mobile applications, this is to manager users on AWS               
+128. Directory Services: used for Active Directory (Windows system) for log in to multiple machine                
+129. SSO (Single-Sign On): centrally manage single-sign on to access multiple accounts and 3rd party business applications             
+
+
+## Other Services             
+
+130. WorkSpaces: managed Desktop as a Service (DaaS) to easily provision Windows or Linux Desktop                 
+131. AppStream 2.0: deliever/use application within a web browser               
+132. Sumerian: create and run VR, AR and 3D applications/model.              
+133. IoT Core: easily connect IoT devices to AWS Cloud             
+134. Elastic Transcoder: convert media files stored in S3 into media files in the formats required by consumer playback devices (phone, tablet, PC, etc)               
+
+
+## AWS Architecting & Ecosystem               
+
+135. 5 Pillar for Well Architected Framework:          
+-> Operational Excellence            
+-> Security               
+-> Reliability               
+-> Performance Efficiency                  
+-> Cost Optimization               
+
+136. AWS Professional Service: a global team of experts                
+137. APN (AWS Partner Network): a group of people good with cloud:                
+-> APN Technology Partner: providing hardware, connectivity, and software (focus on infra)            
+-> APN Consulting Partner: professional services firm to help build on AWS               
+-> APN Training Partner: find who can help you learn AWS            
+138. AWS Competency Program: grant competencies to APN parneter who have demonstrated technical proficienty and proven customer success in specialsied solution areas            
+139. AWS Navigation Prgram: help Partner become better Partner
 
 
 
