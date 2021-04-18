@@ -172,7 +172,7 @@
 -> Route table: define access to internet and between subnet             
 87. Internet Gateway: helps VPC instances connect to internet, used by instances in the public subnet         
 88. NAT Gateway (AWS managed) or NAT Instances (self-managed): allow instance in the private subnet to access internet (patching etc) without exposing itself, this gateway is in the public subnet and instance in private subnet need to connect to it                  
-89. NACL (Network Access Control List): first line of defense for EC2 instances, a firewall which controls traffic in and out subnet, attached to subnet level, rules only include IP address. NACL is stateless (return traffic must be explicitly allowed by rules) Security Groups (stateful, return traffic auto allowed) is 2nd line of defense, can include IP and other SGs.        
+89. NACL (Network Access Control List): first line of defense for EC2 instances, a firewall which controls traffic in and out subnet, attached to subnet level, rules only include IP address. NACL is stateless (return traffic must be explicitly allowed by rules), can have both deny and allow rules. Security Groups (, only allow rules, stateful, return traffic auto allowed) is 2nd line of defense, can include IP and other SGs.        
 90. VPC Flow Logs: a log of all the I traffic going through your interfaces.                  
 91. VPC Peering: connect two VPC, privately using AWS's netowrk, make them behavior as if they are in the same network. VPC Peering connection is NOT transitive.                  
 92. VPC Endpoints: allow us to connect AWS services (usually all public services) privately instead of public internet network            
@@ -184,9 +184,9 @@
 
 ## Security & Compliance        
 
-96. AWS Shield              
--> Standard: protect against DDoS attack for your website and applications, free and activated by default, layer3/4(TCP) attacks           
--> Advanced: 24/7 premius DDoS protection, EC2/ELB, CloudFront etc                  
+96. AWS Shield: AWS Shield Advanced provides expanded DDoS attack protection for web applications running on the following resources: Amazon EC2, Elastic Load Balancing (ELB), Amazon CloudFront, Amazon Route 53, AWS Global Accelerator.                       
+-> Standard: protect against DDoS attack for your website and applications, free and activated by default, layer 3 (network layer)/4(transport layer, TCP) attacks           
+-> Advanced: 24/7 premius DDoS protection, EC2/ELB, CloudFront etc                                        
 97. AWS WAF (Web Application Firewall): fileter requests based on rules, layer 7 (HTTP), defined Web ACL (Access Control List): geo-matching, rate-based rules (to count occurrence in evvent)               
 98. Pennetration Testing: can carry out on 8 services without prior approval. cannot do DNS zone walking/DDoS/Port flooding/protocal flooding/request flooding.               
 99. Amazon KMS (Key Management Serivce): AWS managed the encryption keys for us (we manage who can access to these keys). AWS Key Management Service (KMS) makes it easy for you to create and manage cryptographic keys and control their use across a wide range of AWS services and in your applications.                                
