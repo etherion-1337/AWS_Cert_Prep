@@ -137,7 +137,29 @@ YubiKey by Yubico (3rd party): support for multiple root and IAM users using a s
 3.1) Hardware Key Fob MFA Device:    
 Gemalto (3rd party)      
 3.2) Hardware Key Fob MFA Device for AWS GovCloud (US):           
-SurePassID (3rd party)        
+SurePassID (3rd party)             
+
+## AWS CLI             
+
+How can users access AWS ? There are 3 options:    
+1) AWS Management Console (protected by password + MFA, for Root Account or other users)       
+2) AWS Command Line Interface (CLI): protected by access keys      
+3) AWS Software Developer Kit (SDK): this is mainly for code, (when your code is trying to access AWS), also protected by access keys    
+
+Access keys are generated through the AWS Console. Users manage their own access keys and these keys are **private**.    
+Access key have 2 components:            
+Access Key ID (username) and Secret Access Key (password).   
+
+We have to install (OS specific) client and configure the CLI with the Access Key ID and the Secret Access Key in order to use command line to access AWS.         
+
+## AWS CloudShell
+
+There is an alternative to install the CLI and configure it, this is called CloudShell. At the top right corner of the AWS Console there is a `terminal` icon we can launch. This is basically CLI in the cloud with pre-installed tools, storage (1 GB per AWS region) and saved files/settings.       
+
+We can directly run AWS command directly in the CloudShell instead on the local CLI. e.g. `aws --version` to check the version of the AWS CLI installed or `aws iam list-users` to list the IAM users.        
+
+The credentials used by the CloudShell is the same credentials as the user we logged in to the console with, at the moment we launch the CloudShell.         
+
 
 # Things to do            
 
