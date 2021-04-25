@@ -204,6 +204,31 @@ Audit: IAM Credential Reports and IAM Access Advisor
 
 # EC2 Fundamentals                
 
+## EC2 Basics
+
+One of the most popular AWS service and it is a Infrastructure as a Service (IaaS).            
+
+EC2 = Elastic Compute Cloud             
+
+It is comprised of many things (and capabilities) at a high level:            
+-> You can rent virtual machinese on EC2 (they are called EC2 instances)          
+-> You can store data in on their virual drives (they are called EBS volumes)              
+-> You can distribute load across machines (Elastic Load Balancer, ELB)          
+-> You can scale services using auto-scaling group (ASG)           
+
+Knowing how EC2 works is *fundamental* to understand how Cloud works.      
+
+EC2 sizing & configuration option: what can we choose for our instances (virtual servers) ?     
+
+-> Operating System (OS): Linux or Windows (there is MacOS now)       
+-> How much compute power & cores (CPU)       
+-> How much random-access memory (RAM)            
+-> How much storage space: Network-attached (EBS & EFS) or hardware-attached (EC2 Instance Store)           
+-> The Network card that is attached to the EC2 instance: speed of the card, public IP address        
+-> Firewall rules: **security group**              
+-> Bootstrap script (configure at first launch): Configuration script needs to be run at first launch, this is called EC2 User Data           
+
+The `t2.micro` instance is included in the AWS free-tier. It has 1 vCPU, 1 GiB Mem and EBS storage.      
 
 
 # Things to do            
