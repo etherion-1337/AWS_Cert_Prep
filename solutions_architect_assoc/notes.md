@@ -158,7 +158,52 @@ There is an alternative to install the CLI and configure it, this is called Clou
 
 We can directly run AWS command directly in the CloudShell instead on the local CLI. e.g. `aws --version` to check the version of the AWS CLI installed or `aws iam list-users` to list the IAM users.        
 
-The credentials used by the CloudShell is the same credentials as the user we logged in to the console with, at the moment we launch the CloudShell.         
+The credentials used by the CloudShell is the same credentials as the user we logged in to the console with, at the moment we launch the CloudShell.             
+
+## IAM Roles for AWS Service           
+
+Some AWS services will need to perform actions on our behalf and on our account. We have to assign permissions to AWS services with IAM Roles.    
+
+IAM Roles are just like users, but they are intended to be used *not* by physical people, but instead used by AWS Services.        
+
+<img src="images/iam_role.png" width="400">             
+
+A quick example will be we created an EC2 instance (virtual server), and this EC2 instance would like to perform some action on AWS. To do so we need to give permissions to this EC2 instance. We will create an IAM Roles and together with the EC2 instance (as one entity), they can access AWS.     
+
+Some common roles includes: EC2 Instance Roles, Lambda Function Roles, Roles for CloudFormation.        
+
+## IAM Security Tools    
+
+IAM Credentials Report (account level):      
+We can create this report at the account level. This is a report that lists all your account's users and the status of their various credentials.         
+
+IAM Access Advisor (user level):            
+Access advisor shows the service permissions granted to a user and when those services were last used. We can use this information to revise your policies based on principle of least privilege.           
+
+## IAM Best Practices
+
+Do not use the Root Account except for AWS account setup      
+One physical user = One AWS user       
+**Assign users to groups** and assign permissions to groups (such that we manage permissions at a group level)           
+Create a strong password policy       
+Use and enforce the use of MFA              
+Create and use Roles for giving permissions to AWS services           
+Use Access Keys for Programmatic Access (CLI/SDK)      
+Audit permissions of your account with the IAM Credential Reports (also IAM Access Advisor)    
+Never share IAM users and Access keys        
+
+## IAM Summary
+
+Users: mapped to a physical user, has password for AWS Console         
+Groups: contains users only (it is best to group users together)     
+Policies: JSON document that outlines permissions for users or groups        
+Roles: if we are within AWS, we can use roles to give permissions to AWS services to perform tasks      
+Security: MFA + password policy        
+Access Keys: access AWS using the CLI or SDK        
+Audit: IAM Credential Reports and IAM Access Advisor          
+
+# EC2 Fundamentals                
+
 
 
 # Things to do            
