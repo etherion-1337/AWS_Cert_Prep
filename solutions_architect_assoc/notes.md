@@ -220,7 +220,7 @@ Knowing how EC2 works is *fundamental* to understand how Cloud works.
 
 EC2 sizing & configuration option: what can we choose for our instances (virtual servers) ?     
 
--> Operating System (OS): Linux or Windows (there is MacOS now)       
+-> Operating System (OS): Linux or Windows or Mac        
 -> How much compute power & cores (CPU)       
 -> How much random-access memory (RAM)            
 -> How much storage space: Network-attached (EBS & EFS) or hardware-attached (EC2 Instance Store)           
@@ -228,7 +228,36 @@ EC2 sizing & configuration option: what can we choose for our instances (virtual
 -> Firewall rules: **security group**              
 -> Bootstrap script (configure at first launch): Configuration script needs to be run at first launch, this is called EC2 User Data           
 
-The `t2.micro` instance is included in the AWS free-tier. It has 1 vCPU, 1 GiB Mem and EBS storage.      
+The `t2.micro` instance is included in the AWS free-tier. It has 1 vCPU, 1 GiB Mem and EBS storage.         
+
+**EC2 User Data**            
+It is possible to bootstrap our instances using an EC2 User Data scirpt.              
+*Bootstrapping* means launching commands when a machine starts             
+That script is *only run once* at the instance first start                
+EC2 user data is used to automate boot tasks such as:            
+-> installing updates           
+-> installing software         
+-> downloading common files from the internet           
+The EC2 User Data Script runs with the root user (any command you have will have the pseudo rights)             
+
+## Create an EC2 Instance with EC2 User Data to have a Website (hands-on)
+
+1. Log in AWS Console, search for EC2, go to EC2 Console    
+2. Choose region (e.g. closest to you)
+3. Go to `Instances` on the right panel and `Launch Instance`
+4. Choose Amazon Machine Image (AMI), we can choose from Quick Start and select Amazon Linux 2 AMI (64-bit x86) which is free-tier eligible.  
+5. Choose an Instance Type (e.g. t2.micro for free tier)
+6. Configure Instance Details: Under `User Data` we can run a user data which is only run at the first boot of the instance. (an example script is given, which is going to launch a web server onto our EC2 instance and write a file to it)
+7. Add Storage (check `Delete on Termination`)
+8. Add tags
+9. Configure Security Group: create a new security group and Add Rule (HTTP, port 80)
+10. Review and launch (will be prompted to use a key pair (for SSH)) 
+11. Create a new key-pair (public-private key) and download the key pair
+
+We can then use the public IPv4 address to access the website. To stop the instance, we can right click the instance and `Stop Instance`. To get rid of the instance, choose `Terminate Instance`.       
+
+Note that if we stop an instance and restart it again, the public IPv4 **is going to change**.   
+
 
 
 # Things to do            
