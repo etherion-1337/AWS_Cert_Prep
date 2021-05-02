@@ -256,7 +256,101 @@ The EC2 User Data Script runs with the root user (any command you have will have
 
 We can then use the public IPv4 address to access the website. To stop the instance, we can right click the instance and `Stop Instance`. To get rid of the instance, choose `Terminate Instance`.       
 
-Note that if we stop an instance and restart it again, the public IPv4 **is going to change**. The private IPv4 will not change.  
+Note that if we stop an instance and restart it again, the public IPv4 **is going to change**. The private IPv4 will not change.        
+
+## EC2 Instance Types Basics
+
+AWS has the following naming convention (example):          
+m5.2Xlarge         
+m: **instance class**, in this case a general purpose instance         
+5: **generation** of the instance (AWS improves them over time)         
+2xlarge: **size** within the instance class         
+
+**For exam we need to know this**, for various EC2 Instance Types:              
+1. General Purpose        
+Great for a diversity of workloads such as web servers or code repositories              
+Balance between:        
+-> Compute           
+-> Memory              
+-> Networking                  
+t2.micro is a General Purpose EC2 Instance (free tier)             
+
+2. Compute Optimized        
+Great for compute-intensive tasks that require high performance processors:      
+-> Batch processing workloads       
+-> Media transcoding      
+-> High performance web server              
+-> High performance computing (HPC)            
+-> Scientific modeling and machine learning            
+-> Dedicated gaming servers               
+Currently all the Compute Optimized EC2 Instance start with `c`, e.g. c5 or c6.     
+
+3. Memory Optimized                
+Fast performance for workloads that process large data sets in memory (RAM)       
+Use cases includes:         
+-> High performance, relational/non-relational databases        
+-> Distributed web scale cache stores                
+-> In-memory databases optimzed for BI           
+-> Applications performing real-time processing of big unstructured data                   
+These instances starts with `r`.             
+
+4. Storage Optimized                      
+Great for storage-intensive tasks that require high, sequential read and write access to large data sets on local storage     
+Use cases include:        
+-> High frequency online transaction processing (OLTP) systems    
+-> Relational & NoSQL databases            
+-> Cache for in-memory databases (e.g. Redis)       
+-> Data warehousing applications                 
+-> Distributed file systems           
+These instance starts with `i`, `d` or `h1`.        
+
+## Security Groups & Classic Ports Overview
+
+Security Groups are the fundamental of network security in AWS.             
+They control how traffic is allowed into or out of our EC2 Instances.    
+Security Groups only contains *allow* rules, i.e. what is allowed to go in or go out.    
+Security Groups rules can reference by IP address (i.e. where is your computer) or by Security Groups (i.e. Security Groups can reference each other).                
+
+<img src="images/ec2_sg_simple.png" width="700">              
+
+For example we are on our computer (i.e. public internet) and we would like to access our EC2 Instance. We will have to create a Security Group around our EC2 Instance (that is the firewall around it) and this Security Group is going to have rules that control which inbound traffic is allowed into the EC2 Instance and if the EC2 Instance can perform some Outbound traffic.      
+
+Security Groups are acting as a "firewall" on EC2 Instance. They regulate:          
+1. Access to Ports
+2. Authorised IP ranges: IPv4 and IPv6 (e.g. 0.0.0.0/0 means any IP address is authorised)
+3. Control of inbound network (i.e. from others to the EC2 Instance)
+4. Control of outbound network (i.e. from EC2 Instance to others)
+
+A quick example of Security Group works is shown below:           
+<img src="images/security_firewall.png" width="700">     
+
+For unauthorised inbound traffic, it will be a timeout error. By default for any Security Group, it will allow all outbound traffic out of the EC2 Instance. For example, if our EC2 Instance try to access a website, the Security Group is going to allow it.         
+
+Security Groups good-to-know:            
+-> can be attached to multiple instances          
+-> instances can have multiple security groups              
+-> Locked down to region/VPC combination           
+-> Does live "outside" the EC2 - if traffic is blocked the EC2 instance won't see it (i.e. not like an application that runs on EC2)            
+-> It is good to maintain one sepearate security group for SSH access                  
+-> If your application is not accessible (time out), then it is a security group issue               
+-> If your application gives a "connection refused" error, then it is an application error or it is not launched.           
+-> By default, all inbound traffic is **blocked**           
+-> By default, all outbound traffic is **authorised**                     
+
+Referencing other security groups:                 
+<img src="images/ec2_sg_refer.png" width="700">            
+
+In the inbound rule for the EC2 instance, it is authorising Security Group 1 inbound AND Security Group 2. When another EC2 instance has Security Group 2, it can connect straight through on the port of the first EC2 instance. So regardless of the IP address, because they have the right Security Group attached to them, they are able to communicate straight through to other instances.                 
+
+Classic Port we need to know (**EXAM**):        
+1. 22 = SSH (Secure Shell) - log into a EC2 Instance on Linux
+2. 21 = FTP (File Transport Protocol) - upload files into a file share
+3. 22 = SFTP (Secure File Transport Protocol) - upload files using SSH
+4. 80 = HTTP - access unsecured websites
+5. 443 = HTTPS  - access secured websites
+6. 3389 = RDP (Remote Desktop Protocol) - log into a Windows instance
+
+The Security Groups (i.e. firewall) can be attached to multiple EC2 Instances.     
 
 
 
