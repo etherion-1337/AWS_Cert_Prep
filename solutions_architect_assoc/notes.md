@@ -245,8 +245,8 @@ The EC2 User Data Script runs with the root user (any command you have will have
 1. Log in AWS Console, search for EC2, go to EC2 Console    
 2. Choose region (e.g. closest to you)
 3. Go to `Instances` on the right panel and `Launch Instance`
-4. Choose Amazon Machine Image (AMI), we can choose from Quick Start and select Amazon Linux 2 AMI (64-bit x86) which is free-tier eligible.  
-5. Choose an Instance Type (e.g. t2.micro for free tier)
+4. Choose Amazon Machine Image (AMI), we can choose from Quick Start and select Amazon Linux 2 AMI (64-bit x86) which is free-tier eligible.          
+5. Choose an Instance Type (e.g. t2.micro for free tier), note that we are launching the instances in a default VPC (if we don't change the settings)          
 6. Configure Instance Details: Under `User Data` we can run a user data which is only run at the first boot of the instance. (an example script is given, which is going to launch a web server onto our EC2 instance and write a file to it)
 7. Add Storage (check `Delete on Termination`)
 8. Add tags
@@ -256,7 +256,7 @@ The EC2 User Data Script runs with the root user (any command you have will have
 
 We can then use the public IPv4 address to access the website. To stop the instance, we can right click the instance and `Stop Instance`. To get rid of the instance, choose `Terminate Instance`.       
 
-Note that if we stop an instance and restart it again, the public IPv4 **is going to change**.   
+Note that if we stop an instance and restart it again, the public IPv4 **is going to change**. The private IPv4 will not change.  
 
 
 
