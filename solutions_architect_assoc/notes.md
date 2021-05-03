@@ -350,7 +350,118 @@ Classic Port we need to know (**EXAM**):
 5. 443 = HTTPS  - access secured websites
 6. 3389 = RDP (Remote Desktop Protocol) - log into a Windows instance
 
-The Security Groups (i.e. firewall) can be attached to multiple EC2 Instances.     
+## SSH Overview
+
+<img src="images/ssh_summary.png" width="700">
+
+## SSH with Mac
+
+When creating the EC2 Instance, we have created a key pair and download it (e.g. `ec2tutorial.pem`). We will need this key pair to SSH into this instance.      
+```
+ssh -i ec2tutorial.pem ec2-user@35.180.100.144
+```
+`ec2-user` is basically the Linux user in Amazon Linux machine. `35.180.100.144` is the IPv4 Public IP of the EC2 Instance.      
+
+The above command will **fail**. This is because the first time we download the file, the permission is 0644 for the file. And this is too open for the private key, this means that the private key can leak, and it is accessable by others and it is a bad permission. The remedy is to change the file permission via:      
+```
+chmod 0400 ec2tutorial.pem
+```
+Run the SSH command again and we will be able to SSH into the EC2 instance. Once we are inside we can query the user (`whoami`) or ping a website (`ping google.com`)          
+
+Note that in Windows 10 the `chmod` command does not exist. We will have to go to the property of the `.pem` file. We cab go to the Security tab and disable inherentence then remove all other user except yourself.        
+
+To exit we can just press `exit` or `ctrl + d` to close the connection. (or `ctrl + c` or type `exit`)      
+
+Note that on Windows when we use PuTTY, we need the PuTTygen to convert the key pair, which is in `.pem` to `.ppk` format so that PuTTY can use. Then after launching PuTTY and put in the public IPv4 of the EC2 Instance, we need to go to Connection -> SSH -> Auth to link the `.ppk` file.            
+
+## EC2 Instance Connect
+
+There is another way to connect to an EC2 Instance directly from AWS. We can click Connect in the AWS EC2 dashboard (where the list of EC2 Instance is shown). We can connect via EC2 Instance Connect after use a username. Note that this methods do not work with all type of AMIs in AWS. At the backend, it upload a temporary SSH key on your EC2 Instance for you. This methods ultimately still rely on SSH, so if we remove SSH rules from the Security Groups setting we will meet a timeout error if we use EC2 Instance Connect. So even though this method is based on browser, port 22 still needs to be opened for this method
+
+## EC2 Instance Role Demo
+
+After we connect to our EC2 Instance (via EC2 Connect) with our user, if we perform something like `aws iam list-users`, the CLI will prompt us to configure AWS to get our credentials. We can use `aws configure` to enter AWS Access Key ID and Secret Access Key but it is very bad practice. We can attach a Role to this instance (for example a Role with `IAMReadOnlyAccess` could allow us to run `aws iam list-users` without inputing credential again)                
+
+## EC2 Instance Launch Types
+
+EC2 Instances purchasing options:         
+1. On-Demand Instances: short workload, predictabel pricing     
+Sometimes we will need to use the serve for a long time and we can get some cost saving through:        
+2. Reserved(**minimum 1 year**): 3 types       
+-> Reserved Instances: long workload (e.g. database)       
+-> Convertible Reserved Instances: long workload with flexible instances       
+-> Scheduled Reserved Instances: example, every Thurs 3-6 pm     
+3. Spot Instances: short workloads, cheap, can lose instances (less reliable)      
+4. Dedicated Host: book an entire physical server, control instance placement        
+
+Exam will ask you question and expect us to find the best of EC2 for various situations for cost saving or comply with some rules.    
+
+**EC2 On Demand**:      
+We pay for what we use:       
+-> Linux machine: billing per second, after the first minute         
+-> All other OS: billing per hour when instance is running      
+Has the *highest* cost but no upfront payment      
+No long-term commitment        
+
+Recommended for **short-term** and **un-interrupted workloads**, where you cannot predict how the application will behave.      
+
+**EC2 Reserved Instances**:       
+Up to 75% discount compared to On-Demand.        
+Reservation period: 1 year = + discount | 3 years = +++ discount (ONLY 1 or 3 years, not any time in between)       
+Purchasing options: no upfront | partial upfront = + discount | All upfront = ++ discount        
+Reserve a specific instance type (t2.micro etc)      
+
+Recommended for steady-state usage applications (think database)        
+
+Convertible Reserved Instnace:      
+-> can change the EC2 instance type (e.g. t2.large to c3.large)        
+-> up to 54% discount      
+
+Scheduled Reserved Instances       
+-> launch within specific time window you reserve          
+-> require a fraction of day / week / month      
+-> still commitment over 1 to 3 years      
+
+**EC2 Spot Instances**:       
+Provides the highest discount, can get up to 90% compared to On-Demand      
+Instances that you can lose at any point of time if your max price (you are willing to pay for them) is less than the current spot price (the spot price changes over time)          
+The MOST cost-efficient instances in AWS       
+
+Useful for workloads that are resilient to failure (e.g. won't lose the progress of your work if you lose that instance)       
+
+Recommended: batch jobs, data analysis, image processing, any distributed workloads, workloads with a flexible start and end time.       
+Not suitable for critical jobs or databases.          
+
+**EC2 Dedicated Hosts**:         
+An Amazon EC2 Dedicated Host is a physical server with EC2 instances capacity fully dedicated to your use. Dedicated Hosts can help you address **compliance requirements** and reduce costs by allowing you to **use your existing server-bound software licenses**.       
+
+These hosts are going to be allocated for a 3-year period reservation.      
+More expensive     
+
+Useful for software that have complicated licensing model (BYOL - Bring Your Own License)    
+Or for companies that have strong regulatory or complicance needs.        
+Since AWS shares all their server with everyone, this will ensure no one is using the server except you.      
+
+**EC2 Dedicated Instances**:      
+These are for EC2 Instances running on hardware that is dedicated to you.        
+May share hardware with other instances in the same account.         
+No control over instance placement (hardware control). So this is more like a software-version of Dedicated Host.           
+<img src="images/dedicated_host.png" width="700">      
+
+Which purchasing option is right for me ?       
+On-Demand: coming and staying in resort whenever we like, we pay full price.           
+Reserved: like planning ahead and if we plan to stay for a long time, we may get a good discount.        
+Spot instances: the hotel allows people to bid for the empty rooms and the highest bidder keeps the room. You can get kick out at any time.       
+Dedicated: we book entire building of the resort.        
+
+An example of cost comparison using m4.large instance:    
+<img src="images/m4_large.png" width="700">   
+
+# EC2 - Solution Architect Associate Level             
+
+## Private vs Public vs Elastic IP        
+
+
 
 
 
