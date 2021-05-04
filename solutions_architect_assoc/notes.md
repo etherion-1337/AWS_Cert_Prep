@@ -461,6 +461,57 @@ An example of cost comparison using m4.large instance:
 
 ## Private vs Public vs Elastic IP        
 
+Networking has two sorts of IPs: **IPv4** and **IPv6**.             
+IPv4: 4 numbers seperated by 3 dots, e.g. 1.160.10.240             
+IPv6: 3ff2: 1900:4545:3:200:f8ff:f221:67cf                
+
+IPv4 is still the most common format used online         
+IPv6 is newer and solves problems for the Internet of Things (IoT)                
+
+IPv4 allows for **3.7 billion** different addresses in the public space:             
+[0-255].[0-255].[0-255].[0-255]                  
+
+<img src="images/public_private_ip.png" width="700">              
+
+When you have a public IP, you are accessible over the internet and when you have a private IP, you are only accessible within your private netowrk.             
+
+**Fundamental Differences**:                  
+Public IP:          
+-> Public IP means the machine can be identified on the internet (WWW)             
+-> must be unique across the whole web (not two machines can have the same public IP)           
+-> can be geo-located easily           
+Private IP:             
+-> Private IP means the machine can only be identified on a private network only         
+-> IP must be unique across the private network            
+-> BUT two different private networks (e.g. 2 companies) can have the same IPs        
+-> machines connect to WWW using a NAT + internet gateway (a proxy)         
+-> only a specified of IPs can be used as private IP            
+
+**Elastic IPs**         
+When you stop and then start an EC2 instance, it can change its public IP.                
+If you need to have a fixed public IP for your instance, you need an Elastic IP              
+An Elastic IP is a public IPv4 IP you own as long as you don't delete it                
+You can attach it to one instance at a time                   
+With an Elastic IP address, you can mask the failure of an instance or software by rapidly remapping the address to another instance in your account                    
+
+You can only have 5 Elastic IP in your account (you can ask AWS to increase that)               
+
+Overall, try to avoid using Elastic IP.               
+-> they often reflect poor architectural decision             
+-> instead, use a random public IP and register a DNS name to it                 
+-> or, use a Load Balancer and don't use a public IP              
+
+In EC2:         
+By default, your EC2 machine comes with:         
+-> a private IP for the internal AWS Network         
+-> a public IP, for the WWW          
+
+When we are doing SSH into our EC2 machines:         
+-> we can't use a private IP, because we are not in the same network          
+-> we can only use the public IP (if you don't have a VPN)         
+
+If your machine is stopped and then started, the public IP can change            
+
 
 
 
