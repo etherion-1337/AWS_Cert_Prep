@@ -512,6 +512,22 @@ When we are doing SSH into our EC2 machines:
 
 If your machine is stopped and then started, the public IP can change            
 
+We can find the Elastic IP in the EC2 console (under Network & Security), and we can allocate a new IP address from Amazon's pool of IPv4 addresses. By doing this we can create an IP address we own now, and this can be allocated to a specific EC2 instance. Now if we stop and restart an EC2 instance with an Elastic IP, (the public IPv4 is going to be the same as the Elastic IP associated to this EC2 instance), the Public IPv4 will remain the same.                
+
+## Spot Instances & Spot Fleet    
+
+Can get a discount of up to 90% compared to On-Demand          
+
+Define **max spot price** and get the instance while **current spot price < max**              
+-> the hourly spot price varies based on offer and capacity             
+-> if the current spot price > your max price you can choose to **stop** or **terminate** your instance with a 2 minutes grace period              
+Other strategy: **Spot Block**            
+-> "block" spot instance during a specified time frame (1 to 6 hours) without interruptions                
+-> in rare situations, the instance may be reclaimed             
+
+Used for batch jobs, data analysis, or workloads that are resilient to failures.               
+Not great for critical jobs or databases                
+
 
 
 
