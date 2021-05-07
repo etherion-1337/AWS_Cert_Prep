@@ -528,7 +528,7 @@ Other strategy: **Spot Block**
 Used for batch jobs, data analysis, or workloads that are resilient to failures.               
 Not great for critical jobs or databases                
 
-
+<img src="images/terminate_spot.png" width="700">                          
 
 
 
