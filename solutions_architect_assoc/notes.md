@@ -718,7 +718,209 @@ Specify:
 
 Combined with Reserved Instances and Saving Plans to do cost saving                 
 
-# EC2 Instance Storage
+# EC2 Instance Storage      
+
+## EBS Overview    
+
+## EBS Overview
+
+An EBS (Elastic Block Store) Volume is a *network* drive you can attach to your instances while they run.         
+It allows your instances to persist data, even after their termination: we can re-create the instances and mount the same EBS Volume from before and we will get back our data.              
+They can only be **mounted to one instance at a time** (at the CCP exam level)      
+They are bound to **a specific availability zone** when we create an EBS Volume: you cannot have an EBS Volume created in US-East-1A and attach to an instance in US-East-1B            
+
+Analogy: think of them as a "network USB stick"             
+Free tier: 30GB of free EBS storage of type General Purpose (SSD) or Magnetic per month         
+
+EBS Volume:            
+1. network drive (i.e. not a physical drive)            
+-> it uses the network to communicate the instance, which means there might be a bit of latency from one computer to reach another server                
+-> can be detached from an EC2 Instance and attached to another one quickly    
+2. locked to an Availability Zone (AZ)        
+-> an EBS volume in us-east-1a cannot be attached to us-east-1b             
+-> to move a volume across from different AZ, we need to snapshot it            
+3. Have provisioned capacity (i.e. we have to provision capacity in advance): size in GBs, and IOPS (IO operations per second)           
+
+An EBS example is given below, at CCP level, one EBS can only be attached to one EC2 Instance, but multiple EBS volume can be attached to one EC2 Instance:               
+<img src="images/ebs_eg.png" width="700">              
+
+**Delete on Termination Attribute**         
+When we create EBS volume through EC2 Instances, there is the Delete on Termination attribute.          
+
+<img src="images/ebs_delete_terminate.png" width="700">              
+
+By default, it is ticked for the Root Volume and not the new EBS volume.           
+This controls the EBS behavior when an EC3 instance terminates             
+-> By default, the root EBS volume is deleted (attribute enabled)             
+-> By default, any other attached EBS volume is not deleted (attribute disabled)              
+This can be controlled by the AWS console / AWS CLI              
+
+Use case: preserve root volume when instance is terminated                    
+
+## EBS Hands On
+
+In the EC2 services, when we select the EC2 Instance, we can check the `Root Device` and `Block Devices`, and they both link the to same EBS Volume. When we click on them there will be an EBS ID (we can also access the EBS Volume under Elastic Block Store at the side bar).             
+
+We can also create a stand-alone EBS volume in EC2 service. We will have to select the same Availability Zone as our instance. After creating the EBS Volume, it will appear in the `Elastic Block Store` under `Volumes`. We can then attach this volume to an instance.                 
+
+If we terminate the EC2 Instance, the EBS Volumes which do not have "Delete on Termination" set to True will persist after the instance is terminated. By default, the root EBS Volume was created with termination in mind.      
+
+## EBS Snapshots Overview
+
+We can make a backup (snapshot) of our EBS volume at a point in time. We will be able to backup the state of it and even if the EBS volume is terminated later on, we can restore it from that backup.       
+
+It is *not* necessary to detach volume to do snapshot, but *recommended*, just to make sure everything is clean on the EBS volume.      
+
+We can also copy snapshots across Availability Zones or Region: we can transfer data in a different region to leverage on the global infrastructure of AWS.       
+
+A simple illustration: the snapshot of the EBS volume will exist in your Region and can be used to restore into a EBS volume in another Availability Zone.                         
+<img src="images/ebs_snapshot.png" width="700">           
+
+We can create the snapshot in EC2 service and the snapshots can be seen under `Elatic Block Store` (at the side bar) under `Snapshots`.      
+
+We can copy snapshot into a new snapshot. This new snapshot can be in *ANY* Region that we want.     
+
+We can create an EBS volume from the snapshot, and we can create the volume in a different Availability Zones (but same Region from the original EBS volume)       
+
+## AMI Overview
+
+AMI = Amazon Machine Image           
+
+They represent a customisation of an EC2 Instance       
+-> add our own software, configuration, operating system, monitoring              
+-> Faster boot / configuration time because all our software that we want to install is pre-packaged through AMI              
+
+AMI are built for a **specific region**, and can be copied across Regions. 
+
+We can launch EC2 Instances from:             
+-> A Public AMI: AWS provided            
+-> Your own AMI: you make and maintain them yourself            
+-> An AWS Marketplace AMI: An AMI someone else made (and potentially someone sells them)               
+
+AMI Process (from an EC2 Instance)               
+-> start an EC2 instance and customize it      
+-> stop the instance (for data integrity)        
+-> build an AMI: this will create EBS snapshots behind the scenes              
+-> finally we can launch instances from other AMIs       
+
+Simple illustration on creating AMI and then use it to launch an EC2 instance:              
+<img src="images/custom_ami.png" width="700">                    
+
+To create an AMI from existing EC2 Instance, we right click -> image -> create image.     
+
+After the AMI is created, we can go to Images (at the sidebar) -> AMI, select the AMI and create an EC2 Instance. Go to `Launch Instance` and instead of selecting existing public AMI, we can choose My AMIs. We still needs to select instance type (e.g. t2.micro) but we don't need to input "User Data". This can save a lot of time (e.g. configure and install software on our other EC2 Instances).       
+
+## EC2 Instance Store
+
+EBS volumes are **network drives** with good but "limited" performance         
+**If we need a high-performance hardware disk, use EC2 Instance Store.** EC2 Instance is a virtual machine but it is attached to a real hardware server and some of these servers do have disk space that is attached directly with a physical connection onto the server.      
+
+They have better I/O performance       
+EC2 Instance Store lose their storage if they are stopped (ephemeral) i.e. the EC2 Instance that has an Instance Store are stopped or terminated                
+User case: Good for buffer / cache / scratch data / temporary content but NOT for long-term storage              
+Risk of data loss if hardware fails -> Backups and Replication are our responsibility              
+
+If we see very high performance hardware attached volume for EC2 Instance, think local EC2 Instance Store.
+
+## EBS Volume Types           
+
+EBS Volumes come in 6 types.                
+-> gp2 / gp3 (SSD): General purpose SSD Volume that balances price and performance for a wide variety of workloads           
+-> io1 / io2 (SSD): Highest-performance SSD volume for mission-critical low-latency or high-throughput workloads           
+-> st1 (HDD): Low cost HDD volume designed for frequently accessed, throughput intensive workloads               
+-> sc1 (HDD): Lowest cost HDD volume designed for less frequently accessed workloads                
+
+EBS Volumes are characterized in Size | Throughput | IOPS (I/O Ops Per Sec)              
+
+For EC2 instances, only gp2/3, io1/2 can be used as boot volumes (i.e. where the root OS is going to be running).            
+
+EBS Volume Types Use Cases:                 
+**General Purpose SSD**:                 
+*Cost effective storage, low-latency*         
+System boot volumes, Virtual desktops, Development and test environments                
+1 GiB - 16 TiB           
+gp3:         
+-> newer generation of volumes        
+-> baseline of 3,000 IOPS and throughput of 125 MiB/s         
+-> can increase IOPS up to 16,000 and throughput up to 1000 MiB/s independently            
+gp2:        
+-> small gp2 volumes can burst IOPS to 3,000           
+-> size of the volume and IOPS are linked, max IOPS is 16,000            
+-> 3 IOPS per GB, means at 5334 GB we are at the max IOPS              
+
+**Provisioned IOPS (PIOPS) SSD**:             
+*Critical business applications* with sustained IOPS performance          
+Or applications that need more than 16,000 IOPS        
+Great for **database workloads** (sensitive to storage perf and consistency)               
+io1 /  io2 (4 GiB - 16 TiB)             
+-> max PIOPS: 64,000 for Nitro EC2 instances & 32,000 for other           
+-> can increase PIOPS independently from storage size           
+-> io2 have more durability and more IOPS per GiB (at the same price as io1)            
+
+io2 Block Express (4 GiB - 64 TiB)           
+-> sub-millisecond latency         
+-> max PIOPS: 256,000 with an IOPS: GiB ration of 1,000:1            
+
+*Supports EBS Multi-attach*           
+
+**Hard Disk Drives (HDD)**:             
+Cannot be a boot volume           
+125 MiB to 16 TiB           
+Throughput Optimized HDD (st1)           
+-> Big Data, Data Warehouses, Log Processing           
+-> Max throughput 500 MiB/s - max IOPS 500                 
+Cold HDD (sc1)             
+-> for data that is infrequently accessed          
+-> scenarios where lowest cost is important            
+-> Max throughput 250 MiB/s - max IOPS 250                 
+
+Summary:             
+
+<img src="images/ebs_summary.png" width="900">            
+
+if we need more than 32,000 IOPS, we need EC2 Nitro with io1/2.                 
+
+## EBS Multi-Attach           
+
+For io1 / io2 family           
+
+Attach the same EBS volume to multiple EC2 instances in the same AZ.           
+
+<img src="images/ebs_multi.png" width="400">                  
+
+Each instance has full read & write permissions to the volume              
+
+Use case:          
+-> achieve **higher application availability** in clustered Linux applications (e.g. Teradata)                
+-> applications must manage concurrent write operations             
+
+Must use a file system that's cluster-aware (not XFS, EX4, etc)              
+
+## EBS Encryption           
+
+When you create an encrypted EBS volume, you get the following:         
+-> data at rest is encrypted inside the volume           
+-> all the data in flight moving between the instance and the volume is encrypted          
+-> all snapshots are encrypted         
+-> all volumes created from the snapshot are encrypted             
+
+Encryption and decryption are handled transparently (you have nothing to do)              
+
+Encryption has a minimal impact on latency            
+
+EBS Encryption leverages keys from KMS (AES-256)                 
+
+Copying an unencrypted snapshot allows encryption                   
+
+Snapshots of encrypted volumes are encrypted          
+
+**Encrypt an unencrypted EBS volume**:                
+
+
+
+
+
+
 
 # Things to do            
 
