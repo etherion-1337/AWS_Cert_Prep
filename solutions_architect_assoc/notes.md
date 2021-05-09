@@ -555,10 +555,170 @@ Strategies to allocate Spot Instances (EXAM):
 
 Spot Fleets allow us to automatically request Spot Instances with the lowest price, i.e. Spot Fleet gives us an extra saving based on spot instances because it is smart enough to choose the right spot instance pools to allow us to get the maximum amount of savings.           
 
+## EC2 Placement Groups
+
+Sometimes we want control over the EC2 instance placement strategy (i.e. how the EC2 instances is placed within the AWS infrastructure)                
+
+That strategy can be defined using placement groups              
+
+When we create a placement group, you specify one of the following strategies for the group:          
+-> *Cluster*: clusters instances into a low-latency group (hardware setup) in a single AZ - **high performance, high risk**            
+-> *Spread*: spreads instances across underlying hardware (max 7 instances per group per AZ) - **critial applications**             
+-> *Partition*: spreads instances across many different partitions (which rely on different sets of racks) within an AZ. Scales to 100s of EC2 instances per group (Hadoop, Cassandra, Kafka).                
+
+**Cluster**:           
+
+<img src="images/placement_cluster.png" width="700">                 
+
+For Cluster, it means that all of our EC2 instances are on the same rack (means same hardware, same AZ).            
+Pros: Great network (10 Gbps bandwidth between instances)           
+Cons: if the rack fails, all instances fails at the same time                
+Use cases:           
+-> Big Data job that needs to complete fast            
+-> Application that needs extremely low latency and high network throughput              
+**Willing to take on the risk of failure**                    
+
+**Spread**:              
+
+<img src="images/placement_spread.png" width="700">               
+
+We have 3 AZ and 6 EC2 instances, and each instance is on a different hardware.          
+Pros:           
+-> can span across AZ              
+-> reduce risk in simultaneous failure             
+-> EC2 Instances are on different physical hardware            
+
+Cons:            
+-> limited to 7 instances per AZ per placement group           
+
+Use cases:              
+-> Application that needs to maximize high availability           
+-> Critical applications where each instance must be isolated from failure from each other           
+
+**Partition**:               
+
+<img src="images/placement_partition.png" width="700">             
+
+We can have up to 7 partitions per AZ. And on each partition we can have many EC2 instances.         
+Each partition represent a rack on AWS -> so instances are safe from rack failure affecting one another.              
+Can span across multiple AZs in the same region               
+Up to 100s of EC2 instances.               
+The instances in a partition do not share racks with the instances in the other partitions             
+A partition failure can affect many EC2 instances but won't affect other partitions             
+EC2 instances get access to the partition information as metadata.                
+
+Use cases: HDFS, HBase, Cassandra, Kafka                
+
+We can create new placement group and assign EC2 instances during launching, or directly create the new placement group during the instance launching (after selecting AMIs etc)            
 
 
+## Elastic Network Interfaces (ENI) - Overview             
 
+Logical component in a VPC that represents a **virtual network card**             
+They are used outside of EC2 instances as well.              
 
+<img src="images/eni.png" width="700">             
+
+For example we have 1 EC2 instance in a AZ. There is a primary ENI `Eth0` attached to it.           
+This will provide your EC2 instance network connectivity and (e.g.) Private IP.              
+
+Each ENI can have the following attributes:            
+-> primary private IPv4, one or more secondary IPv4 (here `Eth1` is a secondary ENI, this will give another IPv4)                                
+-> One Elastic IP (IPv4) per private IPv4           
+-> One Public IPv4              
+-> One or more security groups           
+-> a MAC address             
+
+You can create ENI independently and attach them on the fly (move them) on EC2 instances for failover         
+In the example above, we can move `Eth1` so that the private IP is moved to the second EC2 instance.                      
+Bound to a specific AZ.                 
+
+ENI is automatically created during EC2 Launching, we can create ENI manually and attach to them. These manually created ENI is going to stay (under `Network interfaces`) after the EC2 instances are terminated.                
+
+## EC2 Hibernate          
+
+We can stop and terminate instances:             
+-> Stop: the data on disk (EBS) i skept intact in the next start            
+-> Terminate: any EBS volumes (root) also *set-up to be destroyed* is lost               
+
+On start, the following happens:          
+-> First start: the OS boots & the EC2 User Data script is run             
+-> Following start (stop and then restart): the OS boots up, then your application starts, caches get warmed up, and that can take time           
+
+**EC2 Hibernate**       
+The in-memory (RAM) state is preserved          
+The instance boot is much faster (the OS is not stopped/restarted)             
+Under the hood: the RAM state is written to a file in the root EBS volume              
+The root EBS volume must be encrypted           
+
+<img src="images/ec2_hibernate.png" width="700">           
+
+Use cases:           
+-> long-running processing          
+-> saving the RAM state          
+-> services that take time to initialise             
+
+EC2 Hibernate - Good to know           
+
+Supported instance families - C3, C4, C5, M3, M4, M5, R3, R4 and R5          
+Instance RAM size - must be less than 150 GB          
+Instance size - not supported for bare metal instances              
+AMI: Amazon Linux 2, Linux AMI, Ubuntu and Windows            
+RootVolume: must be EBS (so not Instance Store), encrypted and large               
+Available for On-Demand and Reserved Instances                  
+
+An instance cannot be hibernated more than 60 days             
+
+During EC2 launching, we can enable hibernation as an additional stop behavior              
+
+## EC2 - Advanced Concepts (Nito, vCPU, Capacity Reservations)             
+
+1. EC2 Nitro          
+
+Underlying Platform for the next generation of EC2 instances               
+New virtualisation technology             
+Allows for better performances:               
+-> better networking options (enhanced netowrking, HPC, IPv6)               
+-> **High Speed EBS (Nitro is necessary for 64,000 EBS IOPS - max is 32,000 on non-Nitro)**           
+Better underlying security             
+Instance types example:         
+-> Virtualised, A1, C5, C5a, C5ad, D3, D3gen, M5, M5a etc. (anything new will have Nitro in it)            
+-> Bare metal: a1.metal, c5.metal, c6g.metal, etc.             
+
+2. vCPU           
+
+Multiple threads can run on one CPU or Core (multithreading)            
+Each thread is represented as a virtual CPU (vCPU)             
+e.g. launching m5.2xlarge:              
+-> 4 CPU             
+-> 2 threads per CPU (8 threads total)             
+-> so 8 vCPU in total
+
+We can optimise CPU options:           
+EC2 instances come with a combination of RAM and vCPU              
+In some rare cases, you may want to change the vCPU options (e.g. reduce):             
+-> no. of CPU cores: you can decrease it (helpful if you need high RAM and low number of CPU) - decrease licensing costs           
+-> no. of threads per core: disable multithreading to have 1 thread per CPU - helpful for high performance computing (HPC) workloads           
+
+Only specified during the instance launch            
+
+<img src="images/vcpu_1.png" width="700">             
+
+3. Capacity Reservations         
+
+Capacity Reservations ensure you have EC2 Capacity when needed          
+Manual or planned end-date for the reservation         
+No need for 1 or 3-year commitment           
+Capacity access is immediate, you get billed as soon as it starts           
+
+Specify:       
+-> the AZ in which to reserve the capacity (only one), if needed in 3 AZ, we need to do 3 Capacity Reservations              
+-> the number of instances for which to reserve capacity            
+-> the instance attributes, including the instance type, tenancy, and platform/OS             
+
+Combined with Reserved Instances and Saving Plans to do cost saving                 
+
+# EC2 Instance Storage
 
 # Things to do            
 
