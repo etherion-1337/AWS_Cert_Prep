@@ -912,10 +912,36 @@ EBS Encryption leverages keys from KMS (AES-256)
 
 Copying an unencrypted snapshot allows encryption                   
 
-Snapshots of encrypted volumes are encrypted          
+Snapshots of encrypted volumes are encrypted            
 
 **Encrypt an unencrypted EBS volume**:                
+Create an EBS snapshot of the volume           
+Encrypt the EBS snapshot (using copy, or while copying we can choose to encrypt the copied snapshot)                  
+Create new EBS volume from the snapshot (the volume will also be encrypted)              
+Now you can attach the encrypted volume to the original instance          
 
+As a shortcut, we can also take an unencrypted snapshot and while creating a volume out of the snapshot, choose encrypt this volume.          
+
+## EBS RAID configurations           
+
+EBS is already redundant storage (replicated within an AZ)         
+But what if you want to increase IOPS to say 100,000 IOPS ?               
+What if you want to mirror your EBS volumes ?             
+You would mount volumes in parallel in RAID settings                  
+
+RAID is possible as long as your OS supports it            
+Some RAID options are:             
+-> RAID 0                  
+-> RAID 1                     
+-> RAID 5 (not recommended for EBS - see documentation)             
+-> RAID 6 (not recommended for EBS - see documentation)                 
+
+RAID 0 (increase performance)               
+
+
+<img src="images/raid_0.png" width="700">                   
+
+<img src="images/raid_1.png" width="700">                    
 
 
 
