@@ -938,10 +938,75 @@ Some RAID options are:
 
 RAID 0 (increase performance)               
 
+<img src="images/raid_0.png" width="400">                   
 
-<img src="images/raid_0.png" width="700">                   
+Say we have one EC2 instance and this is backed by one logical volume. But this logical volume consist of 2 EBS Volume. It is either going to EBS Volume 1 or EBS Volume 2. When you write data, e.g. writing block A, B, C, D. They gets distributed between the two volumes.          
 
-<img src="images/raid_1.png" width="700">                    
+Combining 2 or more volumes and getting the total disk space and I/O.            
+But one disk fails, all the data is failed             
+We raise performance but increase our risk to have faults.               
+Use cases would be:            
+-> an application that needs a lot of IOPS and doesn't need fault-tolerance               
+-> a database that has replication already built-in             
+
+Using this, we can have a very big disk with a lot of IOPS                 
+
+e.g. two 500 GiB Amazon EBS io1 volumes with 4,000 provisioned IOPS each -> 1,000 GiB RAID 0 array with an available bandwidth of 8,000 IOPS and 1,000 MB/s of throughput                 
+
+RAID 1 (increase fault tolerance)                   
+
+<img src="images/raid_1.png" width="400">                    
+
+We have a similar setup, but this time we are going to write to both at the same time. So anytime we write a block A on Volume 1, it will also go to Volume 2.               
+
+RAID 1 = Mirroring a volume to another              
+
+If one disk fails, our logical volume is still working               
+We have to send the data to two EBS volume at the same time (2 x network)                  
+So we need the EC2 instance to have more network throughput to handle the writes to 2 EBS volumes at a time.                 
+
+Use cases:             
+-> Application that need increase volume fault tolerance              
+-> Application where you need to service disks               
+
+e.g. two 500 GiB Amazon EBS io1 volumes with 4,000 privisioned IOPS each -> 500 GiB RAID 1 array with an available bandwidth of 4,000 IOPS and 500 MB/s of throughput.                      
+
+## EFS Overview
+     
+EFS is a managed NFS (network file system) that can be mounted on **100s of EC2** at a time. Recall that EBS Volume attached to only 1 EC2 Instance at a time. So EFS makes it a shared network file system.            
+
+EFS works only with **Linux EC2 instances** and **works across multiple Availability Zones**. i.e. EFS can be attached to instances in different AZ.        
+
+Highly available, scalable, expensive (3x gp2 EBS Volume), pay per use, no capacity planning            
+
+<img src="images/efs.png" width="700">           
+
+Use case: content management, web serving, data sharing, Wordpress           
+Uses NFSv4.1 protocol                       
+Uses security group to control access to EFS           
+**Compatible with Linux based AMI (no Windows)**               
+Encryption at rest using KMS               
+POSIX file system (~Linux) that has a standard file API              
+File system scales automatically, pay-per-use, no capacity planning              
+
+EFS Scale:            
+1000s of concurrent NFS clients, 10GB+/s throughput         
+Grow to Petabyte-scale network file system, automatically            
+
+Performance mode (set at EFS creation time)                
+-> General purpse (default): latency-sensitive use cases (web server, CMS, Wordpress etc...), there is going to be alot of small files and you can access them very quickly. So EFS is built for that.                              
+-> Max I/O - higher latency, throughout, highly parallel (big data, media processing)                
+
+Throughput mode             
+-> Bursting (1 TB = 50MiB/s + burst of up to 100 MiB/s)               
+-> Provisioned: set your throughput regarless of storage size, e.g. 1 GiB.s for 1 TB storage (throughput usually grows with the file system's size) **small size file system but we want high throughput**                    
+
+Storage Tiers (lifecycle management feature - move file after N days)                    
+-> Standard: for frequently accessed files              
+-> Infrequent access (EFS-IA): cost to retrieve files, lower price to store                 
+
+
+
 
 
 
