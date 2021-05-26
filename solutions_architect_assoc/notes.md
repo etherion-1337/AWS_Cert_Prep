@@ -1005,13 +1005,125 @@ Storage Tiers (lifecycle management feature - move file after N days)
 -> Standard: for frequently accessed files              
 -> Infrequent access (EFS-IA): cost to retrieve files, lower price to store                 
 
+**EFS Hands On**             
 
+1. File system settings          
+-> Name (optional)              
+-> Automatic backup             
+-> Lifecycle management (e.g. files not accessed after N days move to EFS Infrequent Access storage class)                 
+-> Performance mode (General Purpose vs Max I/O)                 
+-> Throughput mode (Bursting vs Provisioned (fixed throughput regardless file system size))                     
+-> Encryption           
 
+2. Network access              
+-> VPC (choose VPC where you want EC2 instances to connect to your file system)                 
+-> Mount targets (a mount target provides NFSv4 endpoint at which you can mount an EFS file system, recommend one mount target per AZ), and for each AZ we can define a security group (create the security group from EC2 console)                              
 
+3. File system policy (optional)                     
+4. Review and Create                 
 
+After the EFS is created, we can create a few EC2 instance (in different AZ) to try to connect to the EFS. When we create the EC2 instance we can choose to add directly under "File systems". When configuring Security Group we can name a SG (allows SSH) so we can track and use this SG.                
 
+We can SSH into each of these instance. Next we need to install EFS into the EC2 instances. From the EFS console, we can choose "Attach", and we can choose to mount the EFS via DNS or IP. There is a EFS mount helper, and in order to use this help we need to (go to the documentation) install a small package called `amazon-efs-utils`. So in the EC2 instance (after SSH in), key in:             
+```
+sudo yum install -y amazon-efs-utils
+```
+In order to use the helper we also need a directory for EFS, so in the EC2 console we can do:                   
+```
+mkdir efs
+```
+and then use the helper:                  
+```
+sudo mount -t efs -o tls fs-5dafeeac:/ efs
+```
+"tls" means there will be in flights encryption, and "fs-5dafeeac" is the ID for the EFS.                  
 
+If you do these steps there will be a timeout, this is due to the Security Group of the EFS. We can add the inbound rules of the EFS's SG, the type is "NFS", and the source is the SG of the EC2 instances.          
 
+Once the EFS is setup, then the 2 EC2 instances can access the files within the EFS simultaneously.             
+
+## EBS vs EFS                   
+
+**EBS** (Elastic Block Storage) Volumes:        
+
+In general:              
+-> can be attached to only one instance at a time              
+-> are locked at the AZ level            
+-> gp2: IO increases if the disk size increases                   
+-> io1: can increase IO independently (great for running critical database)                  
+
+To migrate an EBS volume across AZ              
+-> take a snapshot           
+-> restore the snapshot to another AZ            
+-> EBS backups use IO and you should not run them while your application is handling a lot of traffic               
+
+Root EBS volumes of instances get terminated by default if the EC2 instance gets terminated (you can disable that)                
+
+<img src="images/ebs_1.png" width="500">                 
+
+**EFS** Elastic File System:             
+
+In general:                 
+-> mounting 100s of instances across AZ            
+-> EFS share websites files (WordPress)                    
+-> Only for Linux Instances (POSIX)               
+-> EFS has a higher price point than EBS (about 3x more expensive)            
+-> Can leverage EFS-IA for cost savings               
+
+For EFS we get billed only for what we use on EFS, for EBS we have to provision in advance a size that you know for EBS drive and we pay for the provision capacity and not the actual use capacity.             
+   
+<img src="images/efs_1.png" width="500">                  
+
+# High Availability and Scalability: ELB & ASG
+
+## High Availability and Scalability
+
+**Scalability** means that an application / system can handle greater loads by adapting.        
+There are two kinds of scalability in the Cloud:  
+1. Vertical Scalability
+2. Horizontal Scalability (= elasticity)         
+
+Scalability is linked but different to High Availability.       
+
+**Vertical Scalability**       
+Vertical Scalability means increasing the size of the instance.          
+For example, your application runs on t2.micro. Scaling that application *vertically* means running it on a t2.large, i.e. we change the size of our instance.         
+Vertical scalability is very common for non-distributed system, such as a database. If we want to increase the performance of our database, we just increase the size of our database.           
+There is usually a limit to how much you can vertically scale (hardware limit, even though the modern limits can be very very high)        
+
+**Horizontal Scalability**            
+Horizontal Scalability means increasing the number of instances / systems for your applications.         
+Horizontal Scaling implies that we need to have a distributed system.      
+This is very common for web applications / modern applications (usually design them with horizontal scalability in mind).       
+It is easy to horizontally scale thanks to cloud offeringss such as AWS EC2.         
+
+**High Availability**        
+High Availability usually goes hand in hand with horizontal scaling           
+High Availability means running your application / system in at least 2 Availability Zones on AWS        
+The goal of high availability is to survive a data center loss (disaster)           
+
+High availablilty can be passive (for RDS Multi AZ for example)               
+High availability can be active (for horizontal scaling)                
+
+High Availability & Scalability for EC2:         
+Vertical Scaling: increase instance size (= scale up / down)          
+-> from: t2.nano - 0.5GB of RAM, 1 vCPU        
+-> to: u-12tb1.metal - 12.3 TB of RAM, 448 vCPUs          
+
+Horizontal Scaling: Increase number of instances (= scale out / in)        
+-> Auto Scaling Group       
+-> Load Balancer        
+
+High Availability: Run instances for the same application across multi AZ           
+-> Auto Scaling Group multi AZ         
+-> Load Balancer multi AZ            
+
+Scalability vs Elasticity vs Agility (Exam !)       
+Scalability: ability to accomodate a larger load by making the hardware stronger (scale up), or by adding nodes (scale out)        
+
+Elasticity: (more cloud native) once a system is scalable, elasticity means that there will be some "auto-scaling" so that the system can scale based on the load. This is "cloud-friendly": pay-per-use, match demand, optimize costs            
+
+Agility: (not related to scalability - distractor) new IT resources are only a click away, which means that you reduce the time to make those resources available to your developers from weeks to just minites.      
 
 # Things to do            
 
