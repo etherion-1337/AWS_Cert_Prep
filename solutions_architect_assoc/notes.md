@@ -1125,5 +1125,7 @@ Elasticity: (more cloud native) once a system is scalable, elasticity means that
 
 Agility: (not related to scalability - distractor) new IT resources are only a click away, which means that you reduce the time to make those resources available to your developers from weeks to just minites.      
 
+tbc 
+
 # Things to do            
 
