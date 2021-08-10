@@ -105,9 +105,13 @@ For users, we can add tags, where we can mark the users and add in some attribut
 
 After log in we can notice that if the user accout is something like `stephane@stephane-ccp`, this means that this account is logged in as IAM user. The part after `@` is the account alias (e.g. can be `stephane-aws` for the account `stephane-ccp`, or the account name itself). If the user account is just `stephane-ccp` then this is logged in with root user (`stephane-ccp` is the account name).      
 
-To grant permissions to User, we can either add the user into a group (which has the group policy, so this user will inhereit this group policy) or assign a policy directly to the user. We can also create our own custom policy either use the GUI or write in JSON.          
+To grant permissions to User, we can either add the user into a group (which has the group policy, so this user will inhereit this group policy) or assign a policy directly to the user (this is called a inline policy). We can also create our own custom policy either use the GUI or write in JSON.          
 
-By clicing on the policy, we can also view what are the services that we have (full) access to.                 
+IAM Policies Structure:                  
+<img src="images/iam_policy_structure.png" width="700">
+
+
+By clicking on the policy, we can also view what are the services that we have (full) access to.                 
 
 ## IAM MFA Overview
 
@@ -115,11 +119,11 @@ To protect the AWS account, we have 2 defense mechanisms:
 
 1) IAM Password Policy (helpful against brute force attack)         
 
-1. Set minimum password length      
-2. Requires specific character types: upper/lower case letters, numbers or non-alphanumeric characters.       
-3. Allow all IAM users to change their own passwords       
-4. Require users to change their password after some time                   
-5. Prevent password reuse                 
+-> Set minimum password length      
+-> Requires specific character types: upper/lower case letters, numbers or non-alphanumeric characters.       
+-> Allow all IAM users to change their own passwords       
+-> Require users to change their password after some time                   
+-> Prevent password reuse                 
 
 2) Multi Factor Authentication - MFA        
 
@@ -134,9 +138,9 @@ Authy: multi-device, and supports multiple tokens on a single device.
 2) Universal 2nd Factor (U2F) Security Key:      
 YubiKey by Yubico (3rd party): support for multiple root and IAM users using a single security key, act as an USB-based key                
 
-3.1) Hardware Key Fob MFA Device:    
+3) Hardware Key Fob MFA Device:    
 Gemalto (3rd party)      
-3.2) Hardware Key Fob MFA Device for AWS GovCloud (US):           
+4) Hardware Key Fob MFA Device for AWS GovCloud (US):           
 SurePassID (3rd party)             
 
 ## AWS CLI             
@@ -151,6 +155,13 @@ Access key have 2 components:
 Access Key ID (username) and Secret Access Key (password).   
 
 We have to install (OS specific) client and configure the CLI with the Access Key ID and the Secret Access Key in order to use command line to access AWS.         
+
+AWS SDK:                 
+-> AWS Software Development Kit (AWS SDK0)                      
+-> Language-specific APIs (set of libraries)                   
+-> Enables you to access and manage AWS services programmatically                
+-> Embedded within your application (not launched from the terminal)               
+-> e.g. AWS CLI is built on AWS SDK for Python                   
 
 ## AWS CloudShell
 
