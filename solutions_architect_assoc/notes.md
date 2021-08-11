@@ -160,7 +160,7 @@ AWS Software Development Kit (SDK):
 -> Language-specific APIs (set of libraries)             
 -> Enables you to access and manage AWS services programmatically             
 -> Embedded within your application (not launced from terminal)            
-
+-> e.g. AWS CLI is built-on AWS SDK for Python
 
 ## AWS CloudShell
 
