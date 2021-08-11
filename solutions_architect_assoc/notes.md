@@ -105,9 +105,12 @@ For users, we can add tags, where we can mark the users and add in some attribut
 
 After log in we can notice that if the user accout is something like `stephane@stephane-ccp`, this means that this account is logged in as IAM user. The part after `@` is the account alias (e.g. can be `stephane-aws` for the account `stephane-ccp`, or the account name itself). If the user account is just `stephane-ccp` then this is logged in with root user (`stephane-ccp` is the account name).      
 
-To grant permissions to User, we can either add the user into a group (which has the group policy, so this user will inhereit this group policy) or assign a policy directly to the user. We can also create our own custom policy either use the GUI or write in JSON.          
+To grant permissions to User, we can either add the user into a group (which has the group policy, so this user will inhereit this group policy) or assign a policy directly to the user (in some cases, this is also called an inline policy). We can also create our own custom policy either use the GUI or write in JSON.          
 
-By clicing on the policy, we can also view what are the services that we have (full) access to.                 
+By clicing on the policy, we can also view what are the services that we have (full) access to.              
+
+<img src="images/iam_policy_structure.png" width="700">                
+
 
 ## IAM MFA Overview
 
