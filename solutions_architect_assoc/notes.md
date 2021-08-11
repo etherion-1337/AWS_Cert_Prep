@@ -152,9 +152,15 @@ How can users access AWS ? There are 3 options:
 
 Access keys are generated through the AWS Console. Users manage their own access keys and these keys are **private**.    
 Access key have 2 components:            
-Access Key ID (username) and Secret Access Key (password).   
+Access Key ID (username) and Secret Access Key (password).         
 
 We have to install (OS specific) client and configure the CLI with the Access Key ID and the Secret Access Key in order to use command line to access AWS.         
+
+AWS Software Development Kit (SDK):              
+-> Language-specific APIs (set of libraries)             
+-> Enables you to access and manage AWS services programmatically             
+-> Embedded within your application (not launced from terminal)            
+
 
 ## AWS CloudShell
 
