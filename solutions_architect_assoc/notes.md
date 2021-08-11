@@ -115,11 +115,11 @@ To protect the AWS account, we have 2 defense mechanisms:
 
 1) IAM Password Policy (helpful against brute force attack)         
 
-1. Set minimum password length      
-2. Requires specific character types: upper/lower case letters, numbers or non-alphanumeric characters.       
-3. Allow all IAM users to change their own passwords       
-4. Require users to change their password after some time                   
-5. Prevent password reuse                 
+-> Set minimum password length      
+-> Requires specific character types: upper/lower case letters, numbers or non-alphanumeric characters.       
+-> Allow all IAM users to change their own passwords       
+-> Require users to change their password after some time                   
+-> Prevent password reuse                 
 
 2) Multi Factor Authentication - MFA        
 
