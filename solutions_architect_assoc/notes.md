@@ -134,9 +134,10 @@ Authy: multi-device, and supports multiple tokens on a single device.
 2) Universal 2nd Factor (U2F) Security Key:      
 YubiKey by Yubico (3rd party): support for multiple root and IAM users using a single security key, act as an USB-based key                
 
-3.1) Hardware Key Fob MFA Device:    
-Gemalto (3rd party)      
-3.2) Hardware Key Fob MFA Device for AWS GovCloud (US):           
+3) Hardware Key Fob MFA Device:    
+Gemalto (3rd party)       
+
+4) Hardware Key Fob MFA Device for AWS GovCloud (US):           
 SurePassID (3rd party)             
 
 ## AWS CLI             
