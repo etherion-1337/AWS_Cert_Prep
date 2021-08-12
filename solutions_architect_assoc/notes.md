@@ -172,9 +172,9 @@ The credentials used by the CloudShell is the same credentials as the user we lo
 
 ## IAM Roles for AWS Service           
 
-Some AWS services will need to perform actions on our behalf and on our account. We have to assign permissions to AWS services with IAM Roles.    
+Some AWS services will need to perform actions on our behalf and on our account. We have to assign permissions to AWS services with IAM Roles.           
 
-IAM Roles are just like users, but they are intended to be used *not* by physical people, but instead used by AWS Services.        
+IAM Roles are just like users, but they are intended to be used *not* by physical people, but instead used by AWS Services.           
 
 <img src="images/iam_role.png" width="400">             
 
