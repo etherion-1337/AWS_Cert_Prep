@@ -274,7 +274,7 @@ AWS has the following naming convention (example):
 m5.2Xlarge         
 m: **instance class**, in this case a general purpose instance         
 5: **generation** of the instance (AWS improves them over time)         
-2xlarge: **size** within the instance class         
+2xlarge: **size** within the instance class (more memory, more CPU etc)         
 
 **For exam we need to know this**, for various EC2 Instance Types:              
 1. General Purpose        
