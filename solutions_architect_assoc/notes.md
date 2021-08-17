@@ -625,7 +625,8 @@ We can create new placement group and assign EC2 instances during launching, or 
 ## Elastic Network Interfaces (ENI) - Overview             
 
 Logical component in a VPC that represents a **virtual network card**             
-They are used outside of EC2 instances as well.              
+They are what gives EC2 instances access to the network.                   
+They are used outside of EC2 instances as well.                
 
 <img src="images/eni.png" width="700">             
 
@@ -649,7 +650,7 @@ ENI is automatically created during EC2 Launching, we can create ENI manually an
 
 We can stop and terminate instances:             
 -> Stop: the data on disk (EBS) i skept intact in the next start            
--> Terminate: any EBS volumes (root) also *set-up to be destroyed* is lost               
+-> Terminate: any EBS volumes (root) also *set-up to be destroyed* is lost (if an EBS volume that is attached as a secondary drive and it is not meant to be destroyed on termination, we will keep the data on that EBS volume.)               
 
 On start, the following happens:          
 -> First start: the OS boots & the EC2 User Data script is run             
@@ -729,8 +730,6 @@ Specify:
 Combined with Reserved Instances and Saving Plans to do cost saving                 
 
 # EC2 Instance Storage      
-
-## EBS Overview    
 
 ## EBS Overview
 
