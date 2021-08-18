@@ -748,7 +748,9 @@ EBS Volume:
 2. locked to an Availability Zone (AZ)        
 -> an EBS volume in us-east-1a cannot be attached to us-east-1b             
 -> to move a volume across from different AZ, we need to snapshot it            
-3. Have provisioned capacity (i.e. we have to provision capacity in advance): size in GBs, and IOPS (IO operations per second)           
+3. Have provisioned capacity (i.e. we have to provision capacity in advance): size in GBs, and IOPS (IO operations per second)             
+-> you get billed for all the provisioned capacity                
+-> you can increase the capacity of the drive over time              
 
 An EBS example is given below, at CCP level, one EBS can only be attached to one EC2 Instance, but multiple EBS volume can be attached to one EC2 Instance:               
 <img src="images/ebs_eg.png" width="700">              
