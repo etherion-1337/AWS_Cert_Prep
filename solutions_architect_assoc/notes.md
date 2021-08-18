@@ -893,7 +893,7 @@ if we need more than 32,000 IOPS, we need EC2 Nitro with io1/2.
 
 ## EBS Multi-Attach           
 
-For io1 / io2 family           
+**For io1 / io2 family**           
 
 Attach the same EBS volume to multiple EC2 instances in the same AZ.           
 
