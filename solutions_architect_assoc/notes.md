@@ -870,7 +870,7 @@ io1 /  io2 (4 GiB - 16 TiB)
 
 io2 Block Express (4 GiB - 64 TiB)           
 -> sub-millisecond latency         
--> max PIOPS: 256,000 with an IOPS: GiB ration of 1,000:1            
+-> max PIOPS: 256,000 with an IOPS: GiB ratio of 1,000:1            
 
 *Supports EBS Multi-attach*           
 
