@@ -1136,7 +1136,74 @@ Elasticity: (more cloud native) once a system is scalable, elasticity means that
 
 Agility: (not related to scalability - distractor) new IT resources are only a click away, which means that you reduce the time to make those resources available to your developers from weeks to just minites.      
 
-tbc 
+## Elastic Load Balancing (ELB) Overview
+
+The first service on AWS that allows us to be more elastic and this is the Elastic Load Balancing.      
+
+Load Balancer is a server that will forward the internet traffic down to multiple servers (EC2 Instances) downstream. They are also called the backend EC2 Instances.         
+
+The Load Balancer will be publicly exposing for our users. There are multiple EC2 Instances behind that Load Balancer. User 1 will be talking to the Load Balancer and will be directed to one of these EC2 Instances. The EC2 Instances will reply back with something and the User 1 will get some response. This is same for User 2 and User 3.             
+
+<img src="images/load_balancer.png" width="700">           
+
+Why use a load balancer ?         
+-> Spread load across multiple downstream instances          
+-> Expose a single point of access (DNS) to your application      
+-> Seamlessly handle failures of downstream instances        
+-> Do regular health checks to your instances (if one of the instance is failing , the load balancer will not direct traffic to that instance, i.e. hide the failure of the EC2 Instances with the load balancer)        
+-> Provide SSL termination (HTTPS) for your websites         
+-> Enforce stickness with cookies             
+-> High availability across zones (making our applications highly available)          
+-> Separate public traffic from private traffic            
+
+Why use an Elastic Load Balancer ?            
+An ELB (Elastic Load Balancer, EC2 Load Balancer) is a *managed load balancer*.           
+-> So we don't need to be provisioning servers               
+-> AWS guarantees that it will be working        
+-> AWS takes care of upgrades, maintenance, high availability              
+-> AWS provides only a few configuration knobs (for the behavior of the load balancer)           
+It costs less to setup your own load balancer but it will be a lot more effort on your end (maintenance, integrations)          
+
+Health Check                   
+-> Health Checks are crucial for Load Balancers               
+-> They enable the load balancer to know if instances it forwards traffic to are available to reply to requests                   
+-> The health check is done by the load balancer, on a port and a route (/health is common)            
+-> If the response is not 200 (OK), then the instance is unhealthy (if not unhealthy, LB will stop sending traffic)                      
+-> can happen every 5 sec (can be configured)                   
+
+<img src="images/lb_health.png" width="500">                   
+
+AWS has 4 kinds of managed load balancers:             
+1. Classic Load Balancer (v1 - old generation) - 2009 - Layer 4 & 7             
+-> HTTP, HTTPS, TCP                   
+2. Application Load Balancer (v2 - new generation) - 2016 - Layer 7              
+-> HTTP, HTTPS, WebSocket               
+3. Network Load Balancer (v2 - new generation) - 2017 - Layer 4           
+-> TCP, TLS (secure TCP), UDP             
+4. Gateway Load Balancer (New, added in Nov 10th 2020)
+
+Overall, it is recommended to use the newer (v2) generation load balancer as they provide more features.              
+
+You can setup internal (private) or external (public) ELBs             
+
+Load Balancer Security Groups               
+
+The Load Balancer can accept traffic from anywhere, but the EC2 instance only accept traffic from the Load Balancer. The Source of the Application Security Group is actually a Security Group itself and it represents the Load Balancer's Security Group ID. i.e. the Load Balancer has a Security Group and the EC2's Security Group will reference to the Load Balancer's Security Group.                  
+
+<img src="images/lb_sg.png" width="700">
+
+Load Balancer Good to Know            
+-> LBs can scale out but not instantaneously - contact AWS for a "warm-up" if we have massive load balancing                
+-> Troubleshooting :                   
+--> 4xx errors are client induced errors            
+--> 5xxx errors are application induced errors          
+--> Load Balancer Errors 503 means at capacity or no registered target             
+--> If the LB can't connect to your application, check your security groups                  
+-> Monitoring :             
+--> ELB access logs will log all access requests (so you can debug per request)              
+--> CloudWatch Metrics will give you aggregate statistics (ex: connections count)            
+
+
 
 # Things to do            
 
