@@ -1213,6 +1213,51 @@ Fixed hostname
 
 <img src="images/clb.png" width="500">            
 
+## Application Load Balancer (ALB)                
 
-# Things to do            
+Application Load Balancer (v2)                    
+Supports HTTP (Layer 7)               
+
+Load balancing to multiple HTTP applications across machines (target groups)                
+Load balancing to multiple applications on the same machine (ex: containers)                     
+
+Support for HTTP/2 and WebSocket           
+Support redirects (from HTTP to HTTPS for example)                 
+
+Supports routing to different target groups:               
+-> routing based on path in URL (example.com/**users** & example.com/**posts**)                 
+-> Routing based on hostname in URL (one.example.com & other.example.com)                  
+-> Routing based on Query String, Headers (example.com/users?**id=123&order=false**)               
+
+ALB are a great fit for micro services & container-based application (example: Docker & Amazon ECS)              
+Has a port mapping feature to redirect to a dynamic port in ECS                    
+
+In comparison, we would need multiple Classic Load Balancer per application                
+
+We have our external ALB which is public facing and we have two target groups. The first target group made of EC2 instances which is targeted for the users. And this one is going to be routing for the route `/user`. We have a second target group made of EC2 instances again and this is going to be the search application. This is going to be routed for the `/search` route. We have two independent micro services that do different things.              
+
+<img src="images/alb_two.png" width="700">                 
+
+Target Groups              
+-> They can be EC2 instances (can be managed by an Auto Scaling Group) - HTTP            
+-> ECS task (managed by ECS itself) - HTTP          
+-> Lambda functions - HTTP request is translated into a JSON event            
+-> A front to IP address - must be private IPs              
+
+ALB can route to multiple target groups           
+Health checks are at the target group level        
+
+In this example, we have an ALB and two target groups. The first one is based on AWS with EC2 instances. The second one is going to have private servers on premise. We can send the first group all the mobile-based traffic and second group all the desktop-based traffic. If in the URL that the clients are trying to use there is a `?Platform=Mobile` we can write a rule in the ALB redirection rules to redirect to the first target groups. If we have `?Platform=Desktop` then we can redirect to the second target group.                  
+<img src="images/alb_string.png" width="700">              
+
+Good to know:              
+-> Fixed hostname (`XXX.region.elb.amazonaws.com`)               
+-> The applicaiton servers do not see the IP of the clients direcly.                 
+--> The true IP of the client is inserted in the header **X-Forwarded-For**            
+--> We can also get Port (X-Forwarded-Port) and proto (X-Forwarded-Proto)            
+
+The client's IP is directly talking to ALB (which performs something called Connection Termination). When the load balancer talks to our EC2 instance, it is going to use the load balancer IP, which is a private IP into your EC2 instance. And so for the EC2 instance to know the client IP, it will have to look at these extra headers in our HTTP request, which are called **X-Forwarded-Port** and **Proto**.           
+<img src="images/alb_private.png" width="700">   
+
+## Things to do            
 
