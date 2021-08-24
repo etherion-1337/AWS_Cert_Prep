@@ -1216,7 +1216,7 @@ Fixed hostname
 ## Application Load Balancer (ALB)                
 
 Application Load Balancer (v2)                    
-Supports HTTP (Layer 7)               
+Supports HTTP/HTTPS (Layer 7)               
 
 Load balancing to multiple HTTP applications across machines (target groups)                
 Load balancing to multiple applications on the same machine (ex: containers)                     
@@ -1257,7 +1257,53 @@ Good to know:
 --> We can also get Port (X-Forwarded-Port) and proto (X-Forwarded-Proto)            
 
 The client's IP is directly talking to ALB (which performs something called Connection Termination). When the load balancer talks to our EC2 instance, it is going to use the load balancer IP, which is a private IP into your EC2 instance. And so for the EC2 instance to know the client IP, it will have to look at these extra headers in our HTTP request, which are called **X-Forwarded-Port** and **Proto**.           
-<img src="images/alb_private.png" width="700">   
+<img src="images/alb_private.png" width="700">           
+
+## Network Load Balancer (NLB)              
+
+Network Load Balancer (v2)                   
+NLB (Layer 4) allow to:            
+-> forward TCP & UDP traffic to your instances            
+-> handle millions of request per seconds         
+-> less latency ~100 ms (vs 400 ms for ALB)         
+
+NLB has one **static IP per AZ**, and supports assigning Elastic IP (helpful for whitelisting specific IP)                  
+i.e. we can use NLB when you want to have two entry points that are dedicated specific IP for your application.                   
+ALB and CLB has a **static host name**               
+
+NLB are used for extreme performance, TCP or UDP traffic               
+
+Not included in the AWS free tier             
+
+The target group can be EC2 instances, but now your TCP based traffic will reach your target groups and so it could be from the external and we can also have some rules around on how to redirect to our target groups.                          
+
+<img src="images/nlb.png" width="700">      
+
+## Elastic Load Balancer - Sticky Sessions                 
+
+Sticky Sessions (Session Affinity)             
+
+It is possible to implement stickness so that the same client is always redirected to the same instance behind a load balancer.        
+
+<img src="images/elb_sticky.png" width="400">        
+
+If we have 3 clients, Client 1 makes a request and it goes through the first EC2 instance, when it does a second request to the load balancer, it will go to the same instance. This is different in the usual behavior where the balancer will do a spread of all the requests across all the EC2 instances.         
+
+This behavior can be acitvated for the CLB and ALB.             
+
+The "cookie" used for stickness has an expiration date you control. When the cookie expires, the client maybe redirected to another EC2 instance.               
+
+Use case: make sure the user doesn't lose his session data              
+
+Enabling stickness may bring imbalance to the load over the backend EC2 instances.               
+
+Sticky Sessions - Cookie Names         
+There are 2 types of cookies we can have for Sticky Sessions.                      
+-> Application-based cookies                    
+
+-> Duration-based cookies             
+
+
 
 ## Things to do            
 
