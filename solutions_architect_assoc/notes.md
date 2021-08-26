@@ -1475,9 +1475,7 @@ ASG Brain Dump:
 4. IAM roles attached to an ASG will get assigned to EC2 instances              
 5. ASG are free. You pay for the underlying resources being launched             
 6. Having instances under an ASG means that if they get terminated for whatever reason, the ASG will automatically **create new ones as a replacement**                  
-7. ASG can terminate instances marked as unhealthy by an LB (through LB health check, and hence replace them)            
-
-
+7. ASG can terminate instances marked as unhealthy by an LB (through LB health check, and hence replace them)        
 
 ## Auto Scaling Groups (ASG) Hands On     
 
