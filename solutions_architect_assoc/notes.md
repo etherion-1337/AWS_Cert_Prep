@@ -1483,7 +1483,77 @@ We can setup the EC2 configuarations in ASG directly when creating launch templa
 
 Deleting ASG will automatically delete EC2 Instances that is managed by it. (Deleting EC2 Instances directly will cause ASG to replace these instances according to the desired instances specified.)       
 
+## Auto Scaling Groups - Dynamic Scaling Policies
 
+Within the dynamic scaling policies we have 3 kinds:              
+
+1. Target Tracking Scaling               
+-> most simple and easy to setup            
+-> e.g. I want to track the average ASG CPU to stay at around 40%.         
+2. Simple / Step Scaling         
+-> when a CloudWatch alarm is triggered (e.g. CPU > 70%) then add 2 units          
+-> when a CloudWatch alarm is triggered (e.g. CPU > 30%) then remove 1             
+3. Scheduled Actions         
+-> Anticipate a scaling based on known usage patterns            
+-> e.g. increase the min capacity to 10 at 5pm on Fridays           
+
+ASG: Predictive Scaling:            
+-> continuously forecast load and schedule scaling ahead          
+-> machine learning powered           
+
+<img src="images/asg_pred.png" width="500">                
+
+Good metrics to scale on             
+-> CPUUtilization: average CPU utlilization across your instances         
+-> RequestCountPerTarget: to make sure the number of requests per EC2 instance is stable           
+-> Average Network In / Out (if your application is network bound)         
+-> Any custom metric (that you push using CloudWatch)               
+
+ASG: Scaling Cooldowns:           
+-> After a scaling activity happens, you are in the **cooldown period (default 300 seconds)**.            
+-> During the CD period, the ASG will not launch or terminate additional instances (to allow for netrics to stabilize)            
+-> Advice: use a ready-to-use AMI to reduce configuration time in order to be serving request faster and reduce the CD period.
+
+## Auto Scaling Groups - For Solution Architects            
+
+There is a rule regarding how your instances are being terminated.                
+ASG Default Termination Policy:            
+1. Find the AZ which has the most number of instance          
+2. If there are multiple instances in the AZ to choose from, delete the one witht he oldest launch configuration             
+
+**ASG tries to balance the number of instances across AZ by default**                
+
+<img src="images/asg_sa_1.png" width="500">         
+In the above example, the v1 in AZ A will be terminated.           
+
+Lifecycle Hooks:         
+-> By default as soon as an instance is launched in an ASG it is in service        
+-> But there is a long process for it.        
+-> You have the ability to perform extra steps before the instance goes in service (`Pending State`)              
+-> if there is no lifecycle hook, then the instance will go directly from `Pending` to `InService`.             
+-> We can install extra software or extra checks before making sure your instance is declared in service.            
+-> Similarly for `Terminating state`, we can define a Lifecyle Hooks. e.g. extra or log information before terminating.             
+
+Launch Template vs Launch Configuration             
+**Both**:        
+-> ID of the AMI, instance type, key pair, security groups, and other parameter that you use to launch EC2 instances (user-data etc)           
+ 
+**Launch Configuration (legacy)**:           
+-> must be re-created every time you want to update any single parameter         
+
+**Launch Template (newer)**:          
+-> can have multiple version        
+-> create paramter subsets (partial configuration for re-use and inheritance)           
+-> Provision using both On-Demand and Spot instances (or a mix)            
+-> can use T2 unlimited burst feature           
+-> *recommended by AWS going forward*              
+-> will completely replace Launch Configuration.             
+
+<img src="images/asg_lifecycle.png" width="500">       
+
+# AWS Fundamentals: RDS + Aurora + ElasticCache         
+
+## Amazon RDS Overview        
 
 
 
