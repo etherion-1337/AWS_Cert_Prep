@@ -1356,7 +1356,7 @@ SSL certificates have an expiration date (you set) and must be renewed
 
 <img src="images/lb_ssl.png" width="600">            
 
-User connect over HTTPS (SSL certificate) to the load balancer, the load balancer talk to EC2 instance over (unsecured) HTTP, but since it is within your VPC, it is somewhat secured.               
+User connect over HTTPS (using SSL certificate) to the load balancer, the load balancer talk to EC2 instance over (unsecured) HTTP, but since it is within your VPC, it is somewhat secured.               
 
 The load balancer uses an X.509 certificate (SSL/TLS server certificate)           
 You can manage certificates using ACM (AWS Cerficate Manager)             
@@ -1370,7 +1370,51 @@ HTTPS listener:
 Server Name Indication - SNI                
 SNI solves the problem of loading multiple SSL certificates onto one web server (to serve multiple websites)              
 
-It is a "newer" protocol, and requires the client to **indicate**
+It is a "newer" protocol, and requires the client to **indicate** the hostname of the target server in the initial SSL handshake. The server will then find the correct certificate, or return the default one.              
+
+Only works for ALB, NLB (newer generation), CloudFront             
+Does NOT work for CLB (old generation)                 
+
+<img src="images/sni.png" width="600">             
+
+Suppose our ALB has 2 target groups and the client wants to go to `mycorp.com`. This is part of the server name indication. ALB will then use the correct SSL certificate to fill that request and then direct to the correct target group.                 
+
+Classic Load Balancer (v1)              
+-> support only one SSL certificate           
+-> must use multiple CLB for multiple hostname with multiple SSL certificates               
+
+Application Load Balancer (v2)          
+-> supports multiple listeners with multiple SSL certificates            
+-> uses Server Name Indication (SNI) to make it work             
+
+Network Load Balancer (v2)              
+-> support multiple listeners with multiple SSL certificates             
+-> uses Server Name Indication (SNI) to make it work.                  
+
+## Elastic Load Balancer - Connection Draining        
+
+It has two different name depend on what load balancing we are using:          
+-> CLB: Connection Draining             
+-> Target Group: Deregistration Delay (applicable for ALB and NLB)
+
+It is the time to complete "in-flight requests" while the instance is de-registering or unhealthy. It will allow the instance to just shut down anything was doing before being de-registered.                  
+
+Stop sending new requests to the instance which is de-registering. i.e. as soon as the instance is in draining mode, the ELB will stop sending new request.                   
+
+<img src="images/connection_drain.png" width="500">               
+
+For example one of our EC2 instance is unhealthy and is going into the draining mode. The existing connection will be waited for the duration of the connection draining period (default 300 secounds). Any new connection that is made by the users into the ELB will be redirected to the other EC2 instances available.          
+
+The deregistration delay is beween 1 to 3600 seconds, the default is 300 seconds.           
+Can be disabled (set value to 0)               
+Set to a low value if your requests are short.                  
+If the application takes long time to process, we want to set it abit higher such that those requests already in-flight has a chance to be completed.              
+
+If set to 0, then the connection will be dropped while your EC2 instance is being killed. Then user will retrieve an error. Then it is (perhaps) the users' responsibility to retry the request again and the ELB will redirect to the healthy EC2 instance again.                
+
+
+
+
 
 
 
