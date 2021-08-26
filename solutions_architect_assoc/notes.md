@@ -1412,7 +1412,78 @@ If the application takes long time to process, we want to set it abit higher suc
 
 If set to 0, then the connection will be dropped while your EC2 instance is being killed. Then user will retrieve an error. Then it is (perhaps) the users' responsibility to retry the request again and the ELB will redirect to the healthy EC2 instance again.                
 
+## Auto Scaling Groups (ASG) Overview       
 
+Now we have an application that can be load balanced through a load balancer. But how do we create, automatically, these servers at the backend ? We can use an Auto Scaling Group.               
+
+In real-life, the load on your websites and application can change over time (high traffic during day time, but not during night time).     
+In the cloud, we can create and get rid of servers very quickly.         
+So the goal of an ASG is to:         
+-> Scale out (add EC2 instances) to match an increased load           
+-> Scale in (remove EC2 instances) to match a decreased load           
+-> Ensure we have a minimum and maximum number of machines running            
+-> Automatically register (or deregister) new instances to a load balancer           
+-> Replace unhealthy instances       
+
+Cost saving: only run at an optimal capacity (principle of the cloud)          
+ASG in AWS:          
+<img src="images/asg.png" width="700">           
+What we need to know about is the minimum size, desired capacity and maximum size parameters as they will come out the exam very often. 
+
+ASG with a load balancer:       
+<img src="images/asg_lb.png" width="700">           
+The load balancer will know directly how to connect to these ASG instances. If we add EC2 instances then the load balancer will also register its targets to them.                      
+
+ASG have the following attributes:            
+1. A launch configuration             
+-> AMI + Instance type       
+-> EC2 User Data         
+-> EBS Volumes           
+-> Security Groups           
+-> SSH Key p=Pairs           
+2. Min Size / Max Size / Initial Capacity            
+3. Network + Subnets Information (ASG will be able to craete instances)            
+4. Load Balancer Information (or target group information)            
+5. Scaling Policies                    
+
+Auto Scaling Alarms             
+-> It is possible to scale an ASG based on CloudWatch alarms (i.e. CloudWatch would watch a few metrics, and when certain metrics goes up, it will tell the ASG to add more instances)      
+-> An Alarm monitors a metric (such as Average CPU)            
+-> **Metrics are computed for the overall ASG instances**                
+-> Based on the alarm:
+--> we can create scale-out policies (increase the number of instances)            
+--> we can create scale-in policies (decrease the number of instances)            
+
+Auto Scaling New Rules             
+1. It is now possible to define "better" auto scaling rules that are directly managed by EC2              
+-> Target Average CPU Usage            
+-> number of requests on the ELB per instance          
+-> Average Network In/Out               
+2. These rules are easier to setup than the previous ones and can make more sense                  
+
+Auto Scaling Custom Metric           
+-> We can auto scale based on a custom metric (e.g. number of connected users)             
+1. Send custom metric from application on EC2 to CloudWatch (PutMetricAPI)             
+2. Create CloudWatch alarm to react to low/high values         
+3. Use the CloudWatch alarm as the scaling policy for ASG                   
+We should know that the ASG metrics is not tied to the metrics AWS exposes.                       
+
+ASG Brain Dump:         
+1. Scaling policies can be on CPU, Network ... and can even be on custom metrics or based on a schedule (if you know the visitor patterns)          
+2. ASGs can use Launch configurations or Launch Templates (newer)           
+3. To update an ASG, you must provide a new launch configuration / launch template          
+4. IAM roles attached to an ASG will get assigned to EC2 instances              
+5. ASG are free. You pay for the underlying resources being launched             
+6. Having instances under an ASG means that if they get terminated for whatever reason, the ASG will automatically **create new ones as a replacement**                  
+7. ASG can terminate instances marked as unhealthy by an LB (through LB health check, and hence replace them)            
+
+
+
+## Auto Scaling Groups (ASG) Hands On     
+
+We can setup the EC2 configuarations in ASG directly when creating launch template.        
+
+Deleting ASG will automatically delete EC2 Instances that is managed by it. (Deleting EC2 Instances directly will cause ASG to replace these instances according to the desired instances specified.)       
 
 
 
