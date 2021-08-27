@@ -1555,6 +1555,111 @@ Launch Template vs Launch Configuration
 
 ## Amazon RDS Overview        
 
+RDS = *Relational* Database Service          
+It's a managed DB service for DB use SQL as a query language           
+It allows you to create databases in the cloud that are managed by AWS            
+-> Postgres               
+-> MySQL               
+-> MariaDB               
+-> Oracle         
+-> Microsoft SQL Server            
+-> Aurora (AWS Proprietary database)          
+We have to remember the name of these DB for the exam.          
+
+Advantage over using RDS versus deploying DB on EC2              
+-> RDS is a managed service:         
+-> Automated provisioning, OS patching         
+-> Continuous backups and restore to specific timestamp (Point in Time Restore)       
+-> Monitoring dashboards            
+-> Read replicas for improved read performance          
+-> Multi AZ setup for DR (Disaster Recovery)             
+-> Maintenance windows for upgrades       
+-> Scaling capability (veritcal or horizontal)                  
+-> Storage backed by EBS (gp2 or Io1)              
+
+But you can't SSH into your instances               
+
+RDS Backups:         
+1. Backups are automatically enabled in RDS            
+2. Automated backups:                
+-> Daily full backup of the database (during the maintenance window)              
+-> Transaction logs are backed-up by RDS every 5 minutes          
+-> These 2 points above give you the ability to restore to any point in time (from oldest backup to 5 minutes ago)           
+-> 7 days retention (can be increased to 35 days)            
+
+DB Snapshots (slightly different from backups):            
+-> Manually triggered by the user           
+-> Retention of backup for as long as you want           
+
+RDS - Storage Auto Scaling              
+1. Helps you increase storage on your RDS DB instance dynamically         
+2. when RDS detects you are running out of free database storage, it scales automatically             
+3. Avoid manually scaling your database storage          
+4. You have to set **Maximum Storage Threshold** (maximum limit for DB storage)               
+5. Automatically modify storage if:          
+-> free storage is less than 10% of allocated storage              
+-> low-storage lasts at least 5 minutes              
+-> 6 hours have passed since last modification          
+6. Useful for applications with unpredicatable workloads              
+7. Supports all RDS database engines (MariaDB, MySWL, PostgreSWL, SQL Server, Oracle)            
+
+## RDS Read Replica vs Multi AZ
+
+
+When we deploy RDS databases, we need to understand that we have multiple architectural choices we can make.                  
+
+RDS Read Replicas:         
+Say we have our application that reads from our main RDS database and we want to scale the read workloads, i.e. we have more and more applications that needs to read more data from RDS. We can create Read Replicas.          
+This means that we have some copies of your RDS database that are going to be created. And our applications can read from these Read Replicas.                 
+So we have distributed the reads to different RDS databases.            
+-> We can create up to 5 Read Replicas.                   
+-> Within AZ, cross AZ or cross Region            
+-> Replication is **ASYNC** so reads are eventually consistent             
+-> Replicas can be promoted to their own DB (i.e. has its own lifecycle etc afterwards)           
+-> Applications must update the connection string to leverage replicas             
+-> Writing data is only done to the *main database*.                  
+<img src="images/rds_read_replica.png" width="700">                
+
+RDS Read Replicas - Use Cases           
+-> you have a production DB that is taking on normal load.            
+-> You want to run a reporting application to run some analytics             
+-> If we directly plug the Reporting Application into the main DB, it will overload the DB           
+-> You create a Read Replica to run the new workload there            
+-> The production application is unaffected           
+-> Read Replicas are sued for SELECT (=read) only kind of statements (not INSERT, UPDATE, DELETE)           
+
+<img src="images/rds_replica_use.png" width="400">          
+
+RDS Read Replicas - Network Cost         
+
+-> In AWS there's network cost when data goes from one AZ to another. There are exceptions, and usually for managed services             
+-> **For RDS Read Replicas within the same region, you don't pay that fee**              
+-> If we use **cross-region replica**, then we have to pay for the transfer data.               
+
+<img src="images/rds_network_cost.png" width="700">                       
+
+Multi-AZ (Disaster Recovery):                               
+1. **SYNC** replication to a standby instance (e.g. in AZ B here), i.e. the modifications has to be in AZ B before the change is accepted.                         
+2. One DNS name - automatic app failover to standby         
+3. Increase **availability**         
+4. Failover in case of loss of AZ, loss of network, instance or storage failure.             
+5. No manual intervention in apps            
+6. Not used for scaling (Just used as failover, no one can write to it)            
+7. **Note: The Read Replica can be setup as Multi AZ for Disaster Recovery**             
+                   
+<img src="images/rds_az.png" width="500">                   
+
+RDS - From Single-AZ to Multi-AZ             
+-> Zero downtime operation (no need to stop DB)        
+-> Just click on "modify" for the database           
+-> The following will happen internally:
+1. A snapshot is taken       
+2. A new DB is restored from the snapshot in a new AZ        
+3. Synchronization is established between the 2 database           
+
+<img src="images/rds_multi_az.png" width="500"> 
+
+
 
 
 ## Things to do            
