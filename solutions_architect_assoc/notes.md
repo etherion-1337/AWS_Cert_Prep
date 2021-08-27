@@ -1657,7 +1657,19 @@ RDS - From Single-AZ to Multi-AZ
 2. A new DB is restored from the snapshot in a new AZ        
 3. Synchronization is established between the 2 database           
 
-<img src="images/rds_multi_az.png" width="500"> 
+<img src="images/rds_multi_az.png" width="500">           
+
+## RDS Hands On                    
+In the RDS console, we can choose 6 types of DB (e.g. MySQL).              
+We need to put in credentials such as Master usermame and password             
+We need to choose the class and also storage type/size.           
+In most case we don't want your DB to be accessible to public, but only within your VPC.               
+We also need a VPC security group.            
+We can also choose maintenance window (in which DB updates will be performed)             
+After creating the DB, we can create a snapshot of it and we can restore it into a new database, with possibly another instance class (veritcal scaling).             
+We can also copy the database into another region. We can also share this snapshot with other account or export it to S3 for later usage.   
+
+## RDS Encryption + Security            
 
 
 
