@@ -1850,7 +1850,112 @@ Use cases: fraud detection, ads targeting, sentiment analysis, product recommend
 
 <img src="images/aurora_ml.png" width="400">                   
 
+## ElastiCache Overview            
 
+Second type of database we will see on AWS is the Amazon ElastiCache. It is as the same way RDS to get managed Relational Databases.                        
+ElastiCache is to get managed Redis or Memcached                   
+Caches are **in-memory databases** with high performance, low latency.                
+In exam if there is mention about *in-memory* database, we have to think ElastiCache.              
+Helps **reduce load off databases for read intensive workloads** (if we have an RDS database and we are doing alot of query on it and they are the same query all the time, it will put abit of pressure on the RDS. So we use a cache to reduce the pressure off the database by making sure the queries are directly going onto my in-memory database through ElastiCache).                       
 
-## Things to do            
+Helps make your application stateless.                 
+
+AWS takes care of OS maintenance / patching, optimization, setup, configuration, monitoring, failure recovery and backups.                   
+
+**Using ElastiCache involves heavy application code changes**                
+
+ElastiCache Solution Architecture - DB Cache:                 
+Applications queries ElastiCache, (if available, it is called a cache hit, and it will get the answer straight from ElastiCache, thus saving a trip to the DB to make the query).           
+If not available, get from RDS and store in ElastiCache, then we will fetch the data from the DB. We can write the data back to the cache.                       
+Helps relieve load in RDS.           
+Cache must have an invalidation strategy to make sure only the most current data is used in there.          
+
+<img src="images/elasticache_db.png" width="600">                                
+
+ElastiCache Solution Architecture - User Session Store:            
+This is to make our application stateless         
+User logs into any of the application            
+The application will write the session data into ElastiCache               
+The user hits another instance of our application, then the application can retrieve this session cache directly from the Amazon ElastiCache.         
+Therefore the users still log in and he does not need to log in  again. 
+
+<img src="images/elasticache_user.png" width="600">            
+
+ElastiCache - Redis vs Memcached                 
+**Redis**:                 
+Redis is a technology that allows you to multi AZ with Auto-Failover             
+Read Replicas to scale reads and have high availbility            
+Data Durability using AOF persistence                  
+Backup and restore features          
+Abit like RDS             
+DB -> replication -> DB
+
+**Memcached**:         
+Multi-node for partition of data (sharding)          
+No high availbility (no replication)              
+Non persistent        
+No backup and restore          
+Multi-threaded architecture 
+DB + sharding + DB           
+
+Redis = high availablity, backup, read replica        
+Memcache = pure cache distributed, no backup and no backup and no restore                  
+
+## ElastiCache for Solution Architects            
+
+Cache Security:          
+1. All caches in ElastiCache:            
+-> Do NOT support IAM authentication          
+-> IAM policies on ElastiCache are only used for AWS API-level security (create cache, delete cache etc, any operation within the cache is not using IAM)            
+2. Redis AUTH        
+-> you can set a "password/token" when you create a Redis cluster (allows you to have password when go into a cache)         
+-> this is an extra level of security for your cache (on top of security groups)           
+-> support SSL in flight encryption        
+3. Memcached            
+-> supports SASL-based authentication (advanced)                
+
+An EC2 instance will have its own security group, which can access Redis (which has its own security group as well). For encryption in flight we have SSL encryption. For authentication we can use Redis AUTH (if using Redis)                   
+<img src="images/cache_security.png" width="600">                   
+
+Patterns for ElastiCache:                
+There are 3 kind of pattern for loading data into ElastiCache               
+1. Lazy Loading: all the read data is cached, data can become stale in cache                
+2. Write Through: adds or update data in the cache when written to a DB (no stale data)            
+3. Session Store: store temporary session data in a cache (using Time To Live (TTL) features)                
+
+<img src="images/cache_pattern.png" width="600">                          
+
+Redis Use Case             
+**EXAM**          
+Creating Gaming Leaderboards are computationally complex.                   
+**Redis Sorted sets** guarantee both uniqueness and element ordering               
+Each time a new element added, it's ranked in real time, then added in correct order                 
+All the Redis cache will have the same leaderboard available.          
+<img src="images/redis_usecase.png" width="600">     
+
+## Important Port
+Here's a list of standard ports you should see at least once. You shouldn't remember them (the exam will not test you on that), but you should be able to differentiate between an Important (HTTPS - port 443) and a database port (PostgreSQL - port 5432)             
+
+**Important ports**:                       
+
+FTP: 21                      
+SSH: 22                       
+SFTP: 22 (same as SSH)                               
+HTTP: 80                                
+HTTPS: 443                         
+
+**vs RDS Databases ports**:              
+
+PostgreSQL: 5432                 
+MySQL: 3306                       
+Oracle RDS: 1521                    
+MSSQL Server: 1433                 
+MariaDB: 3306 (same as MySQL)                    
+Aurora: 5432 (if PostgreSQL compatible) or 3306 (if MySQL compatible)                    
+
+Remember, you should just be able to differentiate an "Important Port" vs an "RDS database Port".
+
+# Route 53 
+
+## Route 53 Overview 
 
