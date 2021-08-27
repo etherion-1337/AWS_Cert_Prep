@@ -1671,6 +1671,126 @@ We can also copy the database into another region. We can also share this snapsh
 
 ## RDS Encryption + Security            
 
+1. At rest encryption           
+-> Possibility to encrypt the master & read replicas with AWS KMS - AES256 encryption        
+-> Encryption has to be defined at launch time        
+-> **If the master is not encrypted, then the read replicas CANNOT be encrypted**         
+-> Transparent Data Encryption (TDE) available for Oracle and SQL Server           
+
+2. In-flight encryption        
+-> SSL certificates to encrypt data to RDS in flight                 
+-> Provide SSL options with trust certificate when connecting to database           
+-> To **enforce** SSL:          
+PostgreSQL: rds.force_ssl=1 in the AWS RDS Console (Parameter Groups)          
+MySQL: Within the DB: GRANT USAGE ON *.* TO 'mysqluser'@'REQUIRE SSL;        
+
+RDS Encryption Operations              
+1. Encrypting RDS backups             
+-> snapshots of un-encrypted RDS databases are un-encrypted        
+-> snapshots of encrypted RDS databases are encrypted        
+-> can copy a (unencrypted) snapshot into an encrypted one (we can created an encrypted version of the un-encrypted)             
+
+2. To encrypt an un-encrypted RDS database:         
+-> Create a snapshot of the un-encrypted database         
+-> Copy the snapshot and enable encryption for the snapshot          
+-> Restore the database from the encrypted snapshot         
+-> Migrate applications to the new database, and delete the old database         
+
+RDS Security - Network & IAM         
+1. Network Security          
+-> RDS databases are usually deloyed within a private subnet, not in a public one           
+-> RDS security works by leveraging security groups (the same concepts as for EC2 instances) - it controls which IP/Security Group can **communicate** with RDS           
+2. Access Management         
+-> IAM policies help control who can **manage** AWS RDS (through the RDS API) (i.e. who can create/delete DB)         
+-> Traditional Username and Password can be used to **login into** the DB           
+-> IAM-based authentication can be used to login into RDS MySQL & PostgreSQL           
+
+RDS - IAM Authentication         
+-> IAM database authentication works with MySQL and PostgreSQL         
+-> Don't need a password, just an authentication token obtained through IAM & RDS API calls         
+-> Auth token has a lifetime of 15 minutes           
+
+EC2 IAM role is going to issue an API call to the RDS service to get an authentication token. Using the token, the we can access the DB.         
+<img src="images/rds_iam.png" width="500">             
+Benefits:       
+-> Netowrk in/out must be encrypted using SSL         
+-> IAM to centrally manage users instead of DB               
+-> Can leverage IAM Roles and EC2 Instance profiles for easy integration            
+
+RDS Security Summary:            
+1. Encryption at rest:          
+-> is done only when you first create the DB instance        
+-> or: unencrypted DB => snapshot => copy snapshot as encrypted => create DB from snapshot           
+2. Your responsibility:           
+-> check the ports/IP/security group inbound rules in DB's SG         
+-> in-database user creation and permissions or manage through IAM            
+-> create a DB with or without public access          
+-> Ensure parameter groups or DB is configured to only allow SSL connections             
+3. AWS responsibility:        
+-> No SSH access         
+-> No manual DB patching     
+-> No manual OS patching         
+-> No way to audit the underlying instance           
+
+## Aurora Overview                
+
+1. Aurora is a proprietary technology from AWS (not open sourced)               
+2. It works the same way as RDS and it supports **PostgreSQL** and **MySQL**           
+3. Postgre and MySQL are both supported as Aurora DB (that means your drivers will work as if Aurora was a Postgres or MySQL DB)            
+4. Aurora is "AWS cloud optimized" and claims 5x performance improvement over MySQL on RDS, over 3x the performance of Postgres on RDS                   
+5. Aurora storage **automatically** grows in increments of 10GB, up to 64TB             
+6. Aurora can have 15 replicas while MySQL has 5, and the replication process is faster (sub 10 ms replica lag)             
+7. Failover in Aurora is instantaneous. It's HA (high availability) native            
+8. Aurora costs more than RDS (20% more), but more efficient.               
+       
+From the exam perspective, RDS and Aurora are going to be the two ways for you to create relational database on AWS. They are both managed but Aurora is going to be more cloud native where RDS is going to be running the technologies directly as a managed service.   
+
+Aurora High Availability and Read Scaling           
+1. 6 copies of your data across 3 AZ:              
+-> 4 copies out of 6 needed for writes         
+-> 3 copies out of 6 needed for reads             
+-> Self healing with peer-to-peer replication (i.e. corrupted data can be healed through peer-to-peer from backend)                     
+-> storage is striped across 100s of volumes            
+
+for example, there is a shared (logical volume) for DB over 3 AZ. If we write some data (e.g. blue blocks), we will see 6 copies of data in 3 different AZ.              
+-> Aurora is abit like multi-AZ for RDS.             
+-> One Aurora Instance takes writes (master)                
+-> If the master does not work, the failover will be there in less than 30 seconds               
+-> Master + up to 15 Aurora Read Replicas serve reads            
+-> Any of the read replica can become master if the master fails.               
+-> Support for Cross Region Replicaion            
+<img src="images/aurora_ha.png" width="500">       
+
+Aurora DB Cluster       
+    
+Your Master is the only thing will write to your storage. Aurora will provide a Writer Endpoint (it is a DNS name) and always pointing to the Master. We have a lot of read replicas and they can have auto scaling.              
+As there are auto scaling and read replicas, it will be hard for the application to find the replicas.          
+There is something called Reader Endpoint. It helps with connection load balancer and automatically connects to all the read replicas.            
+Anytime the client connect to the Reader Endpoint, it will connect to one of the read replicas.           
+<img src="images/aurora_cluster.png" width="700">            
+
+Features of Aurora          
+1. Automatic fail-over        
+2. Backup and Recovery         
+3. Isolation and security        
+4. Industry compliance           
+5. Push-button scaling           
+6. Automated Patching with Zero Downtime         
+7. Advanced Monitoring            
+8. Routine Maintenance       
+9. Backtrack: restore data at any point of time without using backups             
+
+Aurora Security          
+1. Similar to RDS because uses the same engines        
+2. Encryption at rest using KMS       
+3. Automated backups, snapshots and replcias are also encrypted        
+4. Encryption in flight using SSL (same process as MySQL or Postgres)           
+5. **Possibility** to authenticate using IAM token (same method as RDS)         
+6. You are responsible for protecting the instance with security groups            
+7. You can't SSH       
+Overall, the security of Aurora is same as RDS.          
+
+
 
 
 
