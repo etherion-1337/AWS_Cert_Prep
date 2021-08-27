@@ -1790,7 +1790,65 @@ Aurora Security
 7. You can't SSH       
 Overall, the security of Aurora is same as RDS.          
 
+Note, when creating Aurora we can choose Server Less under DB features. This is for unpredictable workload.  
 
+## Aurora - Advanced Concepts           
+
+**Aurora Replicas - Auto Scaling**            
+Say we have three Aurora instances right now. One will be writing through the Writer Endpoint and the other two will be reading through the Reader Endpoint. The 2 reader instances have increased CPU usage due to high usage. We can setup Replicas Auto Scaling and it will add Amazon Aurora replicas and the Reader Endpoint is going to be extended。              
+
+<img src="images/aurora_autoscale.png" width="700">                   
+
+**Aurora - Custom Endpoints**           
+In this case there are 2 types of replicas. Some are larger and some are smaller. The reason we will do this is that we want to define a subset of your Aurora instances. So we can define Custom Endpoint are these bigger Aurora instances. These instances are more powerful so we will run analytics query on these specific replicas. In this case, in general, the Reader Endpoint will NOT be used after the Custom Endpoint is being defined. It will not disappear but you would not use it anymore.           
+
+In practice, we will setup many Custom Endpoint for many different kind of workloads. Therefore allowing you to query olny a subset of your Aurora replicas.           
+
+<img src="images/aurora_custom_endpoint.png" width="700">          
+
+**Aurora Serverless**           
+
+Automated database instantiation and auto-scaling based on actual usage.       
+Good for infrequent, intermittent or unpredictable workloads.          
+No capacity planning needed.            
+Pay per second, can be more cost-effective.            
+
+The client is going to talk to the Proxy Fleet. In the backend, many Aurora instances will be created based on the workload so we don't have to provision capacity at all in advance.          
+
+<img src="images/aurora_serverless.png" width="400">               
+
+**Aurora Multi-Master**           
+This is in case you want immediate failover for writer node (High availability)         
+Every nodes does read and write, VS promoting a Read Replica as the new master.            
+
+All the Aurora instances can do writes/reads. In case one Aurora instance fails then we can automatically failover to another one, giving you immediate failover for the writer node.              
+
+<img src="images/aurora_multimaster.png" width="400">                
+
+**Global Aurora**         
+Aurora Cross Region Read Replicas:         
+-> useful for disaster recovery            
+-> simple to put in place           
+Aurora Global Database (recommended):           
+-> 1 Primary Region (read/write)            
+-> up to 5 secondary (read-only) regions, replication lag is less than 1 second             
+-> up to 16 Read Replicas per secondary region               
+-> helps for decreasing latency            
+-> promoting another region (for disaster recovery) has an Recovery Time Objective (RTO) of less than 1 minute.           
+
+<img src="images/aurora_global.png" width="400">        
+
+**Aurora Machine Learning**             
+
+Enables you to add ML-based predictions to your application via SQL              
+Simple, optimized, and secure integration between Aurora and AWS ML services.            
+Supported services:        
+-> Amazon SageMaker (use with any ML model)           
+-> Amazon Comprehend (for sentiment analysis)         
+No need to have ML experience        
+Use cases: fraud detection, ads targeting, sentiment analysis, product recommendation                       
+
+<img src="images/aurora_ml.png" width="400">                   
 
 
 
