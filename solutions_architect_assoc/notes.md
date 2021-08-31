@@ -2188,6 +2188,10 @@ If you buy your domain on 3rd party website, you can still use Route 53.
 
 Each domain registrar usually comes with some DNS features             
 
+# Classic Solution Architecture Discussions           
+
+## Solution Architecture Discussions Overview       
+
 
 
 
