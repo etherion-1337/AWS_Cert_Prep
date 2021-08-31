@@ -2012,4 +2012,76 @@ Route 53 has advanced features such as:
 
 You pay $0.50 per month per hosted zone          
 
+To look up the IP address for the DNS (i.e. check if the DNS record works), we can use these commands in the CLI:        
+1. on Windows: `nslookup example.com`           
+2. on Mac: `dig example.com`             
+
+
+## Route 53 - TTL          
+
+DNS Records TTL (Time to Live)             
+
+TTL is basically a way for web browsers and clients to cache the response of a DNS query. The reason we do this is not to overload the DNS. So have Route 53 which is the DNS and we are going to make a DNS request from `myapp.mydomain.com`. Route 53 will send back the IP and also the TTL (we can set to 300 seconds). The web browser will cache that DNS request and the response for the TTL duration. Anytime we request `myapp.mydomain.com`, the web browser will just look internally and not ask Route 53 again. If there is some changes for the IP, the cache will be updated, but only after the TTL has expired.            
+
+<img src="images/dns_ttl.png" width="700">                 
+
+This means that as soon as we update Route 53 Record, that does not mean that all the clients see the changes right away. They have to wait for the TTL to expire.               
+
+**TTL is mandatory for each DNS record**                
+
+## CNAME vs Alias          
+
+AWS Resources (Load Balancer, CloudFront, ...) expose an AWS hostname: `lbl-1234.us-east-2.elb.amazonaws.com` and you want `myapp.mydomain.com` and this will point to our load balancer.           
+
+CNAME:         
+-> points a hostname to any other hostname (`app.domain.com` => `blabal.anything.com`)              
+-> **ONLY FOR NON ROOT DOMAIN** (e.g. `something.mydomain.com`) (cannot be `mydomain.com`)              
+
+Alias:        
+-> points a hostname to an AWS resource (`app.mydomain.com` => `blabla.amazonaws.com`) (this is for AWS resources while CNAME can point to anywhere)              
+-> **Works for ROOT DOMAIN and NON ROOT DOMAIN** (e.g. `mydomain.com`)                    
+-> Free of charge        
+-> Native health check           
+
+In summary, if you have a ROOT DOMAIN, we have to use Alias. Most of the time Alias is free and better as we will point to AWS resources.               
+
+## Routing Policy - Simple               
+
+We have a web browser and Route 53. We would like to know where is `foo.example.com` and Route 53 will reply us the IP address.        
+Use when you need to redirect to a single resource.          
+You **cannot** attach health checks to simple routing policy.          
+
+**If multiple values are returned, n a random one is chosen by the CLIENT**            
+We can add in multiple IP addresses under `Value` in DNS. When the web browser query for the domain name, it will receive multiple IP addresses and the browser will choose one of them to go. This is called client side load balancing.
+<img src="images/route_simple.png" width="500">                 
+
+## Routing Policy - Weighted          
+
+This policy will control the percentage of the requests that go to specific endpoint.                    
+
+Our client in the below example will send 70% of the traffic to the first instance etc.         
+
+e.g. Helpful to test 1% of traffic on new app version                  
+e.g. Helpful to split traffic between two regions             
+
+Can be associated with Health Checks                 
+Note that the sum of the percentage need not to be 100%.           
+
+
+<img src="images/route_weight.png" width="500">                   
+
+The policy can be set within Route 53 under `Create Record Set` in the "Hosted Zone" at the sidebar.                
+We can set up 2 or more Record with independent percentage (directed to different EC2 instances or app), but with the same DNS name. Once the TTL expires, the app will direct the request to different EC2 instances according to the percentage.                   
+If you do a `dig` on the domain, we will just get back 1 IP address.              
+i.e. from the client's perspective, they will not aware that there is multiple IP in the backend (which is different from the Simple Routing Policy if you put multiple IP)             
+
+## Routing Policy - Latency           
+
+
+
+
+
+
+
+
 
