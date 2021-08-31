@@ -1959,3 +1959,57 @@ Remember, you should just be able to differentiate an "Important Port" vs an "RD
 
 ## Route 53 Overview 
 
+Route 53 is a Managed DNS (Domain Name System). It is a **Global Service**.            
+
+DNS is a collection of rules and records which helps clients understand how to reach a server through URLs (think phone book) or domain name.                          
+
+In AWS, the most common records are:            
+1. **A Record: hostname to IPv4**: www.google.com => 12.34.56.78             
+2. **AAAA Record: hostname to IPv6**: www.google.com => 2001:0db8:85a3:0000:0000:8a2e:0370:7334              
+3. **CNAME: hostname to hostname**: search.google.com => www.google.com                 
+4. **Alias: hostname to AWS resource**: example.com => AWS resource                  
+(exam) no need to know all types of records               
+
+Route 53 - Diagram for A Record              
+<img src="images/route_53_a.png" width="700">                
+We have an Application Server that we've deployed that has a public IPv4.                  
+We want to access our application server using a normal URL through our web browser.              
+We can create A Record in Route 53, so that when the web browser does a DNS request for `myapp.mydomain.com`, the DNS will reply back with an IP, then that IP can used by our web browser to the get the correct server and then get the HTTP Response from our server.                   
+
+Route 53 Routing Policies             
+Need to know them at a high-level for the CCP exam.                
+<img src="images/route_53_policy_1.png" width="700">          
+<img src="images/route_53_policy_2.png" width="700">           
+
+**Simple Routing Policy**:              
+no health check        
+web browser go into our DNS system, does a DNS query and gets an IPv4 for example as a result.             
+
+**Weighted Routing Policy**:           
+Allows us to distribute the traffic across multiple EC2 instances (some kind of load balancing)               
+can do health check            
+
+**Latency Routing Policy**:              
+It will look at where the user is located, and it will redirect the user to talk to the server that is close to them
+can do health check                
+
+**Failover Routing Policy**:         
+Disaster Recovery          
+DNS system will do health check on the primary, if the primary instance fail we will be redirected to the failovers              
+
+Note that you can buy a domain name within Route 53 ($12/year). 
+
+Route 53 can use:           
+1. public domain names you own (or buy)           
+-> `applicationI.mypublicdomain.com`            
+2. private domain names that can be resolved by your instances in your VPCs         
+-> `applicaitonI.company.internal`        
+
+Route 53 has advanced features such as:           
+1. Load balancing (through DNS - also called client load balancing)                  
+2. Health checks (although limited)         
+3. Routing Policy: simple, failover, geolocation, latency, weighted, multi value            
+
+You pay $0.50 per month per hosted zone          
+
+
