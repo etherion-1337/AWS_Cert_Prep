@@ -2047,6 +2047,8 @@ In summary, if you have a ROOT DOMAIN, we have to use Alias. Most of the time Al
 
 ## Routing Policy - Simple               
 
+(All policy is set when we create a Record Set in Route 53)                  
+
 We have a web browser and Route 53. We would like to know where is `foo.example.com` and Route 53 will reply us the IP address.        
 Use when you need to redirect to a single resource.          
 You **cannot** attach health checks to simple routing policy.          
@@ -2089,6 +2091,73 @@ For the example below, the 4 users will be directed to the user (because of low 
 During the set up of the record, we can choose where the instance is going to be (usually auto filled once we provided the IP address in `Value`). We have to create multiple Record Set for each EC2 instance and set the Routing Policy. They can use the same `Name`, e.g. `latency.mydomain.com`.                
 
 ## Route 53 Health Checks
+
+There are health checks in Route 53 and if an instance is unhealthy (just like an ELB), Route 53 will not send traffic to that instance.        
+
+Have `X` health checks failed => unhealthy (default 3)                  
+After `X` health checks passed => health (default 3)                
+
+Default Health Check Interval: 30s (fast health check: can set to 10s - higher cost)            
+
+**About 15 health checkers (launched by AWS) will check the endpoint health**         
+=> one request every 2 seconds on average (if we set the 30s Health Check Interval)               
+
+Can have HTTP, TCP and HTTPS health checks (no SSL verification)                  
+
+Possibility of integrating the health check with CloudWatch              
+
+Once we have the health check defined in Route 53, they can be directly linked to the record sets and the DNS queries and they will change the behaviour of Route 53.          
+i.e. **Health Checks can be linked to Route 53 DNS queries**             
+
+Health Checks can be created within Route 53 service at the `Health Checks` on the left sidebar.            
+We can specify the endpoint for the health check (which is the EC2 instances IP)             
+
+## Routing Policy - Failover              
+
+Say we have 2 EC2 instances, one of them is called a Primary EC2 instance and the other one will be Secondary EC2 instance (meant to be only used if the Primary fails, then it will be used for disaster recovery).                     
+
+The health check to the Primary instance is **mandatory** (i.e. associated with the Primary record). If the health check fails, then Route 53 will automatically failover to the Secondary instance.              
+
+<img src="images/route_failover.png" width="700">                
+
+## Routing Policy - Geolocation             
+
+**Different from latency based**          
+**Routing based on user location**                 
+Here we specify: traffic from the UK should go to this specific IP.              
+Should create a "default" policy (in case there is no match on location)                
+
+<img src="images/route_geo.png" width="400">                
+
+When creating the Record, we can choose either the continent or country that will be routed to the IP.             
+
+## Routing Policy - Geoproximity         
+
+Route traffic to your resources based on the geographic location of users and resources               
+
+Ability to shift more traffic to resources based on the defined **bias**.           
+
+To change the size of the geographic region, specify **bias** values:            
+-> to expand (1 to 99) - more traffic to the resource          
+-> to shrink (-1 to -99) - less traffic to the resource         
+
+Resources can be:          
+-> AWS resources (specify AWS region, AWS will automatically calculate the routing)           
+-> Non-AWS resources (specify Latitude and Longitude)                 
+
+You must use Route 53 Traffic Flow (advanced) to use this feature.               
+
+Say we have two resources below and the bias is set to 0 for both regions. If we have users all around US trying to access these resources, there will be a line dividing the US into 2 and users on the left will go to `us-west-1` for example.                 
+
+<img src="images/route_geoproxy_1.png" width="700">                     
+
+With the same setup, but the bias is set to 50 on `us-east-1`. Then the dividing line will be more to the left so more users will go to `us-east-1`.              
+If we want more users in that region, we increase the bias of the resource of that region to drag more users to it.                
+
+It is really helpful when we need to shift traffic from one region to another, by increasing the bias.            
+
+<img src="images/route_geoproxy_2.png" width="700">                        
+
 
 
 
