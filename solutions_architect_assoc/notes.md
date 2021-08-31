@@ -2077,6 +2077,21 @@ i.e. from the client's perspective, they will not aware that there is multiple I
 
 ## Routing Policy - Latency           
 
+Redirect to the server that has the least latency close to us. It is a very useful policy.             
+Super helpful when latency of users is a priority.                
+**Latency is evaluated in terms of user to designated AWS Region**          
+e.g. if a user is in Germany, if the us-east-1a is the least latency for that user, then it is going to be redirected.           
+
+For the example below, the 4 users will be directed to the user (because of low latency) and other 3 will directed to Australia.            
+
+<img src="images/route_latency.png" width="500">                 
+
+During the set up of the record, we can choose where the instance is going to be (usually auto filled once we provided the IP address in `Value`). We have to create multiple Record Set for each EC2 instance and set the Routing Policy. They can use the same `Name`, e.g. `latency.mydomain.com`.                
+
+## Route 53 Health Checks
+
+
+
 
 
 
