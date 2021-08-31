@@ -2158,6 +2158,37 @@ It is really helpful when we need to shift traffic from one region to another, b
 
 <img src="images/route_geoproxy_2.png" width="700">                        
 
+## Routing Policy - Multi Value              
+
+Use when routing traffic to multiple resources                
+Want to associate a Route 53 health checks with records             
+(some kind of improvement over Simple Routing Policy)                  
+
+Up to 8 healthy records are returned for each Multi Value query (even if you have 50 records at the backend)               
+**MultiValue is not a substitute for having an ELB**              
+
+The `example.com` A record will have three different value and all these values are associated with health check. If one of these instances stops serving traffic the Route 53 will not send back the value of that to the clients.           
+
+<img src="images/route_mv.png" width="700">                
+
+## 3rd Party Domains & Route 53              
+
+Route 53 is also a Registrar.          
+
+A **domain** name **registrar** is an organisation that manages the reservation of Internet **domain** names.          
+
+And also Route 53 is also Registrar and hence we can buy domain names on a registrar.             
+
+Domain Registrar IS NOT DNS.            
+
+If you buy your domain on 3rd party website, you can still use Route 53.            
+
+1. Create a Hosted Zone in Route53          
+2. Update Name Server (NS) Records on 3rd party website to use Route 53 name servers            
+
+Each domain registrar usually comes with some DNS features             
+
+
 
 
 
