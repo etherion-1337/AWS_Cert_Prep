@@ -2192,15 +2192,98 @@ Each domain registrar usually comes with some DNS features
 
 ## Solution Architecture Discussions Overview       
 
+Understand how all the technologies we have seen so far work together.               
 
+We will see the progression of a Solution Architect's mindset through many sample case studies:        
+-> `WhatIsTheTime.com`            
+-> `MyClothes.com`          
+-> `MyWordPress.com`           
+-> Instantiating application quickly           
+-> Beanstalk          
 
+## WhatIsTheTime       
 
+Stateless Web App: WhatIsTheTime.com               
+-> Allows people to know what time it is              
+-> We do not need a database          
+-> we want to start small and can accept downtime           
+-> we want to fully scale vertically and horizontally, no downtime           
 
+1. Starting Simple                  
 
+We have a t2.micro instance and we have a user. The user can query about the time. We will attach a static IP (Elastic IP Address).          
 
+<img src="images/time_simple.png" width="600">                 
 
+2. Scaling Vertically         
 
+Our application is getting more traffic due to popularity. We can replace the t2.micro instance by something larger.             
+The user will experience some downtime while upgrading to the M5 instance.               
 
+<img src="images/time_vertical.png" width="600">              
+
+3. Scaling Horizontally          
+
+We start to adding more M5 instances and they all have elastic IP attached to it. The user will need to know exact IP addresses in order to talk to our instances. Downside is that users need to remember more and more IP addresses.
+
+<img src="images/time_horizontal.png" width="600">              
+
+4. Improved Scaling Horizontally          
+
+Let's remove the elastic IP and users is going to use Route 53. We have a website name `api.whatisthetime.com`. It is A Record with TTL of 1 hour.              
+
+So the users can get to our instances through Route 53.                
+
+<img src="images/time_dns.png" width="600">                    
+
+5. Improved Scaling Horizontally, adding and removing instances              
+
+We would like to remove instances on the fly. If we remove the top instance, then the users is not able to talk to it. This is because the TTL is 1 hour so for that 1 hour the user will try to connect to the instance.              
+
+<img src="images/time_miss.png" width="600">              
+
+6. Scaling Horizontally, with a load balancer            
+
+So now we have private EC2 instances in the same AZ. We have a load balancer with health checks. The ELB is going to be public facing. Our users are going to query from Route 53. The ELB has its IP changes all the time so it cannot be A Record. We will use Alias Record since it is a load balancer. 
+
+<img src="images/time_elb.png" width="600">                
+
+7. Scaling Horizontally, with auto-scaling group           
+
+We have the same api with Route 53 as before. But we have ASG to add or remove istances this time. This is a really stable build.              
+
+<img src="images/time_asg.png" width="600">                   
+
+8. Making our app multi-AZ             
+
+The ELB will be multi-AZ. The ASG will be spanning multiple AZ. 
+
+<img src="images/time_multiaz.png" width="500">               
+
+9. Minimum 2 AZ => let us reserve capacity             
+
+We know 2 instances must be running at all times. 
+
+<img src="images/time_reserve.png" width="600">            
+
+We have discussed:       
+1. Public vs Private IP and EC2 instances           
+2. Elastic IP vs Route 53 vs Load Balancers            
+3. Route 53 TTL, A Records and Alias Records           
+4. Maintaining EC2 instances manually vs Auto Scaling Groups             
+5. Multi AZ to survive disaster          
+6. ELB health checks           
+7. Security Group Rules              
+8. Reservation of capacity for cost savings when possible                 
+
+We are considering 5 pillars for a well architected applications:        
+1. cost        
+2. performance        
+3. reliability           
+4. security           
+5. operational excellence             
+
+## MyClothes                
 
 
 
