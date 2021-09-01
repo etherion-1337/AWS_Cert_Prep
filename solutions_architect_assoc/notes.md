@@ -2285,5 +2285,108 @@ We are considering 5 pillars for a well architected applications:
 
 ## MyClothes                
 
+Stateful Web App: `MyClothes.com`.         
+The previous app `WhatIsTheTime.com` is stateless as we do not need any database, any external information to answer that question.             
+
+`MyClothes.com` allows people to buy clothes online.          
+There's a shopping cart.            
+
+Our website is having hundreds of users at the same time.             
+
+We need to scale, maintain horizontal scalability and keep our web application as stateless as possible. (even if we have a state of shopping cart, we want to scale our application as easy as possible)               
+
+Users should not lose their shopping cart while navigating our website.                 
+
+User should have their details (address, etc) in a database                
+
+We have our user with Route 53 and multi-AZ ELB and 3 AZ with ASG.                 
+
+1. Basic setup             
+
+The user's shopping cart will be lost if their request is going to the second instance (switch from the first instance).             
+The user will lose their shopping cart everytime they do something.              
+
+<img src="images/cloth_simple.png" width="600">                     
+
+2. Introduce Stickiness (Session Affinity)             
+
+We can introduce Stickiness and this is an ELB feature. All the request from the same user goes to the same instance and they can keep their shopping cart.            
+
+But if the EC2 instance gets terminated for some reason, then we still lose the shopping cart.                
+
+<img src="images/cloth_affinity.png" width="600">                      
+
+3. Introduce User Cookies                 
+
+Instead of the EC2 instances storing the content of the shopping cart, we have users storing the shopping cart. Every time it connects to the load balancer, it will send the shopping cart content in Web Cookies. When it talk to the different servers (EC2 instance), each server will know the content of the shopping cart because the user is the one sending the information directly into our EC2 instances.                
+
+<img src="images/cloth_cookie.png" width="600">                
+
+But the HTTP request is getting heavier as we are sending more and more data every time  we add something to our shopping cart.          
+Security risk: cookies can be altered            
+Cookies must be validated (by the EC2 instances)               
+Cookies must be less than 4KB.                
+
+4. Introduce Server Session             
+
+Instead of sending a whole shopping cart in web cookies, we can just send a session ID which is just for the user.               
+At the background we have the ElastiCache cluster. We are going to talk to the EC2 instance and we are going to add this thing to the cart and the EC2 instance will add the cart content into the ElastiCache and the ID to retrieve the cart content is going to be the session ID.          
+
+When our user does the second request with the session ID, and it goes into another EC2 instance. That other EC2 instance is able using the session ID to look up the content of the cart from ElastiCache.               
+
+For storing session data, we can also use DynamoDB.                
+
+<img src="images/cloth_server_session.png" width="600">                     
+
+Much more secured as ElastiCache cannot be easily changed.                
+
+5. Storing user data in a database             
+
+We want to store user data in a database. Again we can talk to our EC2 instance and this time it will talk to an RDS instance. It can then store and retrieve user data. Each of the instances can talk to RDS.                  
+
+<img src="images/cloth_db.png" width="600">               
+
+6. Scaling Reads              
+
+We realise most of the user do Reads, they get product information.               
+We would like to scale reads in this case. We can use an RDS Master which takes the Writes but we can also have RDS Read Replicas with some replication happening. Anytime we read stuff, we can read from the Read Replica and we can have up to 5 Replica in RDS. It will allow us to scale the reads.              
+
+<img src="images/cloth_scale_read.png" width="600">                  
+
+7. Scaling Reads (alternative) - Write Through              
+
+We can use the cache as an alternative. Our user talks to the EC2 instance, it looks into the cache and ask if this information is available. If it does not have it, it is going to read from the RDS and put it back to the ElastiCache. The second time the instance will get a hit in the ElastiCache.                  
+
+It will decrease the CPU usage on RDS.              
+
+<img src="images/cloth_scale_read_2.png" width="600">                  
+
+8. Multi AZ - Surivive disasters                 
+
+We have a multi-AZ ELB. Our ASG is multi-AZ. RDS has multi-AZ feature and also standby Replica.               
+ElastiCache also has multi-AZ feature.                
+
+<img src="images/cloth_multiaz.png" width="600">                 
+
+9. Security Groups                 
+
+We will open all ports from anywhere on the ELB side. We will restric traffic on the EC2 side to accept traffic only from the ELB. ElastiCache we will restric traffic to only accept from the EC2 Security Group. Same thing for the RDS's Security Group.               
+
+<img src="images/cloth_sg.png" width="600">               
+
+**3-tier archnitecture for web application**                
+1. ELB sticky sessions                
+2. Web clients for storing cookies and making our web app stateless               
+3. ElastiCache           
+-> For storing sessions (alternative: DynamoDB)             
+-> For caching data from RDS            
+-> Multi AZ           
+4. RDS            
+-> For storing user data           
+-> Read replica for scaling reads           
+-> multi AZ for disaster recovery           
+5. Tight security with security groups referencing each other            
+
+3-tier: client tier, web tier, database tier => common architecture              
 
 
