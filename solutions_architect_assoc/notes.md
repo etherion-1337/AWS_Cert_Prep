@@ -2433,3 +2433,85 @@ We have discussed:
 
 ## Instantiating applications quickly            
 
+When launching a full stack (EC2, EBS, RDS), it can take time to:             
+1. Install applications        
+2. Insert initial (or recovery) data           
+3. Configure everything             
+4. Launch the application             
+We can take advantage of the cloud to speed that up               
+
+EC2 Instances:           
+1. **Use a Golden AMI**: install your applications, OS dependencies etc. beforehand and launch your EC2 instance from the Golden AMI.            
+2. **Bootstrap using User Data**: for *dynamic* configuration, use User Data scripts            
+3. **Hybrid**: mix Golden AMI and User Data (Elastic Beanstalk)                  
+
+RDS Databases:            
+1. Restore from a snapshot: the database will have schemas and data ready (vs inserting a big chunck of data)                          
+
+EBS Volumes:           
+1. Restore from a snapshot: the disk will already be formatted and have data               
+
+## Beanstalk Overview             
+
+We have a load balancer that is taking all the requests from our users. We have an ASG with multi-AZ. In each AZ there will be some EC2 instances being deployed there. At the backend we can have some data subnet. We have an RDS database and read replicas. In case we need a caching layer we can consider using ElastiCache.                 
+
+If we need to deploy many applications with the same architecture, it maybe a pain to recreate it every single time.              
+
+<img src="images/webapp_three_tier.png" width="700">                   
+
+Developer problems on AWS          
+1. Managing infrastructure            
+2. Deploying code           
+3. Configuring all the databases, load balancers, etc           
+4. Scaling concerns                
+
+Most web apps have the same architecture (ALB + ASG)                
+All developers want is for their code to run.                 
+Possibly, consistently across different applications and environments                
+
+Elastic Beanstalk - Overview            
+1. Elastic Beanstalk is a developer centric view of deploying an application on AWS.              
+2. It uses all the components we have seen before: EC2, ASG, ELB, RDS, ...         
+3. Managed service            
+-> Automatically handles capacity provisioning, load balancing, scaling, application health monitoring, instance configuration etc.         
+-> Just the application code is the responsibility of the developer            
+4. We still have fill control over the configuration, these controls are bundled in the single interface in Beanstalk.             
+5. Beanstalk is free but you pay for the underlying instances.                
+
+Elastic Beanstalk - Components               
+1. Applications: collection of Elastic Beanstalk components (environments, versions, configurations etc.)                 
+2. Application Version: an iteration of your application code              
+3. Environment                
+-> Collection of AWS resources running an application version (only one application version at a time)               
+-> Tiers (2 of them): Web Server Environment Tier and Worker Environment Tier                
+-> You can create multiple environments (dev, test, prod, ...)               
+
+The process is to create an application. Then we upload a version of it. Then we are going to launch an environment and we are going to manage the environment lifecycle. If we want to iterate on that we can update the version by uploading a new version and then deploy that new version again in our environment to update our application stack.                   
+
+<img src="images/beanstalk_overview.png" width="700">                  
+
+Elastic Beanstalk - Supported Platforms             
+
+1. Go          
+2. Java SE              
+3. Java with Tomcat                
+4. .NET Core on Linux                
+5. .NET on Windows Server              
+6. Node.js                 
+7. PHP              
+8. Python               
+9. Ruby                
+10. Packer Builder              
+11. Single Container Docker            
+12. Multi-container Docker          
+13. Preconfigured Docker              
+
+If not supported, you can write your custom platform (advanced)           
+
+Web Server Tier vs Worker Tier                 
+
+The web tier is shown on the left below. This is a traditional architecture where we have a load balancer and it is sending traffic to ASG that has mulitple EC2 intances.           
+
+Another architecture is around a worker environment and there is no clinets access it directly. We use a SQS Queue which is a message queue. The message will be sent into the SQS and the EC2 instances is going to workers and pull the messages from the SQS to execute the task. The worker environment is going to scale based on the number of SQS messages. We can push messages to SQS queue from another Web Server Tier.
+
+<img src="images/beanstalk_tier.png" width="700">                    
