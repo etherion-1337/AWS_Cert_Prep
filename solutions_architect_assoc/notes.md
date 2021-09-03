@@ -2650,3 +2650,145 @@ Encryption in Transit (SSL/TLS)
 
 ## S3 Security and Bucket Policies               
 
+There are different components of S3 Security:          
+1. User based            
+We have defined IAM users, and we will attach IAM policies - which API calls should be allowed for a specific user from IAM console.     
+2. Resource based        
+Bucket Policies - bucket wide rules from the S3 console attached directly to your S3 buckets - allows cross accounts (or public requests and so on)            
+Object Access Control List (ACL) - finer grain (object level access rules)          
+Bucket Access Control List (ACL) - less common         
+
+An IAM principal can access an S3 object if:          
+the user IAM permissions (attached to the IAM principal so the user or the group of the role can allow access the S3 bucket) allow it OR the resource policy ALLOWs it            
+AND there is no explicit DENY           
+This means that if you give someone access directly through IAM, or if we give someone access through S3 objects bucket policy, then we are good to go.      
+
+S3 Bucket Policies:        
+JSON based policies (just like IAM policies)       
+-> Resources: buckets and objects           
+-> Actions: set of API to Allow or Deny        
+-> Effect: Allow or Deny          
+-> Principal: The account or user to apply the policy to      
+
+Use S3 bucket for policy to:          
+-> Grant public access to the bucket         
+-> Force objects to be encrypted at upload            
+-> Grant access to another account (Cross Account)             
+
+```
+{
+    "Version": "2017-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicRead",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::examplebucket/*:
+            ]
+        }
+    ]
+}
+```
+
+Bucket settings for Block Public Access:      
+Block public access to buckets and objects granted through (there are 4 settings)            
+1. new access control lists (ACLs)         
+2. any access control lists (ACLs)        
+3. new public bucket or access point policies         
+
+Block public and cross-account access to buckets and objects through any public bucket or access point policies.        
+These settings were created to prevent company data leaks.           
+Can be set at the account level.          
+
+During setting up we have the `Block all public access` options (4 or 5 of them). These settings were created to prevent company data leaks.       
+If you know your bucket should never be public, leave these on (by default).          
+Can be set at the account level to ensure all S3 buckets within our account will never be made public.           
+
+S3 Security - Other        
+1. Networking:           
+-> Supports VPC Endpoints (for instances in VPC without internet)            
+2. Logging and Audit:         
+-> S3 Access Logs can be stored in other S3 bucket             
+-> API calls can be logged in AWS CloudTrail          
+3. User Security:       
+-> MFA Delete: MFA can be required in versioned bucket to delete objects          
+-> Pre-signed URLs: URLs that are valid only for a limited time (e.g. premium video service for logged in users)         
+
+## S3 Websites              
+
+S3 can host static websites and have them accessible on the www.            
+
+One of the reason why we made our objects public is to be able to host websites onto Amazon S3.                
+S3 is a great way to host static websites and have them accessible on the www.              
+The website URL will be:       
+-> `<bucket-name>.s3-website-<AWS-region>.amazonaws.com`            
+OR (depend on region)     
+-> `<bucket-name>.s3-website.<AWS-region>.amazonaws.com`         
+
+If you get a 403 (Forbidden) error, make sure the bucket policy allows public reads.             
+
+We will need a `index.html` at the root of the bucket to change the bucket into a website. Under bucket's property, there is a "Static website hosting" that we can use.          
+
+## S3 CORS         
+
+CORS = Cross-Origin Resource Sharing          
+
+An **origin** is a scheme (protocol), host (domain) and port           
+-> e.g. `https://www.example.com` (scheme is https, the host is `www.example.com` implied port is 443 or HTTPS, 80 for HTTP)            
+
+CORS means we want to get resource from a different origin.       
+
+**Web Browser** based mechanism to allow requests to other origins while visiting the main origin.          
+i.e. as soon as you visit a website, you can make request to other origins only if the other origins allow you to make these request.           
+
+Same origin: `http://example.com/app1` and `http://example.com/app2`          
+Different origin: `http://www.example.com` and `http://other.example.com` (cross origin request if we make a request to the second website, and our web browser will block it unless we have the correct CORS headers)       
+
+The requests will not be fulfilled unless the other origin allows for the requests, using **CORS Headers** (e.g. Access-Control-Allow-Origin)             
+
+So we have the Web Browser and it visits our first web server. Because it is the first server so it is called the **Origin**.            
+There is a second web server called a **Cross Origin** because it has a different URL.         
+Our web browser visit the first Origin and it is going to be asked from the files that is being loaded in the Origin, to make a request to the Cross Origin.              
+The web browser will do what is clled a preflight request. This preflight request is going to ask the Cross Origin if it is allowed to do a request on it.            
+The Cross Origin will reply the things that you can do.           
+Then it can issue a GET to the Cross Origin and it will be allowed.               
+
+<img src="images/cors_1.png" width="700">            
+
+**S3 CORS**           
+If a client does a Cross Origin request on our S3 bucket (enabled as a website), we need to enable the correct CORS headers.           
+It is a popular exam question, need to know when we need enable CORS headers and where we need to enable CORS headers.                
+
+You can allow for a specific origin or for `*` (all origins)        
+
+The web browser is getting HTML files from our bucket and our bucket is enabled as a website.         
+But there is a second bucket that is going to be our cross-origin bucket, also enabled as a website and contains some files that we want.        
+So we going to GET the `index.html` from the Origin and that file is going to say we need to get the `coffee.jpg` from the second bucket.          
+We need to configure the second bucket with the correct CORS headers.           
+We need to define the CORS headers on the second (Cross Origin bucket), not the first (Origin) bucket.                 
+
+<img src="images/s3_cors.png" width="700">                 
+
+## S3 Consistency Model               
+
+Strong consistency as December 2020:          
+After a:           
+-> successful write of a new object (new PUT)          
+-> or an overwrite or delete of an existing object (overwrite PUT or DELETE)        
+any:       
+-> subsequest read request immediately receives the latest version of the object (read after write consistency)           
+-> subsequent list request immediately reflects changes (list consistency)       
+
+Available at no additional cost, without any performance impact.               
+
+# AWS SDK, IAM Roles and Policies           
+
+
+
+
+
+
