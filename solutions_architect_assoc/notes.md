@@ -2562,4 +2562,91 @@ When opening it through `Object action` it will open a special URL called a pre-
 
 ## S3 Versioning          
 
+We can enable versioning for our files in Amazon S3          
+It is enabled at the **bucket level**             
+Same key overwrite will increment the "version": 1,2,3 ... i.e. anytime we update a file, it will get a new version. (it will actually create a new file)      
+It is best practice to version your buckets          
+-> Protect against unintended deletes (ability to restore a version)           
+-> Easy roll back to previous version (e.g. something wrong with the files)             
+
+Notes:       
+Any file that is not versioned prior to enabling version will have version "null"       
+Suspending versioning does not delete the previous versions            
+
+After enable versioning, if we delete an object (with no prior versions, i.e. the version is "null"), it is not permenently deleted, but was added a delete marker to it. This means we can undo the delete later on.        
+
+If we delete the delete marker version, we can get the object back.             
+
+## S3 Encryption           
+
+S3 Encryption for objects              
+There are 4 methods of encrypting objects in S3.          
+1. SSE-S3: encrypts S3 objects using keys handled and managed by AWS          
+2. SSE-KMS: leverage AWS Key Management Service to manage encryption keys             
+3. SSE-C: when you want to manage your own encryption keys                   
+4. Client Side Encryption                              
+
+SSE: Server Side Encryption                
+
+It is important to understand which ones are adapted to which situaiton for the exam.             
+
+**SSE-S3**          
+1. encryption using keys handled and managed by Amazon S3           
+2. Object is encrypted server side        
+3. AES-256 encryption type             
+4. To set SSE-S3 encryption, must set header: "x-amz-server-side-encryption":"AES256"              
+
+We have an object that is not encrypted and we want to upload it to S3 with SSE-S3 encryption.           
+We are going to upload it onto S3 using the HTTP/S protocol with the Header (from above)          
+Then the S3 (thanks to the header), knows that it should apply its own S3 managed data key.            
+Using this managed data key and the object, the object will be stored and encrypted in the S3 bucket.              
+The data key is entired owned and managed by S3.            
+
+<img src="images/sse_s3.png" width="700">              
+
+**SSE-KMS**            
+1. encryption using keys handled and managed by KMS            
+2. KMS Advantages: user control + audit trail           
+3. Object is encrypted server side         
+4. must set the header: "x-amz-server-side-encryption":"aws:kms"                
+
+Similar t0 the SSE-S3 (as they are all server side encryption), we upload it uisng HTTP/S with the right header.           
+S3 knows to apply the KMS Customer Master key, and using this key defined and the object, encryption will happen and the file  will be stored in the bucket under the SSE-KMS scheme.                 
+
+<img src="images/sse_kms.png" width="700">                 
+
+**SSE-C**             
+1. server-side encryption using data keys fully managed by the customer outside of AWS           
+2. Amazon S3 does not store the encryption key you provide (they will use the key, but it will be discarded afterwards)           
+3. **HTTPS must be used** to transmit the data into AWS             
+4. Encryption key must provided in HTTP headers, for every HTTP request made (because it is going to be discarded every single time)                  
+5. Can only be done through CLI.                  
+
+We have the object but we have to provide ourselves the data key. The data key is in the header and AWS is going to perform the encryption at the server side using the key and object and store the encrypted object in the bucket.              
+If we want to retrieve that file, we need to provide the same client side data key that was used.              
+
+<img src="images/sse_c.png" width="700">               
+
+**Client Side Encryption**          
+1. We encrypt the object before uploading it into Amazon S3.          
+2. Client library such as Amazon S3 Encryption Client           
+3. Clients must encrypt data themselves before sending to S3.              
+4. Clients must decrypt data themselves when retrieving from S3.          
+5. Customer fully managed the keys and encryption cycle              
+
+Amazon S3 this time is just a bucket. The client will use a SDK and the encryption will happen at the client side. The object is going to be fully encrypted on the client side. We are just going to upload the encrypted object to S3 via HTTP/S.             
+
+<img src="images/clientside_encryption.png" width="700">           
+
+Encryption in Transit (SSL/TLS)             
+1. Amazon S3 exposes:             
+-> HTTP endpoint: non encrypted          
+-> HTTPS endpoint: encryption in flight (relies on SSL and TLS certificates)         
+2. HTTPS is usually recommended.            
+3. Most clients would use the HTTPS endpoint by default             
+4. HTTPS is mandatory for SSE-C              
+5. Encryption in flight is also called SSL/TLS           
+
+
+## S3 Security and Bucket Policies               
 
