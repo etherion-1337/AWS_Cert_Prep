@@ -2390,3 +2390,46 @@ We will open all ports from anywhere on the ELB side. We will restric traffic on
 3-tier: client tier, web tier, database tier => common architecture              
 
 
+## MyWordPress         
+
+We are trying to create a fully scalable WordPress website.               
+We want that website to access and correctly display picture uploads.                 
+This means that WordPress will store the pictures somewhere on some drive and then all our instances must access that data.                
+Our user data, and the blog content should be stored in a MySOL database.              
+
+1. With RDS layer            
+
+First thing we do is to create a layer with RDS with multi-AZ and all the instances can talk to it.               
+
+<img src="images/wordpress_rds.png" width="700">                  
+
+2. Scaling with Aurora: Multi-AZ and Read Replicas           
+
+We are getting less operations by using Aurora.               
+
+<img src="images/wordpress_aurora.png" width="700">                 
+
+3. Storing images with EBS             
+
+We can have one EC2 instance with one EBS volume attached to it. We have a load balancer and our user want to send an image to our load balancer and that image will go all the way to the EBS.               
+If we want to read the image, the image can be read from the EBS volume and send back to the user.          
+
+The problem arise when start scaling. We have two different instances in two different AZ. Each of the EC2 instance have their own EBS volumes. If we send the image to one of the instance but read from another instance, the user will not get that image.            
+
+The problem with EBS volume is that it works well with 1 EC2 instance but when we start to scale across multiple instances or multiple AZ, it will start to become problematic.               
+
+<img src="images/wordpress_ebs.png" width="700">                    
+
+4. Storing image with EFS            
+
+EFS creates ENI (Elastic Network Interface) and it creates these ENI into each AZ. These ENI can be used for all our EC2 instances to access our EFS drive. The storage is shared among all the instances.           
+
+<img src="images/wordpress_efs.png" width="700">                 
+
+We have discussed:           
+1. Aurora Database to have easy Multi-AZ and Read Replicas          
+2. Storing data in EBS (single instance application)              
+3. Vs Storing data in EFS (distributed application)              
+
+## Instantiating applications quickly            
+
