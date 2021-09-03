@@ -2522,3 +2522,44 @@ Note that the various resources that is being used by Beanstalk can be seen unde
 
 ## Amazon S3 - Section Introduction             
 
+Amazon S3 is one of the main building blocks of AWS.               
+It is advertised as "infinitely scaling" storage.             
+It is widely popular and deserves its own section             
+
+Many websites uses Amazon S3 as a backbone            
+Many AWS services uses Amazon S3 as in integration as well.           
+
+## S3 Buckets and Objects           
+
+Amazon S3 Overview - **Buckets**:           
+Amazon S3 allows people to store objects (files) in "buckets" (directories)                  
+Buckets must have a **globally unique name (across all regions all accounts, not only your accounts)**               
+Buckets are defined at the region level                 
+S3 looks like a global service but buckets are created in the *region*           
+Naming convention:          
+-> No uppercase        
+-> No underscore          
+-> 3-63 characters long          
+-> Not an IP             
+-> Must start with lowercase letter or number            
+
+Amazon S3 Overview - **objects**:         
+Objects (files) have a Key             
+The Key is the FULL path to the object (e.g.):           
+-> s3://my-bucket/my_file.txt (key is `my_file.txt`)              
+-> s3://my-bucket/my_folder/another_folder/my_file.txt (key is `my_folder/another_folder/my_file.txt`)               
+The Key is composed of prefix (`my_folder/another_folder/`) + object name (`my_file.txt`)              
+There is no concept of "directories: within buckets, just keys with very long names that contains slashes.           
+Object values are the content of the body:          
+-> Max object size is 5TB (5000GB)        
+-> If uploading more than 5GB, must use "multi-part upload"           
+Metadata (list of text key / value pairs - system or user metadata) => this is to add information on your object                     
+Tags (Unicode key / value pair - up to 10) - useful for security / lifecycle            
+Version ID (if versioning is enabled)                   
+
+Upon uploading the object, we can select the object and go to `Object action` and open it. However direct access through the `Object URL` will not work as our bucket is not public yet so access it through web browser will be denied.       
+When opening it through `Object action` it will open a special URL called a pre-signed URL and it contains my AWS credentials into the URL.     
+
+## S3 Versioning          
+
+
