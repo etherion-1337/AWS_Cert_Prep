@@ -2515,3 +2515,10 @@ The web tier is shown on the left below. This is a traditional architecture wher
 Another architecture is around a worker environment and there is no clinets access it directly. We use a SQS Queue which is a message queue. The message will be sent into the SQS and the EC2 instances is going to workers and pull the messages from the SQS to execute the task. The worker environment is going to scale based on the number of SQS messages. We can push messages to SQS queue from another Web Server Tier.
 
 <img src="images/beanstalk_tier.png" width="700">                    
+
+Note that the various resources that is being used by Beanstalk can be seen under the respective services.               
+
+# Amazon S3 Introduction        
+
+## Amazon S3 - Section Introduction             
+
