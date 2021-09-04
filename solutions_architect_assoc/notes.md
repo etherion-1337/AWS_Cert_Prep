@@ -2787,6 +2787,56 @@ Available at no additional cost, without any performance impact.
 
 # AWS SDK, IAM Roles and Policies           
 
+## AWS Policy Simulator        
+
+This is a tool online to test your policies. It will take a look at the policy and try to simulate. It will perform actions (not real action) to test on your defined policies. It will tell you, e.g. if you are allow to get an object with this policy.            
+
+In case something is denied in real life, we can use this policy simulator to see what is wrong.          
+
+## AWS EC2 Instance Metadata        
+
+AWS EC2 Instance Metadata is powerful but one of the least known features to developers         
+
+It allows AWS EC2 instances to "learn about themselves" **without using an IAM Role for that purpose**           
+
+The URL is `http://169.254.169.254/latest/meta-data`             
+This is an internal IP to AWS. It will NOT work on our computer and it will only work from your EC2 instances.           
+
+You can retrieve the IAM Role name from the metadata, but you CANNOT retrieve the IAM Policy        
+
+Metadata = info about the EC2 instance            
+Userdata = launch script of the EC2 instance            
+
+## AWS SDK Overview        
+
+What if you want to perform actions on AWS directly from your applications code (without using the CLI)         
+
+We can use an SDK (software development kit)          
+
+Official SDKs are:           
+-> java        
+-> .NET           
+-> Node.js          
+-> PHP          
+-> Python (named boto3/botocore)            
+-> Go           
+-> Ruby        
+-> C++         
+
+We have to use the AWS SDK when coding against AWS Services such as DynamoDB           
+AWS CLI uses te Python SDK (boto3)           
+
+The exam expects you to know when you should use an SDK.           
+
+We will practice the AWS SDK when we get to the Lambda functions.          
+
+Good to know: if you don't specify or configure a default region, then us-east-1 will be chosen by default by your SDK to issue API calls.             
+
+# Advanced Amazon S3 and Athena            
+
+
+
+
 
 
 
