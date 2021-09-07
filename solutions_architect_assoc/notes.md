@@ -3128,7 +3128,7 @@ We have 3 targets for the S3 event notification:
 2. SQS (Simple Queue Service): add message into a queue            
 3. Lambda Function: to generate some custom code                
 
-<img src="images/s3_event.png" width="400">               
+<img src="images/s3_event.png" width="300">               
 
 **Can create as many "S3 events" as desired**                 
 S3 event notifications typically deliver events in seconds but can sometimes take a minute or longer.              
@@ -3138,7 +3138,19 @@ If 2 writes are made to a single non-versioned object at the same time, it is po
 
 ## S3 Requester Pays          
 
+In general, bucket owners pay for all S3 Storage and data transfer costs associated with their bucket.             
 
+<img src="images/s3_pay_1.png" width="400">              
+
+If we have a lot of heavy files and some of the customers want to download them, we may want to unable Requester Pays Buckets.        
+
+**With Requester Pays buckets**, the requester instead of the bucket owner pays the cost of the request and the data download from the bucket.           
+
+<img src="images/s3_pay_2.png" width="400">           
+
+Helpful when you want to share large datasets with other accounts.            
+
+The requester must be authenticated in AWS (cannot be anonymous)                
 
 
 
