@@ -2832,7 +2832,42 @@ We will practice the AWS SDK when we get to the Lambda functions.
 
 Good to know: if you don't specify or configure a default region, then us-east-1 will be chosen by default by your SDK to issue API calls.             
 
-# Advanced Amazon S3 and Athena            
+# Advanced Amazon S3 and Athena           
+
+## S3 MFA Delete         
+
+MFA (multi factor authentication) forces user to generate a code on a device (usually a mobile phone or hardware) before doing important operations on S3.           
+
+To use MFA-Delete, enable Versioning on the S3 bucket              
+
+You will need MFA to:         
+1. permanently delete an object version      
+2. suspend versioning on the bucket        
+
+You won't need MFA for:       
+1. enabling versioning       
+2. listing deleted versions       
+
+**Only the bucket owner (root account) can enable/disable MFA-Delete**         
+i.e. even if you are on adminstrator account, you cannot enable MFA-Delete       
+
+MFA-Delete currently can only be enabled using the CLI.         
+
+## S3 Default Encryption        
+
+One way to "force encryption" is to use a bucket policy and refuse any API call to PUT an S3 object without encryption headers:             
+
+Another way is to use the "default encryption" option in S3.              
+i.e. if you upload an un-encrypted object into S3, it will be encrypted using the default encryption options. If you already uploading the an encrypted version then it will not be re-encrypted again.           
+
+Note: Bucket Policies are evaluated before "default encryption"            
+i.e. if you want to force an encryption mechanism of SSE S3, you will need to use a bucket policy. If we just want to encrypt everything in the bucket, we can just use defailt encryption.                
+
+## S3 Access Logs            
+
+
+
+
 
 
 
