@@ -2865,6 +2865,41 @@ i.e. if you want to force an encryption mechanism of SSE S3, you will need to us
 
 ## S3 Access Logs            
 
+For audit purpose, you may want to log all access to S3 buckets      
+Any request made to S3, from any account, authorized or denied, will be logged into another S3 bucket            
+The data can be analyzed using data analysis tools or Amazon Athena !             
+
+<img src="images/s3_log.png" width="100">             
+
+**S3 Access Logs: Warning**           
+Do not set your logging bucket to be the monitored bucket. It will create a logging loop, and your bucket will grow in size exponentially             
+
+S3 log deliver group under Access Control List (ACL) of the logging bucket will be added automatically if we enable the Server access logging under the monitored bucket.         
+
+## S3 Replication (Cross Region and Same Region)           
+
+The core idea is that we have an S3 bucket in one region, and we want to replicate it asynchronously into another region, into another bucket. (e.g. from eu-west-1 => us-east-1)       
+
+**Must enable versioning** in source and destination             
+Set up Cross Region Replication (CRR, if the two buckets are in different region) or Same Region Replication (SRR, if the two buckets are in the same region)               
+
+Buckets can be in different accounts (so it is possible for you to save a copy of your data into another account using S3 replication)            
+
+The copy happens asynchronously but is very quick.         
+
+For the copying to happen, we need to create an IAM role, and that IAM role will have the permissions from the first S3 bucket to copy to the second S3 bucket               
+
+CRR use cases: compliance, lower latency access, replication across accounts       
+SRR use cases: log aggregation, live replication between production and test accounts           
+
+S3 Replication - Notes               
+1. After activating S3 Replication, only new objects are replicated, i.e. NOT retroactive            
+2. For DELETE operations:        
+-> can replicate delete markers from source to target (optional setting)          
+-> deletions with a version ID are not replicated (to avoid malicious deletes)              
+3. There is no "chaining" of replication             
+-> i.e. if bucket 1 has replication into bucket 2, which has replication into bucket 2          
+-> then objects created in bucket 1 are not replicated to bucket 3                  
 
 
 
