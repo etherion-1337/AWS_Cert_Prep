@@ -3150,9 +3150,47 @@ If we have a lot of heavy files and some of the customers want to download them,
 
 Helpful when you want to share large datasets with other accounts.            
 
-The requester must be authenticated in AWS (cannot be anonymous)                
+The requester must be authenticated in AWS (cannot be anonymous), so that AWS knows to bill the requester of that request.           
 
+## Athena Overview         
 
+**Serverless** service to perform analytics **directly against S3 files**.                
 
+Fully Serverless database with SQL capabilities               
+It is used only for 1 thing: query data in S3                
 
+With Athena, we leave our files in S3 and we do queries directly against them.                       
+Has a JDBC/ODBC driver if we want to connect our BI tools to it.          
+Charged per query and amount of data scanned           
+Supports CSV, JSON, ORC, Avro and Parquet (built on Presto)           
+
+Use cases: Business intelligence, analytics, reporting, analyze and query VPC Flow Logs, ELB Logs, CloudTrail trails, etc.         
+
+Output results put back to S3.             
+
+It is secured through IAM.               
+           
+From exam's perspective, anytime we see serverless database to perform queries on directly on Amazon S3, or how can we analyze ELB logs/VPC Flow Logs, this is going to be Athena.          
+
+## S3 Lock Policies and Glacier Vault Lock         
+
+S3 Object Lock:     
+-> Versioning must be enabled                     
+-> Adopt a WORM (Write Once Read Many) model. i.e. write the file once to your S3 bucket, and then block that object version to be deleted for a specific amount of time, so no one can touch it.          
+-> Block an object version deletion for a specified amount of time           
+Object retention:         
+1. **Retention Period**: specifies a fixed period        
+2. **Legal Hold**: same protection, no expiry date          
+Modes:       
+1. **Governance mode**: users cannot overwrite or delete an object version or alter its lock settings unless have special permissions         
+2. **Compliance mode**: a protected object version cannot be overwritten or deleted by any user, including the root user in your AWS account. When an object is locked in compliance mode, its retention mode cannot be changed, and its retention period cannot be shortened.        
+
+Glacier Vault Lock:            
+-> Adopt a WORM model          
+-> Create a lock policy and that lock policy prevents future edits to that file so that it no longer can be changed. And also no one can delete that policy (even admin).           
+-> Helpful for compliance and data retention (e.g. after put into the bucket, make sure noone will ever delete it and we will retrieve it in 7 years time)  
+
+# CloudFront and AWS Global Accelerator             
+
+## CloudFront Overview
 
