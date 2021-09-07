@@ -3115,6 +3115,29 @@ For more complex query, it is going to be serverless on S3, we can Amazon Athena
 
 ## S3 Event Notifications           
 
+Some events happen in your S3 bucket, can be new object created etc:       
+S3:ObjectCreated, S3:ObjectRemoved, S3:ObjectRestore, S3:Replication, etc.           
+and we would like to react to all these events.         
+
+We can create rules, and for these rules we can filter by object names. (e.g. `*.jpg`).           
+These rules allow us to trigger some reaction within our AWS account.         
+
+Use case: Generate thumbnails of images uploaded to S3         
+We have 3 targets for the S3 event notification:             
+1. SNS (Simple Notification Service): send notifications and emails                       
+2. SQS (Simple Queue Service): add message into a queue            
+3. Lambda Function: to generate some custom code                
+
+<img src="images/s3_event.png" width="400">               
+
+**Can create as many "S3 events" as desired**                 
+S3 event notifications typically deliver events in seconds but can sometimes take a minute or longer.              
+
+If 2 writes are made to a single non-versioned object at the same time, it is possible that only a single event notification will be sent.          
+-> If you want to ensure that an event notification is sent for every successful write, you can enable versioning on your bucket             
+
+## S3 Requester Pays          
+
 
 
 
