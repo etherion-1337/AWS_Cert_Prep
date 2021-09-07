@@ -2901,6 +2901,100 @@ S3 Replication - Notes
 -> i.e. if bucket 1 has replication into bucket 2, which has replication into bucket 2          
 -> then objects created in bucket 1 are not replicated to bucket 3                  
 
+## S3 Pre-signed URLs        
+
+Can generate pre-signed URLs using SDK or CLI:            
+1. For downloads (easy, can use the CLI)         
+2. For uploads (harder, must use the SDK)         
+
+Valid for a default of 3600 Seconds, can change timeout with `--expires-in [TIME_BY_SECONDS]` argument          
+
+Users given a pre-signed URL inherit the permissions of the person who generated the URL for GET / PUT          
+
+Examples:       
+1. allow only logged-in users to download a permium video on your S3 bucket           
+2. allow an ever changing list of users to download files by generating URLs dynamically       
+3. allow temporarily a user to upload a file to a precise location in our bucket         
+
+## S3 Storage Classes + Glacier       
+
+Now we have stored our files on Amazon S3 but we have different options to store our files on different storage class. These can give us cost saving.          
+
+Amazon S3 Standard - General Purpose (so far we have been using)        
+Amazon S3 Standard - Infrequent Access (IA)        
+Amazon S3 Standard One Zone-Infrequent Access (only in one AZ)           
+Amazon S3 Intelligent Tiering: if we don't know where to put between frequent or infrequent access           
+Amazon Glacier: if you know you have backups and archives          
+Amazon Glacier Deep Archive: backups and archives can take long time to retrieve         
+Amazon S3 Reduced Redundancy Storage (deprecated - omitted)        
+
+**S3 Durability and Availability:**              
+Durability: how often you will lose a file         
+High durability (99.999999999% 11 9's) of objects across multiple AZ. i.e. if you store 10,000,000 objects with Amazon S3, you can on average expect to incur a loss of a single object once every 10,000 years          
+Same for all storage classes          
+
+Availability: how readily available a servce is (in this case, S3)           
+S3 Standard has 99.99% availability, which means it will not be available 53 minutes a year              
+Varies depending on storage class     
+
+**S3 Standard - General Purposes**           
+99.99% availability          
+Used for frequently accessed data           
+Low latency and high throughput       
+Sustain up to 2 concurrent facility failures             
+Use Cases: Big Data analytics, mobile & gaming applications, content distribution           
+
+**S3 Standard - Infrequent Access (IA)**           
+Suitable for data that is less frequently accessed, but requires rapid acccess when needed             
+99.9% availability (so lower than the general purposes class)         
+Lower cost compared to Amazon S3 Standard, but retrieval fee when we need to access the file           
+Sustain 2 concurrent facility failures             
+Use Cases: As a data store for disaster recovery, backups               
+
+**S3 Intelligent-Tiering**              
+99.9% availability           
+Same low latency and high throughput performance of S3 Standard             
+Small monthly monitoring and auto-tiering fee            
+Cost-optimized by automatically moving objects between two access tiers based on changing access patterns (General purpose vs S3 IA):            
+-> frequent access          
+-> infrequent access           
+Resilient against events that impact an entire AZ.                
+
+**S3 One Zone - Infrequent Access (IA)**          
+Same as IA but data is stored in a single AZ           
+data lost when AZ is destroyed            
+99.5% availability         
+Low latency and high throughput performance            
+Supports SSL for data at transit and encryption at rest            
+Lower cost compared to S3-IA (by 20%)           
+Use Cases: Storing secondary backup copies of on-premise data, or storing data you can recreate              
+
+**Amazon Glacier**          
+(very) Low cost object storage (in GB/Month) meant for archiving / backup         
+Data is retained for the longer term (10s of years)           
+Alternative to on-premise magnetic tape storage               
+Various retrieval options of time + fees for retrieval:          
+Cost per storage per month ($0.004/GB) + retrieval cost               
+Each item in Glacier is called "Archive" (up to 40TB)              
+Archives are stored in "Vaults"               
+
+**Amazon Glacier and Glacier Deep Archive**         
+
+Amazon Glacier - cheap, 3 ways to retrieve the data:            
+1. Expedited (1 to 5 minutes)              
+2. Standard (3 to 5 hours)          
+3. Bulk (5 to 12 hours) (multiple files)             
+-> Minimum storage duration of 90 days             
+
+Amazon Glacier Deep Archive - cheapest of all S3 Storage tier:        
+1. Standard (12 hours)          
+2. Bulk (48 hours)           
+-> Minimum storage duration of 180 days               
+
+S3 Storage Classes Comparison:         
+
+<img src="images/s3_storage_class.png" width="700">                  
+
 
 
 
