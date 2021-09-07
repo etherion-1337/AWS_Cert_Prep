@@ -2995,10 +2995,109 @@ S3 Storage Classes Comparison:
 
 <img src="images/s3_storage_class.png" width="700">                  
 
+Note that the storage class is tied to the object.          
+It is possible to change the storage class of an object once uploaded into the bucket.                  
 
+## S3 Lifecycle Rules             
 
+S3 - Moving between storage classes:             
+You can transition objects between storage classes (using transition rules or lifecyle rules)          
+For infrequently accessed object, move them to "STANDARD_1A"           
+For archive objects you don't need in real-time, GLACIER or DEEP_ARCHIVE.             
+You cannot move object from Glacier back to Standard IA etc directly, you will need to restore it and then copy into IA.            
 
+Moving objects can be automated using a **lifecycle configuration**.            
 
+<img src="images/s3_class_rule.png" width="500">          
+
+S3 Lifecyle Rules:            
+1. **Transition actions**: it defines when objects are transitioned to another storage class            
+-> move objects to Standard IA class 60 days after creation           
+-> move to Glacier for archiving after 6 months         
+2. **Expiration actions**: configure objects to expire (delete) after some time         
+-> access log files can be set to delete after a 365 days          
+-> **can be used to delete old versions of files (if versioning is enabled)**               
+-> can be used to delete incomplete multi-part uploads         
+3. Rules can be created for a certain prefix (e.g. `s3://mybucket/mp3/*`)             
+4. Rules can be created for certain object tags (e.g. Department: Finance)                   
+
+S3 Lifecycle Rules - Scenario 1:          
+Your application on EC2 creates images thumbnails after profile photos are uploaded to S3. These thumbnails can be easily recreated, and only need to be kept for 45 days. The source images should be able to be immediately retrieved for these 45 days, and afterwards, the user can wait up to 6 hours. How would you design this ?        
+
+Ans: S3 source images can be on STANDARD, with a lifecycle configuration to transition them to GLACIER after 45 days.           
+S3 thumbnails can be on ONEZONE_IA, with a lifecycle configuration to expire them (delete them) after 45 days.           
+Most cost effective rules for your S3 buckets               
+
+S3 Lifecycle Rules - Scenario 2:          
+A rule in your company states that you should be able to recover your deleted S3 objects immediately after 15 days, although this may happen rarely. After this time, and for up to 365 days, deleted objects should be recoverable within 48 hours.           
+
+Ans: You need to enable S3 versioning in order to have object versions, so that "delete object" is in fact hidden by a "delete marker" and can be recovered.           
+You can transition these "non-current versions" of the object to S3_IA.           
+You can transition afterwards these "non-current versions" to DEEP_ARCHIVE               
+
+## S3 Analytics        
+
+Storage Class Analysis        
+
+You can setup S3 Analytics to help determine when to transition objects from Standard to Standard_IA.          
+Does not work for ONEZONE_IA or GLACIER       
+
+Report is updated daily         
+Takes about 24h to 48h to first start         
+
+Good first step to put together Lifecycle Rules (or improve them)        
+
+## S3 Performance         
+
+S3 - Baseline performance         
+Amazon S3 automatically scales to high request rates, latency 100-200 ms          
+Your application can achieve at least 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD requests per second per prefix in a bucket.          
+There are no limits to the number of prefixes in a bucket           
+
+E.g. (object path => prefix):         
+1. bucket/folder1/sub1/file => `/folder1/sub1/`  -> 3,500 PUT and 5,500 GET per second         
+2. bucket/folder1/sub2/file => `/folder1/sub2/`  -> 3,500 PUT and 5,500 GET per second          
+3. bucket/1/file => `/1/` -> 3,500 PUT and 5,500 GET per second          
+4. bucket/2/file => `/2/` -> 3,500 PUT and 5,500 GET per second          
+If you spread reads across all 4 prefixes evenly, you can achieve 22,000 requests per second for GET and HEAD              
+
+**S3 - KMS Limitation**                    
+If you use SSE-KMS, you may be impacted by the KMS limits          
+When you upload, it calls the **GenerateDataKey** KMS API         
+When you download the file, it calls the **Decrypt** KMS API         
+These 2 requests will count towards the KMS quota             
+
+e.g. Our users connect their S3 bucket and they want to upload or download a file using SSE-KMS encryption. The S3 bucket will perform an API call to a KMS key (to either encrypt or decrypt) and get the result from it.            
+Count towads the KMS quota per second (5500, 10000, 30000 request based on region)              
+You can request a quota increase using the **Service Quotas Console**          1
+
+<img src="images/s3_kms_limitation.png" width="300">              
+
+S3 Performance         
+1. Multi-Part upload:         
+-> recommended for files > 100MB, must use for files > 5GB        
+-> can help parallelise uploads (speed up transfers)           
+S3 is smart enough to put all the parts back into one big file         
+
+<img src="images/s3_multi.png" width="500">              
+
+2. S3 Transfer Acceeleration (for download and upload)        
+-> Increase transfer speed by transfering files to an AWS edge location which will forward the data to the S3 bucket in the target location.           
+-> Compatible with multi-part upload         
+
+<img src="images/s3_acc.png" width="500">           
+
+3. S3 Byte-Range Fetchs (for reading files efficiently)           
+-> Parallelise GETs by requesting specific byte ranges          
+-> Better resilience in case of failures (we can re-try with a smaller byte-range if failed with a big byte-range)        
+
+-> can be used to speed up downloads            
+We can request the first part of the (big) file in S3. We will request all the parts as specific Byte-Range Fetches            
+All these requests can be made in parallel         
+
+-> can be used to retrieve only partial data (e.g. the head of a file)          
+if we know the first 50 bytes of the file in S3 is the header and it will give some information about the file, then we just issue a header request.           
+<img src="images/s3_byte_range.png" width="700">            
 
 
 
