@@ -3097,7 +3097,23 @@ All these requests can be made in parallel
 
 -> can be used to retrieve only partial data (e.g. the head of a file)          
 if we know the first 50 bytes of the file in S3 is the header and it will give some information about the file, then we just issue a header request.           
+
 <img src="images/s3_byte_range.png" width="700">            
+
+## S3 Select and Glacier Select         
+
+Retrieve less data using SQL by performing **server side filtering**            
+Can filter by rows and columns (simple SQL statements)         
+Less network transfer, less CPU cost client-side, S3 will perform the SELECT, the filtering for you            
+
+If our client asking to get a CSV file with S3 Select just to get a few rows and columns. S3 will perform server side filtering on the CSV file to find the right collumns and rows, and send back the data filtered to our client.          
+
+<img src="images/s3_select.png" width="700">      
+
+Exam: everytime we see filtering of data server-side in S3 to get less, think S3 Select. This works for Glacier (Glacier Select)         
+For more complex query, it is going to be serverless on S3, we can Amazon Athena.            
+
+## S3 Event Notifications           
 
 
 
