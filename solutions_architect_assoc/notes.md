@@ -3306,3 +3306,124 @@ But if your users are using directly against S3 and you want to distribute a fil
 
 ## CloudFront Advanced Concepts        
 
+CloudFront - Pricing        
+
+CloudFront Edge locations are all around the world          
+The cost of data out per edge location varies               
+The more data transfer out of CloudFront, the lower the cost.             
+
+CloudFront - Price Classes            
+
+You can reduce the number of edge locations for **cost reduction**           
+Three price classes:          
+1. Price Class All: all region - best performance                
+2. Price Class 200: most regions, but excludes the most expensive regions           
+3. Price Class 100: only the least expensive regions             
+
+<img src="images/cloudfront_priceclass.png" width="700">          
+
+CloudFront - Multiple Origin         
+
+To route to different kind of origins based on the content type             
+Based on path pattern:            
+1. `/images/*`         
+2. `/api/*`         
+3. `/*`                 
+
+In CloudFront we can set different cache behavior with a path being determined. if we have the `/api/*` path, we can say that you need to have a response from the origin being your ALB.          
+Anything else that is being requested, maybe everything else is static content, then you should get that content out of the your S3 buckets.       
+
+We can define multiple origins based on the path being used in Amazon CloudFront              
+
+<img src="images/cloudfront_multiorigin.png" width="700">          
+
+CloudFront - Origin Groups           
+
+To increase high-availability and do failover        
+Origin Group: one primary and one secondary origin           
+If the primary origin fails, the second one is used           
+
+Say we have a CloudFront and an origin group made of two EC2 instances. The first one is going to be our primary origin and the second one is going to be our secondary origin. The CloudFront will send request to the first EC2 instance, if fails then CloudFront will try the same request on Origin B.              
+
+We can also use this with S3. We can have Origin Group made of two S3 buckets. If these buckets are in different region, we can set up replication between these buckets. Same concept as above will be used for recovery.            
+
+<img src="images/cloudfront_origingrp.png" width="700">            
+
+CloudFront - Field Level Encryption         
+
+Protect user sensitive information through application stack              
+Adds an additional layer of security along with HTTPS          
+Sensitive information encrypted at the edge close to user (when sensitive information is sent to the user, the edge location is going to encrypt it and only able to be decrypted with a private key)            
+Uses asymmetric encryption.                
+
+Usage:        
+1. specify set of fields in POST requests that you want to be encrypted (up to 10 fields)          
+2. specify the public key to encrypt them       
+
+Say we have a client talking over HTTPS to edge location which will be forwarding to the CloudFront service using HTTPS again.       
+We can specify Field Level Encryption. Say our user is sending us some credit card information (the orange field below e.g.). Edge location encrypt using public key. So when edge location pass the information to CloudFront services, it will be encrypted thanks to the public key. The information will be decrypted at the web server with the private key.           
+
+<img src="images/cloudfront_field.png" width="700">          
+
+## AWS Global Accelerator - Overview            
+
+Problem Statement: You have deployed an application and have global users who want to access it directly. But our application is only deployed in one region (e.g. india). But my users are all over the world. As they access my application, they will go over to the public internet. which can add a lot of latency due to many hops.            
+
+<img src="images/aws_global_problem.png" width="700">                  
+
+We wish to go as fast as possible through AWS network to minimize latency.             
+
+**Unicast IP vs Anycast IP**            
+
+Unicast IP: one server holds one IP address             
+Anycast IP: all servers hold the same IP address and the client is routed to the nearest one             
+
+AWS Global Accelerator uses the Anycast IP concept.         
+
+Improve global application **availability** and **performance** using the AWS global network             
+
+Leverage the AWS internal network to optimize the route to your application (60% improvement)                 
+
+e.g. We have an application load balancer in India, and users all around the world want to access our application.             
+When they use the Global Accelerator, they are actually connected to an edge location and the edge location will be routing the traffic directly into India.                
+The traffic on the public interet only happens between America and the closest edge location. And it leverage on the private AWS network from the edge location to the your ALB.                       
+<img src="images/aws_global_acc.png" width="700">              
+
+**2 Anycast IP** (static IP) are created for your application and traffic is sent through **Edge Locations**. We only access the application through these 2 IPs. Using these 2 IPs we will be directed to the correct edge location.                        
+The Edge locations send the traffic to your application.                     
+
+1. Works with Elastic IP, EC2 instances, ALB, NLB, public or private             
+2. Consistent performance         
+-> intelligent routing to lowest latency and fast regional failover            
+-> no issue with client cache (because the IP does not change)         
+-> internal AWS network        
+3. Health Checks        
+-> Global Accelerator performs a health check of your applications        
+-> helps make your application global (failover less than 1 minute for unhealthy)            
+-> great for disaster recovery (thanks to the health checks)               
+4. Security        
+-> only 2 external IP need to be whitelisted          
+-> DDoS protection automatically thanks to AWS Shield            
+               
+
+**AWS Global Accelerator vs CloudFront**                    
+They both use the AWS global network and its edge locations around the world              
+Both services integrate with AWS Shield for DDoS protection              
+1. CloudFront - Content Delivery Network              
+-> improves performance for both cacheabel content (such as images and videos) and dynamic content (e.g. API acceleration and dynamic site delivery)                      
+-> cache content at the Edge (e.g. images and videos)           
+-> content is *served at the edge*             
+2. Global Acccelerator             
+-> improves performance for a wide range of applications over TCP or UDP               
+-> no caching, *proxying packets* at the edge to applications running one one or more AWS regions, all request send back to the application         
+-> good for non-HTTP use cases, e.g. gaming (UDP), IoT (MQTT) or Voice over IP                   
+-> good for HTTP use cases that require static IP addresses          
+-> good for HTTP use cases that required deterministic, fast regional failover              
+
+Note: it has a tool for speed test: direct internet vs Global Accelerator               
+
+# AWS Storage Extras         
+
+## AWS Snow Family Overview         
+
+
