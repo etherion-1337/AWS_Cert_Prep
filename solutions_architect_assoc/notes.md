@@ -3194,3 +3194,65 @@ Glacier Vault Lock:
 
 ## CloudFront Overview
 
+CloudFront is a content delivery network (CDN)              
+It is a **global service**.            
+(exam) anytime you see CDN, think CloudFront             
+
+Improves read performance, by caching the content of your website at the different edge locations.            
+
+Improves users experience (lower latency)            
+
+CloudFront is made of 216 Point of Presence globally, which correspond to the AWS edge locations around the world.           
+
+DDoS (attack at the same time) protection (because world wide), integration with Shield, AWS Web Application Firewall.           
+
+Can expose external HTTPS and can talk to internal HTTPS backends           
+
+CloudFront - Origins (where it can cache from)            
+1. S3 bucket:         
+-> for distributing files and caching them at the edge              
+-> enhanced security with CloudFront **Origin Access Identity (OAI)**           
+-> CloudFront can be used as an ingress (to upload files to S3)              
+2. Custom Origin (HTTP):       
+-> Application Load Balancer         
+-> EC2 Instance        
+-> S3 website (must first enable the bucket as a static website)              
+-> any HTTP backend you want (or on-premises)                 
+
+CloudFront at a high level:              
+<img src="images/cloudfront_high.png" width="700">                 
+We have edge locations (around the world) and then it will be connecting to your origin (S3 bucket or an HTTP server).        
+And when client connects and does an HTTP request into your edge location, then the edge location will see if it has it in the cache.          
+If it doesn't have in the cache it will go to the origin to get the request result. Once it retrieve the result it will be caching it into your local cache. So if another client request the same content from the same edge location,  then the edge location does not need to go to the origin.            
+
+e.g. CloudFront - S3 as an origin                  
+<img src="images/cloudfront_s3.png" width="700">               
+S3 bucket is secured through CloudFront OAI. The connection from S3 to Edge will be private.                 
+For the edge location of CloudFront to access your S3 buckets, it is going to use an OAI (Origin Access Identity), it is an IAM role for your CloudFront. Using that role is going to access your S3 buckets and the bucket policy will say that this role is accessible and send the file to CloudFront.                  
+
+e.g. CloudFront - ALB or EC2 as an origin             
+<img src="images/cloudfront_alb.png" width="700">       
+We have our EC2 instances and they must be public because they must be publicly accessible from HTTP standpoint.          
+The user will access our edge location and our edge location will access our EC2 instances.         
+The security group must allow the IPs of CloudFront's edge locations into the EC2 instance. There is a list of public IP for edge locations. The security group must allow all these public IP of edge locations to allow CloudFront to fetch content from your EC2 instances.          
+
+If we use ALB as an origin. The ALB must be public to be able to accessible by CloudFront. But the backend EC2 instances now can be private. The security group of the EC2 instance must allow the security group of the load balancer.     
+
+CloudFront Geo Restriction:          
+1. You can restrict who can access your distribution       
+-> **Whitelist**: allow your users to access your content only if they are in one of the countries on a list of approved countries.         
+-> **Blacklist**: prevent your users from accessing your content if they are in one of the countries on a blacklist of banned countries.         
+
+The "country" is determined using a 3rd party Geo-IP database.               
+Use case: Copyright Laws to control access to content            
+
+CloudFront vs S3 Cross Region Replication               
+CloudFront:          
+-> using Global Edge network         
+-> the files are cached for a TTL (maybe a day)              
+-> **amazing for static content that must be available everywhere**              
+S3 Cross Region Replication:           
+-> must be setup for each region you want replication to happen            
+-> files are updated in near real-time (no caching)           
+-> read only (help with read performance)          
+-> **great for dynamic content that needs to be available at low-latency in few regions**         
