@@ -3243,8 +3243,8 @@ CloudFront Geo Restriction:
 -> **Whitelist**: allow your users to access your content only if they are in one of the countries on a list of approved countries.         
 -> **Blacklist**: prevent your users from accessing your content if they are in one of the countries on a blacklist of banned countries.         
 
-The "country" is determined using a 3rd party Geo-IP database.               
-Use case: Copyright Laws to control access to content            
+2. The "country" is determined using a 3rd party Geo-IP database.               
+3. Use case: Copyright Laws to control access to content            
 
 CloudFront vs S3 Cross Region Replication               
 CloudFront:          
@@ -3256,3 +3256,53 @@ S3 Cross Region Replication:
 -> files are updated in near real-time (no caching)           
 -> read only (help with read performance)          
 -> **great for dynamic content that needs to be available at low-latency in few regions**         
+
+For a certain use case:      
+1. create an S3 bucket       
+2. create a CloudFront distribution       
+3. create an Origin Access Identity (a user of CloudFront that will be access our S3 bucket)           
+4. limit the S3 bucket to be accessed only using this identity (so noone else can access this bucket except through CloudFront)               
+
+## CloudFront Signed URL / Cookies          
+
+Say you have a CloudFront distribution, and you want to make it private but give access to people to premium shared content all over the world. We would like to see and know who has access to what on your CloudFront distribution.             
+
+We can use CloudFront Signed URL/Cookie. We attach a policy with:           
+1. Includes URL expiration (when does the URL or cookie expire)           
+2. Includes IP ranges to access the data from        
+3. Trusted signers (which AWS accounts can create signed URLs)          
+
+How long should the URL be valid for ?         
+1. Shared content (movie, music): make it short (a few minutes)          
+2. Private content (private to the user): you can make it last for years           
+
+Signed URL = access to individual files (one signed URL per file)              
+Signed Cookies = access to multiple files (one signed cookie for manu files)             
+
+**CloudFront Signed URL Diagram**          
+Say we have our CloudFront distribution and have a bunch of edge locations. We can access our S3 bucket through the OAI for full security. This means that the object in our S3 bucket cannot be accessed by anything else but CloudFront.            
+Our clients is going to authorize and authenticate to our application. The application will use the AWS SDK to generate a signed URL directly from CloudFront. It will then return the signed URL to the clients.           
+The clients will then able to use the signed URL to get the data and files and objects.                
+<img src="images/cloudfront_signurl.png" width="700">          
+
+CloudFront Signed URL vs S3 Pre-Signed URL            
+1. CloudFront Signed URL:          
+-> allow access to a path, no matter the origin (not only S3, HTTP, backend etc)            
+-> account wide key-pair, only the root can manage it            
+-> can filter by IP, path, date, expiration        
+-> can leverage caching features           
+
+<img src="images/cloudfront_signurl2.png" width="700">          
+
+3. S3 Pre-Signed URL:          
+-> issue a request as the person who pre-signed the URL         
+-> uses the IAM key of the signing IAM principal          
+-> limited lifetime          
+
+<img src="images/cloudfront_s3_2.png" width="500">            
+
+If you want people to have access to CloudFront distribution and it is in front of S3. you have to use a signed URL because you cannot access S3 bucket as you should (because there is a bucket policy restricting it to the OAI).          
+But if your users are using directly against S3 and you want to distribute a file directly without using CloudFront, then pre-signed URL would be a great use case for it.                
+
+## CloudFront Advanced Concepts        
+
