@@ -3607,3 +3607,100 @@ AWS Storage Gateway Summary
 
 ## Amazon FSx Overview          
 
+Two different Amazon FSx !           
+
+**Amazon FSx for Windows (File Server)**:          
+
+Problem statement:       
+1. EFS is a shared POSIX system for linux systems (or on-premises machines)         
+2. You cannot use EFS with your Windows servers          
+
+Amazon comes up with **FSx for Windows**, and is a fully managed **Windows** file system share drive.               
+Supports SMB protocol and Windows NTFS (EXAM)       
+It supports Microsoft Active Directory integration, ACLs, user quotas        
+Built on SSD, scale up to 10s of GB/s, millions of IOPS, 100s PB of data            
+
+It is a scalable file system for distributed file system for Windows that is managed by AWS.            
+Can be accessed from your on-premise infrastructure           
+Can be configured to be Multi-AZ (high availability)            
+Data is backed-up daily to S3            
+
+Anytime you have shared storage for your Windows instances, this is Amazon FSx for Windows            
+
+**Amazon FSx for Lustre**:               
+
+Lustre is a type of parallel distributed file system, for large-scale computing            
+The name Lustre is derived from "Linux" and "Cluster"           
+
+Used for: Machine Learning, **High Performance Computing (HPC)**               
+Anytime we see file system to perform HPC, then Lustre will be a good answer.          
+We can also do video processing, financial modelling, electronic design automation              
+
+Scale up to 100s GB/s, millions of IOPS, sub-ms latencies          
+**Seamless integration with S3**            
+-> can "read S3" as a file system (through FSx for Lustre)         
+-> can write the output of the computations back to S3 (through FSx for Lustre)          
+
+So FSx for Lustre is a way to expose your S3 bucket as a file system as well to your Linux instances.       
+Can be used from on-premise servers if needed.                  
+
+If you have a cluster, a HPC computing cluster that has a file system that is shared with high IOPS, high throughputs, very low latency and integration with S3 as a backend.               
+
+FSx File System Deployment Options:          
+1. **Scratch File System**:              
+-> temporary storage        
+-> data is not replicated (doesn't persist if file server fails)           
+-> high burst (6x faster than persistent file system, 200MBps per TiB)          
+-> usage: short-term processing, optimise costs (by not having the data being replicated)            
+
+You have SFx and your compute instances are going to connect to AZ1 and AZ2. Then the FSx for Luster Scratch File System only has one copy of your data. We can also have optional extra buckets underlying for the data repository.              
+
+<img src="images/fsx_scratch.png" width="700">                 
+
+2. **Persistent File System**:            
+-> long-term storage        
+-> data is replicated within same AZ (NOT across different AZ)       
+-> replace failed files within minutes            
+-> usage: long-term processing, sensitive data               
+
+Same architecture as above. FSx for Lustre only lives in one single AZ. It will have two copies of data.            
+
+<img src="images/fsx_persistent.png" width="700">                      
+
+## AWS Transfer Family           
+
+A fully-managed service for file transfers into and out of Amazon S3 oe Amazon EFS using the FTP protocol         
+
+Supports 3 kinds of protocol:      
+1. AWS Transfer for FTP (File Transfer Protocol)           
+2. AWS Transfer for FTPS (File Transfer Protocol over SSL)          
+3. AWS Transfer for SFTP (Secure File Transfer Protocol)             
+
+FTP: unencrypted, FTPS,SFTP: encrypted in flight         
+
+The idea is that using the FTP protocol we can upload files to S3 or EFS.       
+
+The Transfer Family is fully managed infrastructure, scalable, reliable, highly available (multi-AZ)              
+Pay per provisioned endpoint per hour + data transfers in GB.              
+Store and manage user's credentials within the service            
+Integrate with existing authentication systems (Microsoft Active Directory, LDAP, Okta, Amazon Cognito, custom)              
+Usage: sharing files, public dataset, CRM, ERP, etc.           
+
+The transfer family has three flavours. The users can access directly using the endpoints of the FTP or optionally a DNS to provide your own host name into the FTP service. The transfer for the FTP service will have an IAM role, that will be assumed to send or retrieve through the files from S3 or EFS.            
+If you want to secure the Transfer Family services, we can authenticate your users using an external authentication system.           
+
+<img src="images/transfer_family.png" width="700">              
+
+## All AWS Storage Options Compared            
+
+1. S3: object storage, serverless           
+2. Glacier: object archival, retrieve rarely          
+3. EFS: Network File System for Linux instances, POSIX filesystem             
+4. FSx for Windows: Network File System for Windows servers               
+5. FSx for Lustre: High Performance Computing Linux file system            
+6. EBS volumes: Network storage for one EC2 instance at a time, bound to AZ             
+7. Instance Storage: Physical storage for your EC2 instance (high IOPS), lose the storage permanently if EC2 goes down               
+8. Storage Gateway: File Gateway, Volume Gateway, (cache and stored), Tape Gateway             
+9. Snowball / Snowmobile: to move large amount of data to the cloud, physically (into or out of S3)            
+10. Database: for specific workloads, usually with indexing and querying               
+
