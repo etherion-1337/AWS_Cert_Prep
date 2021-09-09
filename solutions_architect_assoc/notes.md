@@ -3752,26 +3752,71 @@ Can have out of the order messages (best effort ordering).
 
 **SQS - Producing Messages**               
 
-1. produced to SQS
+1. produced to SQS using the SDK (SendMessage API)             
+2. the message is **persisted** in SQS until a consumer reads it and deletes it (therefore the message has been processed)          
+3. message retention: default 4 days, up to 14 days            
 
+e.g. send an order to be processed           
+-> order id        
+-> customer id        
+-> any attributes            
+
+SQS standard: unlimited throughput              
 <img src="images/sqs_produce.png" width="700">              
+
+**SQS - Consuming Messages**           
+
+1. consumers (running on EC2 instances, servers, or AWS Lambda, i.e. applications)             
+2. consumer poll SQS for messages (receive up to 10 messages at a time)           
+3. consumer process the messages (e.g. insert the message into an RDS database)           
+4. consumer will delete messages using the DeleteMessage API            
+5. therefore no other consumer will see this message.              
 
 <img src="images/sqs_consume.png" width="700">                  
 
+SQS - Multiple EC2 Instance Consumers (i.e. scaling)                    
+
+1. consumers receive and process messages in parallel            
+2. if a message is not consumed fast enough, it will be received by other consumers          
+-> at least once delivery         
+-> best-effort message ordering          
+3. consumers delete messages after processing them           
+4. we can scale consumers *horizontally* to improve throughput of processing        
 
 
+SQS with Auto Scaling Group (ASG)                  
 
+Our consumers will be running on EC2 instances inside of a ASG. They will be polling for messages form the SQS queue. The ASG has to be scaling on some kind of metric.            
+The metric available to us is the Queue Length from CloudWatch. We can setup an alarm such that whenever the queue length go over certain level, then trigger a CloudWatch Alarm. This alarm should increase the capacity of the ASG by X amount.            
 
+<img src="images/sqs_asg.png" width="700">               
 
+SQS to **decouple** between application tiers              
 
-
-
-
-
-SQS to decouple between application tiers           
-
-<img src="images/sqs_sa.png" width="700">              
+<img src="images/sqs_decouple.png" width="700">              
 
 A classic solution architecture. We have a web server and they are taking requests through an application load balancer. They are served through EC2 instances in an auto scaling group. Say our users want us to process some videos. Then instead of sending it directly to the video application, we can instead insert messages into an SQS queue.              
-Then we will have a video processing layer made of an auto scaling group wiht EC2 instances. And these EC2 instances will be reading from the SQS queue and processing our videos.       
+Then we will have a video processing layer made of an auto scaling group with EC2 instances. And these EC2 instances will be reading from the SQS queue and processing our videos. After which insert into a S3 bucket.                  
 The cool thing about it is that we can scale the second auto scaling group independently from the first one. The scaling can happen based on how many messages there are (e.g.) in the SQS queue.             
+We can also optimise the type of EC2 instances for the front-end and back-end separately.         
+
+Amazon SQS - Security           
+1. Encryption:         
+-> in-flight encryption using HTTPS API           
+-> at-rest encryption using KMS keys       
+-> client-side encryption if the client wants to perform encryption/decryption itself (not supported by SQS out of the box)           
+2. Access Contorls:        
+-> IAM policies to regulate access to the SQS API        
+3. SQS Access Policies (similar to S3 bucket policies)            
+-> useful for cross-account access to SQS queues         
+-> useful for allowing other services (SNS, S3, etc) to write to an SQS queue          
+
+## SQS Queue Access Policy            
+
+There are 2 good use cases for SQS queue accesss policies.              
+
+1. allows Cross Account Access            
+
+<img src="images/sqs_cross.png" width="700">            
+
+<img src="images/sqs_publish.png" width="700">           
