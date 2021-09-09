@@ -3704,3 +3704,74 @@ If you want to secure the Transfer Family services, we can authenticate your use
 9. Snowball / Snowmobile: to move large amount of data to the cloud, physically (into or out of S3)            
 10. Database: for specific workloads, usually with indexing and querying               
 
+# Decoupling applications: SQS, SNS, Kinesis, Active MQ               
+
+## Introduction to Messaging          
+
+When we start deploying multiple applications, they will inevitably need to communicate with one another           
+
+There are two patterns of application communication:         
+<img src="images/cloud_integration.png" width="700">         
+1. Synchronous communications (application to application)              
+integrate them synchronously as they talk directly to each other           
+2. Asynchronous / Event based (application to queue to application)              
+
+Synchronous between applications can be problematic if there are sudden spikes of traffic              
+What if you need to suddenly encode 1000 videos but usually it is 10 ?           
+
+In that case, it is better to **decouple** your applications:             
+using SQS: queue model               
+using SNS: pub/sub model             
+using Kinesis: real-time data streaming model                             
+
+These services can scale independently from our application.               
+
+## Amazon SQS - Standard Queues Overview         
+
+Amazon SQS = Simple Queue Service            
+
+<img src="images/sqs.png" width="700">         
+
+We have producers send messages into that queue. Once the messages are stored in a queue, then they can be read by consumers who will be polling the queue (i.e. requesting messages from the queue). (In this example) Once the consumer polls messages, they will share the work so each consumer will get different messages and when they are done processing a message (e.g. processing a video), then they will delete the message from the queue.                  
+
+Amazon SQS - Standard Queue       
+Oldest AWS offering (over 10 years old)         
+Fully managed service (serverless), use to decouple applications          
+(exam) if you see application decoupling, think SQS            
+
+Attributes:          
+-> unlimited throughput, unlimited number of messages in queue           
+-> each message is short-lived, default retention of messages: 4 days, maximum of 14 days         
+-> **Messages are deleted after they're used by consumers**               
+-> low latency (less than 10 ms on publish and receive)         
+-> limitation of 256KB per message sent             
+-> **Consumers share the work to read messages & scale horizontally**             
+
+Can have duplicate messages (at least once deliver, occasionally), i.e. sometimes the message will be delivered twice.                         
+Can have out of the order messages (best effort ordering).               
+
+**SQS - Producing Messages**               
+
+1. produced to SQS
+
+<img src="images/sqs_produce.png" width="700">              
+
+<img src="images/sqs_consume.png" width="700">                  
+
+
+
+
+
+
+
+
+
+
+
+SQS to decouple between application tiers           
+
+<img src="images/sqs_sa.png" width="700">              
+
+A classic solution architecture. We have a web server and they are taking requests through an application load balancer. They are served through EC2 instances in an auto scaling group. Say our users want us to process some videos. Then instead of sending it directly to the video application, we can instead insert messages into an SQS queue.              
+Then we will have a video processing layer made of an auto scaling group wiht EC2 instances. And these EC2 instances will be reading from the SQS queue and processing our videos.       
+The cool thing about it is that we can scale the second auto scaling group independently from the first one. The scaling can happen based on how many messages there are (e.g.) in the SQS queue.             
