@@ -3512,4 +3512,98 @@ Today we can use AWS OpsHub (a software you install on your computer / laptop) t
 -> Monitor device metircs (storage, capacity, active instances on your devices)          
 -> Launch compatible AWS services on your devices (e.g. EC2 Instances, AWS DataSync, Network File System (NFS))             
 
+## Architecture: Snowball into Glacier        
+
+The idea is that we want to have Snowball import data directly into Glacier.              
+
+**Snowball CANNOT import data into Glacier DIRECTLY**         
+
+You must use Amazon S3 first, in combination with an S3 lifecycle policy, to transition these objects into Glacier          
+
+So Snowball imports the data into Amazon S3 and then thanks to an S3 lifecycle policy, the data is transitioned into Amazon Glacier.           
+
+## Storage Gateway Overview       
+
+AWS is pushing for "hybrid cloud"          
+-> part of your infrastructrue is on-premises           
+-> part of your instrastructure is on the cloud          
+
+This can be due to:         
+-> long cloud migrations (you have on-premises infra first and later decided to migrate to cloud)          
+-> security requirements          
+-> compliance requirements           
+-> IT strategy           
+
+S3 is a proprietary storage technology (unlike EFS / NFS), so how do we expose the S3 data on-premise ?         
+Use **Storage Gateway**             
+
+AWS Storage Cloud Native Options:             
+<img src="images/storage_option.png" width="700">         
+
+AWS Storage Gateway will bridge between on-premise data and cloud data in S3.            
+Hybrid storage service to allow on-premises to seamlessly use the AWS Cloud               
+
+Use cases: disaster recovery, backup & restore, tiered storage            
+
+Types of Storage Gateway:           
+1. File Gateway           
+2. Volume Gateway         
+3. Tape Gateway      
+
+You need to know the differences between all 3 !            
+
+**File Gateway**          
+1. Configured S3 buckets are accessible using the NFS and SMB protocol          
+2. Supports S3 standard, S3 IA, S3 One Zone IA storage class                
+3. Bucket access using IAM roles for each File Gateway         
+4. Most recently used data is cached in the file gateway          
+5. Can be mounted on many servers         
+6. **Integraed with Active Directory (AD) on-premises** for user authentication            
+
+The application server will be talking using the NFS protocol to the File Gateway. The File Gateway will do the bridge to the AWS cloud. The File Gateway will be interfacing and talking with HTTPS to these S3 buckets. If we want user authentication and we have setup Active Directory, then there is an integration between Active Directory and a File Gateway to provide authentication at the file Gateway level.         
+Most commonly used files is going to be cached onto the File Gateway, which is going to be helpful for low-latency access to some files.        
+This gives you a way to expand your NFS on-premises by leveraging Amazoin S3.               
+<img src="images/file_gateway.png" width="700">               
+
+**Volume Gateway**            
+1. Block storage using iSCSI protocol backed by S3           
+2. Backed by EBS snapshots which can help restore on-premises volumes !        
+3. Two types of Volume Gateway           
+-> Cached volumes: low latency access to most recent data         
+-> Stored volumes: entire dataset is on premise, scheduled backups to S3            
+
+Our application server needs to be backed up and using this protocol we are going to use Volume Gateway. The Volume Gateway will create Amazon EBS snapshots backed by Amazon S3.         
+The goal is really to back up your volumes of your on-premises servers.             
+
+<img src="images/volume_gateway.png" width="700">                
+
+**Tape Gateway**             
+1. Some companies have backup processes using physical tapes !         
+2. With Tape Gateway, companies use the same processes but, in the cloud       
+3. Virtual Tape Library (VTL) backed by Amazon S3 and Glacier         
+4. Back up data using existing tape-based processes (and iSCSI interface)            
+5. Works with leading backup software vendors         
+
+In the Corporate Data Center we will expect to have a backup server, which is tape-based. The Tape Gateway will do the interface into the cloud, by storing the tapes into Amazon S3 or in Amazon Glacier.          
+
+<img src="images/tape_gateway.png" width="700">              
+
+Storage Gateway - Hardware appliance         
+1. Using Storage Gateway means you need on-premises virtualisation       
+2. Otherwise you can use a **Storage Gateway Hardware Appliance**           
+3. You can buy in on `amazon.com`             
+4. This is like a mini-server into your infrastructure          
+5. Then we can set it up as a File Gateway, Volume Gateway or Tape Gateway             
+6. This is a physical hardware you have to install and will have enough CPU, memory, network and SSD cache resources           
+7. Helpful for daily NFS backups in small data centers                
+
+AWS Storage Gateway Summary        
+1. Exam tip: read the question well, it will hint at which gateway to use.             
+2. On-premises data to the cloud => Storage Gateway        
+3. File access / NFS - user auth with Active Directory => File Gateway (backed by S3)             
+4. Volume / Block Storage / iSCSI => Volume gateway (backed by S3 with EBS snapshots)            
+5. VTL Tape solution / Backup with iSCSL => Tape Gateway (backed by S3 and Glacier)             
+6. No on-premises virtualisation => Hardware Appliance (and install it at your data center)              
+
+## Amazon FSx Overview          
 
