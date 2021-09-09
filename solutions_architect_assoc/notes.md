@@ -3426,4 +3426,90 @@ Note: it has a tool for speed test: direct internet vs Global Accelerator
 
 ## AWS Snow Family Overview         
 
+Highly-secure, portable devices to **collect and porcess data at the edge**, and **migrate data into and out of AWS**.        
+So 2 use cases:         
+Data migration: Snowcone, Snowball Edge, Snowmobile            
+Edge computing: Snowcone, Snowball Edge          
+
+Data Migrations with AWS Snow Family             
+Large amount of data takes long time to transfer. Challenges: limited connectivity, limited bandwidth, high network cost, shared bandwidth (can't maximise the line), connection stability        
+
+**AWS Snow Family**: offline devices to perform data migrations -> if it takes more than a week to transfer over the network, use Snowball devices. (AWS will send you an actual physical device and then we load your data onto it, and we send it back to AWS)         
+
+**Snowball Edge** (for data transfer) is a huge box: move TBs or PBs of data in or out of AWS.            
+Alternative to moving data over the network (and paying network fees)            
+Pay per data transfer job             
+Provide block strorage and Amazon S3-compatible object storage           
+Two flavours:        
+1. Snowball Edge Storage Optimized           
+80TB of HDD capacity for block volume and S3 compatible object storage          
+2. Snowball Edge Compute Optimized               
+42TB of HDD capacity for block volume and S3 compatible object storage (provides powerful computing resources)           
+
+Use cases: large data cloud migrations, DC decommission, disaster recovery             
+
+**AWS Snowcone** is a much smaller device: small, portable computing, anywhere, rugged & secure, withstand harsh environments.           
+Light and secured (2.1 kg)      
+Device used for edge computing, storage and data transfer          
+8TBs of usable storage           
+Use Snowcone where Snowball does not fit (space-constrained environment)             
+Must provide your own battery / cables         
+Can be sent back to AWS offline, or connect it to internet and use **AWS DataSync** to send data.             
+
+**AWS Snowmobile** is an actual truck: transfer exabytes of data (1EB = 1,000PB = 1,000,000 TBs)           
+Each Snowmobile has 100PB of capacity (use multiple in parallel)               
+High security: temperature controlled, GPS, 24/7 video surveillance             
+Better than Snowball if you transfer more than 10 PB            
+
+Summary:              
+<img src="images/snow_family.png" width="700">                 
+
+Snow Family - Usage Process         
+1. Request Snowball devices from the AWS console for delivery          
+2. Install the snowball client / AWS OpsHub on your servers                
+3. Connect the snowball to your servers and copy files using the client             
+4. Ship back the device when you're done (goes to the right AWS facility, E Ink Marker)           
+5. Data will be loaded into an S3 bucket              
+6. Snowball is completely wiped according to the highest security measures              
+
+Data migration used to be the only use case for Snow Family, now we can do Edge Computing.       
+
+Edge Computing means we process data while it is being created on an edge location.         
+Edge location is anywhere that does not have internet. e.g. truck on the road, ship on the sea, mining station underground.            
+They can produce data but may not have internet connectivity.            
+
+These locations may have:        
+-> limited / no internet access        
+-> limited / no easy access to computing power          
+
+We setup a Snowball Edge / Snowcone device to do edge computing.         
+Use cases of Edge Computing:           
+Preprocess data        
+Machine learning at the edge            
+transcoding media streams           
+Eventually (if need be) we can ship back the device to AWS (for transferring data for example)          
+
+Snow Family - Edge Computing           
+1. Snowcone (smaller)              
+2 CPUs, 4 GB of memory, wired or wireless access           
+USB-C power using a cord or the optional battery             
+2. Snowball Edge - Compute Optimized            
+52 vCPUs, 208 GiB of RAM              
+Optional GPU (useful for video processing or machine learning)             
+42 TB usable storage           
+3. Snowball Edge - Storage Optimized           
+up to 40 vCPUs, 80 GiB of RAM           
+Object storage clustering available          
+
+All: can run EC2 Instances & AWS Lambda functions (using AWS IoT Greengrass)            
+Long-term deployment options: 1 and 3 years discounted pricing              
+
+AWS OpsHub: historically, to use Snow Family devices, you needed a CLI.          
+Today we can use AWS OpsHub (a software you install on your computer / laptop) to manage your Snow Family Device             
+-> unlocking and configuring single or clustered devices              
+-> transferring files           
+-> launching and managing instances running on Snow Family Devices               
+-> Monitor device metircs (storage, capacity, active instances on your devices)          
+-> Launch compatible AWS services on your devices (e.g. EC2 Instances, AWS DataSync, Network File System (NFS))             
+
 
