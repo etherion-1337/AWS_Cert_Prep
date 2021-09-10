@@ -3865,6 +3865,26 @@ Make sure to process the messages in the DLQ before they expire:
 
 ## SQS - Request Response          
 
+You can have requesters and they could be multiple producers and they are going to send all the requests into a request queue.            
+The responders are going to sit in an ASG. They are going to be applications running from the SQS queue. They will reply to the producer by putting it back into anotehr queue.            
+
+The producer is going to send a message into the SQS queue with a correlation ID, which represents the number of the request as well as the content of the request, and the reply-to queue. This is saying:"if you receive this message, then please reply to queue response one." The responder will poll the requests and process them. Then they will send response. To produce a response, they are going to create that queue (if it doesn't exist already), they will then send back a response into that queue with the correlation ID (from before, so that the producer can understand which response corresponds to which request), as well as the response payload.              
+
+The producer will read from the response queue 1 and therefore receive this response.            
+
+With this architecture, we have a scalable back-end in the middle which allows you to send many, many different requests and responses without overwhelming your target systems.         
+
+We can have a second producer, and we can have a response queue 2 and therefore the responders is going to respond to the reponse queue 2. Our producer 2 is going to read from that queue 2 to get the response it needs.               
+
+<img src="images/sqs_request_response.png" width="700">                
+
+(EXAM) To implement this pattern: use **SQS Temporary Queue Client**, not worry about the implementation but it will be handled by this client.                              
+
+It leverages virtual queues instead of creating/deleting SQS queues (cost-effective)               
+
+## SQS - Delay Queues             
+
+
 
 
 
