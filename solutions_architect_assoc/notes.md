@@ -3884,8 +3884,27 @@ It leverages virtual queues instead of creating/deleting SQS queues (cost-effect
 
 ## SQS - Delay Queues             
 
+Delay queue is to delay a message (consumers don't see it immediately) up to 15 minutes.             
+By default, the delay parameter is 0 seconds (message is available right away).             
+-> Can set a default at queue level (i.e. all the message to be delayed for X amount of time)            
+-> Can override the default on send using the **DelaySeconds** parameter                   
 
+e.g. if the queue has a default value for how long that message should be delayed (say 30 seconds). After 30 seconds, then when a consumer polls for messages, it will see that message and receive it successfully.              
 
+<img src="images/sqs_delay.png" width="700">              
 
+## SQS - FIFO Queues             
+
+FIFO = First In First Out (ordering of messages in the queue)          
+-> First message to enter the queue will be the first message to leave the queue           
+
+More ordering guarantee we can get than a standard queue.          
+
+This SQS queue has limited throughput (since there is such a restriction)      
+-> limited throughput: 300 msg/s without batching, 3000 msg/s with batching            
+-> exactly-once send capability (by removing duplicates)              
+-> messages are processed in order by the consumer              
+
+Note the name of the queue has to end with `.fifo`, e.g. `DemoQueue.fifo`            
 
 
