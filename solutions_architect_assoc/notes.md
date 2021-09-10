@@ -3907,4 +3907,22 @@ This SQS queue has limited throughput (since there is such a restriction)
 
 Note the name of the queue has to end with `.fifo`, e.g. `DemoQueue.fifo`            
 
+## SQS + Auto Scaling Group          
 
+So we can a few EC2 instances in ASG and they are polling for messages from an SQS Queue. What we want is to scale the EC2 instances based on the amount of messages in the queue.           
+
+We need a metric to scale the ASG on, with some alarms. EC2 instances are going to push a CloudWatch Custom Metric, which is going to represent Queue Length divided by number of instances in our ASG.           
+
+If this metric goes above a certain threshold (either we have too many messages or not enough instances). We will create a CloudWatch Alarm for breaching this metric. The CloudWatch Alarm will automatically be assigned to a scaling policy on your ASG.         
+
+We maybe can create two alarms, one for going above the threshold for that metric, one for going under anther threshold for that metric.         
+
+There is no out-of-the-box metric you can use from SQS or from EC2 to do this scaling. We will have to create a custom metric.           
+
+<img src="images/sqs_asg_1.png" width="700">                
+
+SQS to decouple between application tiers             
+
+Say we have a bunch of request for EC2 Instances and they are also managed by an ASG (maybe behind )
+
+<img src="images/sqs_decouple_tier.png" width="700">                
