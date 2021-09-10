@@ -3813,10 +3813,38 @@ Amazon SQS - Security
 
 ## SQS Queue Access Policy            
 
-There are 2 good use cases for SQS queue accesss policies.              
+(EXAM) There are 2 good use cases for SQS queue accesss policies.                        
 
-1. allows Cross Account Access            
+1. allows Cross Account Access        
 
-<img src="images/sqs_cross.png" width="700">            
+Say you have a queue in an account, and another account needs to access that queue maybe it has an EC2 instance. So for EC2 instance to be able to poll message, we need to create a queue access policy that looks like below. And we attach it to the SQS queue in the first account.             
+This policy will allow the second account to receive message on the resource specified.                
 
-<img src="images/sqs_publish.png" width="700">           
+<img src="images/sqs_cross.png" width="600">            
+
+2. Publish S3 Event Notifications To SQS Queue            
+
+For example we uploaded an object into an S3 bucket, and we want to get automatically a message sent to the SQS queue. The SQS queue will need to give permission to the S3 bucket to write a message to it. 
+
+<img src="images/sqs_publish.png" width="600">           
+
+## SQS - Message Visibility Timeout         
+
+After a message is polled by a consumer, it becomes **invisible** to other consumers                
+
+Say we have a consumer doing a ReceiveMessage Request and therefore, a message will be returned from the queue. Now the visibility timeout begins.            
+-> By default, the "message visibility timeout" is 30 seconds. This means that during these 30 seconds, the message has to be processed. That means that if the same or other consumers do a message request API call, Then the message will NOT be returned.           
+-> After the message visibility timeout is over, the message is "visible" in SQS             
+-> Another consumer or the same consumer doing a receive message API call will receive the message again (same message as before)          
+
+<img src="images/sqs_visibility.png" width="600">             
+
+If we don't process a message within the visibility timeout window, it will be processed *twice* potentially.           
+-> if a consumer is actively processing a message but knows that it needs a bit more time, the consumer could call the **ChangeMessageVisibility** API to get more time.           
+-> If visibility timeout is high (hours), and consumer crashes, re-processing will take time (hours).               
+-> IF visibility timeout is too low (seconds), we may get duplicates             
+Hence the visibility timeout should be set to something reasonble for your application and your consumer should know if they need a bit more time, then they should call the **ChangeMessageVisibility** API.             
+
+## SQS - Dead Letter Queues           
+
+
