@@ -3847,4 +3847,25 @@ Hence the visibility timeout should be set to something reasonble for your appli
 
 ## SQS - Dead Letter Queues           
 
+If a consumer fails to process a message within the Visibility Timeout, the message goes back to the queue.            
+This can be potentially bad if the consumer does not understand the message (hence it will be looping)                
+
+We can set a threshold of how many times a message can go back to the queue.             
+
+Afer the **MaximumReceives** threshold is exceeded, the message goes into a dead letter queue (DLQ)             
+
+The DLQ will contain the message and send for later processing.         
+-> the message will be removed from the first queue and sent into the second queue (DLQ)      
+
+<img src="images/sqs_dead_letter.png" width="500">                 
+
+It is useful for debugging            
+Make sure to process the messages in the DLQ before they expire:           
+-> good to set a retention of 14 days in the DLQ           
+
+## SQS - Request Response          
+
+
+
+
 
