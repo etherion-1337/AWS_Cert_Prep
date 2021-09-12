@@ -4255,3 +4255,38 @@ Whenever you have failover happening, the standby is going to be also mounted on
 So if your clients talk to the Amazon MQ broker, and there is a failover happening, then the data will be kept safe thanks to the EFS.            
 
 <img src="images/aws_mq_ha.png" width="700">              
+
+# Containers on AWS: ECS, Fargate, ECR and EKS         
+
+## Docker Introduction         
+
+Docker is a software development platform to deploy apps             
+Apps are packaged in **containers** that can be run on any OS             
+Apps run the same, regardless of where they are run             
+-> any machine            
+-> no compatibility issues            
+-> predictable behavior                
+-> less work             
+-> easier to maintain and deploy             
+-> works with any language, any OS, any technology                     
+
+Scale containers up and down very quickly (seconds)                
+
+An example of Docker on EC2 Instance, varies docker running Java/NodeJS all in one EC2 Instance:                     
+<img src="images/docker.png" width="700">                          
+
+Docker images are stored in Docker Repositories                       
+Public: Docker Hub                
+-> find base image for many technologies or OS              
+-> Ubuntu            
+-> MySQL                
+
+Private: Amazon ECR (Elastic Container Registry)                   
+
+Docker vs Virtual Machines:               
+<img src="images/docker_vm.png" width="700">                  
+
+Resources are shared with the host => many containers on one server                   
+
+On the left it is what happen when we create EC2 Instances and host various Apps on it (in this case there are 3 EC2 Instance).            
+On the right is when we use Docker, once the Docker Daemon is running, we can have many containers running.     
