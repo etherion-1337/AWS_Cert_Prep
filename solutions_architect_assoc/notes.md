@@ -4148,15 +4148,91 @@ Kinesis Data Firehose: load streams into S3, Redshift, ElasticSearch, etc
 Kinesis Data Analytics: perform real-time analytics on streams using SQL             
 Kinesis Video Streams: monitor real-time video streams for analytics or ML                      
 
+## Data Ordering for Kinesis vs SQS FIFO            
 
+Ordering data into Kinesis:         
 
-## Amazon MQ Overview          
+Imagine you have 100 trucks (truck_1, truck_2, ...) on the road sending their GPS position regularly into AWS.            
+You want to consume the data in order for each truck, so that you can track their movement accurately.                 
+How should we send that data into Kinesis ?         
+
+Answer: sending using a "Partition Key", the value of the partition key is the value of the "truck_id".             
+The same key will always go to the same shard.               
+
+Say we have 3 shards and 5 trucks. We choose the partition key to be the truck ID. So truck 1 will will send its data to Kinesis with partition key truck_1. And Kinesis will do some hashing and put into shard 1. Truck 2 goes to shard 2 and truck 3 can go to shard 1 (after hashing the data).      
+Truck 4 goes to shard 3 and truck 5 goes to shard 2. Truck one keep sending the same partition key so the data will always go to the same shard. Anytime truck 1 send data, it will be in shard 1. This is going to be the same for the rest of the truck.          
+As soon as we have a stable partition key, the data will be in order for each truch at the shard level.        
+
+<img src="images/kinesis_order.png" width="700">            
+
+Ordering data into SQS:             
+
+For SQS standard, there is no ordering.          
+For SQS FIFO, if you don't use a Group ID, messages are consumed in the order they are sent, **with only one consumer**          
+In the truck example, all the truck will be sending data into a FIFO queue, but there only can be one consumer.         
+So sometimes we want to scale the number of consumers and you want the message to be "grouped" when they are related to each other.      
+Then we can use a Group ID (similar to Partition Key in Kinesis)             
+So now using a Group Id, our FIFO queue will have 2 groups of FIFO within. And for each group as we define, you can have a different consumer.       
+
+FIFO standard:          
+<img src="images/sqs_fifo_norm.png" width="700">                
+
+FIFO with Group ID:               
+<img src="images/sqs_fifo_grp.png" width="700">              
+
+**Kinesis vs SQS ordering**:       
+let us assume 100 trucks, 5 kinesis shards, 1 SQS FIFO                
+1. Kinesis Data Streams            
+-> on average you will have 20 trucks per shard (thanks to the hashing)           
+-> trucks will have their data ordered within each shard            
+-> the maximum amount of consumers in parallel we can have is 5 (as we have 5 shards and we need one consumer per shard)        
+-> can receive up to 5 MB/s of data         
+2. SQS FIF            
+-> you can only have 1 SQS FIFO queue             
+-> you will have 100 Group ID       
+-> you can have up to 100 consumers (due to 100 Group ID)        
+-> have up to 300 messages per second (or 3000 if using batching)         
+
+Based on use case, sometimes it is good to use SQS FIFO if you want to have a dynamic number of consumers based on the number of Group IDs, sometimes it is better to use Kinesis Data Stream if you have 10,000 trucks and you need to send a lot of data and also having data ordering per shard.                 
+
+## SQS vs SNS vs Kinesis          
+
+1. SQS         
+-> has a model where consumers pull data by requesting message from the SQS queue            
+-> data is deleted after being consumed         
+-> can have as many workers (consumers) as we want        
+-> no need to provision throughput          
+-> ordering guaranteeds only on FIFO queues         
+-> have individual message delay capability           
+
+2. SNS         
+-> push data to many subscribers and they all receive a copy                   
+-> up to 12,500,000 subscribers per SNS topic           
+-> data is not persisted (lost if not delivered)          
+-> pub/sub model        
+-> up to 100,000 topics          
+-> no need to provision throughput         
+-> integrates with SQS for fan-out architecture pattern           
+-> FIFO capability for SQS FIFO           
+
+3. Kinesis          
+-> standard: consumers pull data from kinesis          
+--> 2 MB per shard         
+-> enhanced-fan out: push data into your consumers           
+--> 2 MB per shard per consumer            
+-> possibility to replay data        
+-> meant for real-time big data, analytics and ETL                
+-> ordering at the shard level          
+-> data expires after X days           
+-> must provision throughput (no auto scaling available for now, need custom solution within AWS)          
+
+## Amazon MQ                      
 
 SQS, SNS are "cloud-native" services, and they are using proprietary protocols from AWS.              
 
 Traditional applications running from on-premise may use open protocols such as: MQTT, AMQP, STOMP, Openwire, WSS.            
 
-When migrating to the cloud, instead of re-engineering the application to use SQS and SNS, we can use Amazon MQ.          
+**When migrating to the cloud**, instead of re-engineering the application to use SQS and SNS, we can use Amazon MQ.          
 
 Amazon MQ = managed Apache ActiveMQ which has these protocols enabled by defaults               
 
@@ -4164,9 +4240,18 @@ Amazon MQ doesn't "scale" as much as SQS / SNS
 
 It is not serverless (it's like a database)                
 
-Amazon MQ runs on a dedicated machine (not serverless)                
+Amazon MQ runs on a dedicated machine (not serverless), can run in high availablity with failover                
 
 Amazon MQ has both queue feature (~SQS) and topic features (~SNS)               
 
-It is used if and only if a company is migrating to the cloud and needs to use one of these open protocols.         
+(EXAM) It is used if and only if a company is migrating to the cloud and needs to use one of these open protocols.         
 Otherwise it should be using SQS or SNS as they are scaled much better and they are way more integrated with AWS.                
+
+Amazon HQ - High Availability             
+
+Say we have a region us-east-1 and we have 2 AZ: us-east-1a and us-east-1b. One zone is going to be active and another one is going to be standby. So we are going to have an Amazon MQ Broker in both AZ. For the failover to work, you need to define a Amazon EFS as your backend storage. EFS is a network file system which can be mounted to multiple AZ.           
+
+Whenever you have failover happening, the standby is going to be also mounted onto the Amazon EFS, and therefore will have the same data as your first active queue.        
+So if your clients talk to the Amazon MQ broker, and there is a failover happening, then the data will be kept safe thanks to the EFS.            
+
+<img src="images/aws_mq_ha.png" width="700">              
