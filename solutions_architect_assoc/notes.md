@@ -3938,31 +3938,217 @@ The right part is Pub/Sub type of integration in which we have a SNS topic and t
 
 SNS = Simple Notification Services           
 
-The "event **publishers**" only sends message to one SNS topic          
-As many "event **subscribers**" as we want to listen to the SNS topic notifications              
-Each subscriber to the topic **will get all the messages**            
-Up to 10,000,000 subscriptions per topic, 1000,1000 topics limit               
+The "event **publishers** (or producer)" only sends message to one SNS topic          
+As many "event **subscriber** (or receiver)" as we want to listen to the SNS topic notifications              
+Each subscriber to the topic **will get all the messages** (note: new feature to filter messages)           
+Up to 10,000,000 subscriptions per topic            
+100,000 topics limit                           
 
 SNS Subscribers can be:       
 -> HTTP/HTTPs (with delivery retries - how many times)              
 -> Emails, SMS messages, Mobile Notifications        
--> SQS queue (fan-out pattern), Lambda Function (write your own integration)          
+-> SQS queue (fan-out pattern)           
+-> Lambda Function (write your own integration)          
+-> SMS messages        
+-> Mobile Notifications           
+-> Amazon Kinesis Data Firehose            
 
-(exam) anytime we see notification, subscribers, publishers, etc, think Amazon SNS.                
+SNS Integrates with a lot of AWS services:          
+-> Many AWS services can send data directly to SNS for notifications       
+-> CloudWatch (for alarms)       
+-> Auto Scaling Groups notifications        
+-> Amazon S3 (on bucket events)               
+-> CloudFormation (upon state changes => failed to build, etc.)           
+-> etc.          
+
+AWS SNS - How to publish           
+1. Topic Publish (using the SDK)           
+-> Create a topic      
+-> Create a subscription (or many)         
+-> Publish to the topic         
+-> all the subscribrer will automatically retrieve that message           
+
+2. Direct Publish (for mobile apps SDK)         
+-> Create a platform application        
+-> Create a platform endpoint        
+-> Publish into the platform endpoint        
+-> Works with Google GCM, Apple APNS, Amazon ADM, ...           
+
+Amazon SNS - Security        
+1. Encryption         
+-> In-flight encryption using HTTPS API        
+-> At-rest encryption using KMS keys       
+-> Client-side encryption if the client wants to perform encryption/decryption itself.           
+
+2. Access Controls: IAM policies to regulate access to the SNS API          
+
+3. ANS Access Policies (similar to S3 bucket policies)              
+-> useful for cross-account access to SNS topics           
+-> useful for allowing other services (S3 etc) to write to an SNS topic        
+
+(exam) anytime we see notification, subscribers, publishers, etc, think Amazon SNS.     
+
+## SNS and SQS - Fan Out Pattern         
+
+The idea is that we want a message to be sent to multiple SQS queues. But if we send them individually to every SQS queue, they can be problems associated with it.         
+
+Therefore we want to use a Fan Out pattern: Push once in SNS, receive in all SQS queues that are subscribers.            
+
+e.g. we have a buying serivce that wants to send messages into two SQS queues, but it will do is that it will send to a SNS Topic and the queues are subscribers of that SNS topic. So that the fraud service and shipping service can read all messages from their own SQS queues.             
+
+<img src="images/sns_sqs_fanout.png" width="700">            
+
+Fully decoupled model, no data loss          
+SQS allows for: data persistence, delayed processing and retires of work.       
+Ability to add more SQS subscribers over time.          
+Make sure your SQS queue **access policy** allows for SNS to write.             
+
+Application: S3 Events to multiple queues        
+
+1. For the same combination of: **event type** (e.g. object create) and **prefix** (e.g. images/) you can only have one S3 Event rule.        
+2. If you want to send the same S3 event to many SQS queues, use fan-out             
+-> e.g we have an S3 object created as an event appearing in your S3 bucket. We will send this event into an SNS topic and we will subscribe many SQS queues to the SNS topic as a FAN Out pattern. We can also subscribe other type of application (e.g. Lambda etc)                
+
+<img src="images/sns_s3_fanout.png" width="700">         
+
+Amazon SNS - FIFO Topic          
+
+FIFO = First In First Out (ordering of messages in the topic)            
+Apart from SQS FIFO, SNS can have similar features:          
+-> **Ordering** by Message Group ID (all messages in the same group are ordered)             
+-> **Deduplication** using a Deduplication ID or Content Based Deduplication          
+**Can only have SQS FIFO queues as subscribers** to read SNS FIFO topics     
+Limited throughput (same throughput as SQS FIFO)               
+
+SNS FIFO + SQS FIFO: Fan Out               
+1. In case you need fan out + ordering + deduplication           
+
+<img src="images/sns_sqs_fifo_fanout.png" width="700">                           
+
+SNS - Message Filtering               
+
+-> JSON policy used to filter messages sent to SNS topic's subscriptions              
+-> If a subscription doesn't have a filter policy, it receives every message        
+
+With Filtering, we have a buying service and it sends transactions into an SNS topic. We want to create an SQS queue just for placed orders (not all the orders). For this we will subscribe the SQS queue into the SNS topic and we will apply a filter policy in JSON. We will specify in the policy that we want to have `state = placed`. So only the message matching that policy will go into that SQS queue.             
+
+<img src="images/sns_filter.png" width="700">                    
 
 ## Kinesis Overview        
 
 For the exam: **Kinesis = real-time big data streaming**                
 
-It is a managed service to collect, process, and analyze real-time streaming data at any scale.         
+It is a managed service to **collect, process, and analyze** real-time streaming data at any scale.         
+Ingest real-time data such as: Application logs, Metrics, Website clickstreams, IoT telemetry data.        
+
+We have 4 components in Kinesis:        
+1. **Kinesis Data Streams**: capture, process, and store data streams         
+2. **Kinesis Data Firehose**: load data streams into AWS data store           
+3. **Kinesis Data Analytics**: analyze data streams with SQL or Apache Flink          
+4. **Kinesis Video Streams**: capture, process, and store video streams            
+
+**Kinesis Data Streams**         
+
+In this service, we have streams. Streams are going to made of shards and there going to be numbers (i.e. shard 1, shard 2, etc.). The more shards we have in Kinesis Data Stream, the more througput is going to be allowed to go through that stream.            
+To produce data into Kinesis Data Stream, we need to have producers and it could be varied: Application, Client. They will all use the SDK internally or KPL which is a Kinesis Producer Library or Kinesis Agent to sent it out into Kinesis Data Stream.             
+They will send records into our stream and a record is made of a Partition Key and a Data Blob up to 1MB.            
+Shards are used to scale our stream, so each shard is going to give you 1MB/sec or 1000 message/sec. If we have 30 shards then we have 30MB/sec.         
+Then we have consumers and they are here to consume data from the Kinesis Data Streams. It could be applications that will be using KCL or SDK, Lambda, Kinesis Data Firehose and Kinesis Data Analytics.                 
+They will receive these records with the same partition key, a sequence number (because data was added into a shard so it gets a sequence number) and data blob.         
+We can have multiple consumers rooting for Kinesis Data Streams.       
+So this is a fan-out or Pub-Sub pattern happening in Kinesis Data Streams           
+There are 2 types of consumption mechanism.           
+1. If we use the **shared** consumption mechanism, you get 2MB/sec per shard across ALL the consumer application you have             
+2. If we use the **enhanced** consumer, you get 2MB/sec per shard per consumer. (more expensive ! but higher throughput)                  
+
+Kinesis Data Streams         
+1. Billing is per shard provisioned, can have as many shards as you want                   
+2. Retention between 1 day (default) to 365 days           
+3. Ability to reprocess (reply) data (thanks to the retention)         
+4. Once data is inserted in Kinesis, it cannot be deleted (immutability)            
+5. Data that shares the same partition goes to the same shard (ordering) (i.e. if content share the same partition key, they go to the same shard)        
+6. Producers: AWS SDK, Kinesis Producer Library (KPL), Kinesis Agent           
+7. Consumers:         
+-> write your own: Kinesis Client Library (KCL), AWs SDK          
+-> managed: AWS Lambda, Kinesis Data Firehose, Kinesis Data Analytics              
+
+<img src="images/kinesis_data_stream.png" width="700">               
+
+**Kinesis Data Firehose**                          
+
+It is to store data into target destinations. We have producers and it could be again applications that can send data directly into Kinesis Data Firehose. Or Kinesis Data Firehose can read from your Kinesis Data Stream, Amazon CloudWatch or AWS IoT.          
+The most commob one is going to be Firehose reading from Kinesis Data Streams.           
+It is going to read the records one by one up to 1MB at a time.          
+If we want to transform the record we could have a lambda function created to transform the record.        
+Then Kinesis Firehose will try to fill a big batch of data to write that data into a target database or a target destination.             
+It is a near real-time service as it does not write data right away but try to batch them efficiently.             
+(EXAM) The destination can include AWS destinations like S3, Redshift (COPY through S3), ElastiSearch.            
+We can also have 3rd-party partner destination, such as Datadog, splunk.                 
+Or we can have custom destination as long as they have a valid HTTP endpoint as an API. You can have Firehose deliver data into that destination.            
+We can send all or failed data into a backup S3 bucket.               
+
+Kinesis Data Firehose            
+1. Fully managed service, no administration, automatic scaling, serverless             
+-> can send to AWS: Redshift, S3, ElastiSearch            
+-> 3rd party partner        
+-> custom: send to any HTTP endpoint            
+
+2. Pay for data going through Firehose         
+3. **Near Real Time**          
+-> 60 seconds latency minimum for non full batchs.          
+-> or minimum 32 MB of data at a time       
+4. Supports many data formats, conversions, transformations, compression         
+5. Supports custom data transformations using AWS Lambda           
+6. Can send failed or all data to a backup S3 bucket            
+
+<img src="images/kinesis_data_firehose.png" width="700">                   
+
+**Kinesis Data Streams VS Firehose**            
+
+Kinesis Data Streams:         
+-> streaming service for ingest at scale         
+-> write custom code (to produce/comsume streams)         
+-> real-time (~200 ms)           
+-> manage scaling (shard splitting/merging)             
+-> data storage is persistent (1 to 365 days)          
+-> supports replay capability             
+
+Kinesis Data Firehose:          
+-> Load streaming data into S3/Redshift/ElastiSearch/3rd party/custom HTTP         
+-> Fully managed           
+-> Near Real Time (buffer time minimum 60 sec)            
+-> Automatic scaling          
+-> No data storage            
+-> Does Not support replay capability                 
+
+**Kinesis Data Analytics (SQL application)**           
+
+So you want to write SQL codes on your streams. The Kinesis Data Analytics is going to read from sources. These sources can be Kinesis Data Streams or Kinesis Data Firehose. You will write your own SQL statements to process the data in real time. Then Kinesis Data Analytics can send the result of that query in real time to destinations: Kinesis Data Stream or Kinesis Data Firehose.           
+
+From Firehose we can send to S3, Redshift or to other Firehose destinations.        
+If we send to KDS, then we will write our own application to use e.g. Lambda to process the data in real time.                
+
+So Kinesis Data Analytics:            
+1. perform real-time analytics on Kinesis Streams using SQL         
+2. fully managed, no servers to provision         
+3. automatic scaling           
+4. real-time analytics           
+5. pay for actual consumption reate (data that flows through Kinesis Data Analytics)               
+6. can create streams out of the real-time queries           
+7. use cases:           
+-> time-series analytics           
+-> real-time dashboards          
+-> real-tine metrics              
+
+<img src="images/kinesis_data_analytics.png" width="700">               
 
 Too detailed for CCP exam but good to know:          
 Kinesis Data Streams: low latency streaming to ingest data at scale from hundreds of thousands of sources           
 Kinesis Data Firehose: load streams into S3, Redshift, ElasticSearch, etc           
 Kinesis Data Analytics: perform real-time analytics on streams using SQL             
-Kinesis Video Streams: monitor real-time video streams for analytics or ML               
+Kinesis Video Streams: monitor real-time video streams for analytics or ML                      
 
-<img src="images/kinesis.png" width="700">            
+
 
 ## Amazon MQ Overview          
 
