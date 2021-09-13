@@ -4273,20 +4273,39 @@ Apps run the same, regardless of where they are run
 Scale containers up and down very quickly (seconds)                
 
 An example of Docker on EC2 Instance, varies docker running Java/NodeJS all in one EC2 Instance:                     
-<img src="images/docker.png" width="700">                          
+<img src="images/docker.png" width="500">                          
 
 Docker images are stored in Docker Repositories                       
 Public: Docker Hub                
 -> find base image for many technologies or OS              
 -> Ubuntu            
--> MySQL                
+-> MySQL             
+-> NodeJS, Java               
 
 Private: Amazon ECR (Elastic Container Registry)                   
+Public: Amazon ECR Public                 
 
 Docker vs Virtual Machines:               
+1. Docker is "sort of" a virtualisation technology, but not exactly              
+2. Resources are shared with the host => many containers on one server         
+
+So on the left picture you have the structure of a VM, this is how EC2 sorks. This allows Amaozn to offer many EC2 instances. They are going to isolated and not sharing resources.              
+For Docker container, you still have the infrastructure and Host OS (maybe this time an EC2 instance). You have the Docker Daemon and we can have a lot of containers. These containers can share networking and share some data etc. It allows you to run more containers on a single server.            
+
 <img src="images/docker_vm.png" width="700">                  
 
-Resources are shared with the host => many containers on one server                   
+**Docker Primer**              
 
-On the left it is what happen when we create EC2 Instances and host various Apps on it (in this case there are 3 EC2 Instance).            
-On the right is when we use Docker, once the Docker Daemon is running, we can have many containers running.     
+First you have to create a Dockerfile. From the Dockerfile a Docker Image will be built and then we can do a Dicker run to get a Docker Container. The Docker Image can be stored in Docker Repository.            
+
+<img src="images/docker_primer.png" width="700">           
+
+Docker Containers Management       
+1. To manage containers, we need a container management platform          
+2. Three choices:       
+-> ECS: Amazon's own container platform        
+-> Fargate: Amazon's own serverless container platform       
+-> EKS: Amazon's managed Kubernetes (open source)         
+
+## ECS Overview        
+
