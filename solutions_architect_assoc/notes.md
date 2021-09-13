@@ -4309,3 +4309,72 @@ Docker Containers Management
 
 ## ECS Overview        
 
+ECS = Elastic Container Service           
+It is a service to allow you to launch Docker containers on AWS.         
+**You must provision and maintain the infrastructure (the EC2 instances)**           
+The EC2 instances are going to be backing your ECS cluster.           
+AWS will take care of starting/stopping containers            
+Has integrations with the Application Load Balancer          
+
+ECS at high level: maybe we have 3 EC2 instances and all of them are running containers of different types. Then we have ECS service when it wants to start a new Docker container, it will try to find where to place that Docker containers on your EC2 instances. EC2 instances are just resources for CPU and RAM. And Docker container will have some requirements about how much CPU/RAM is needed. And that Docker container will be placed onto a specific EC2 instance. 
+
+<img src="images/ecs.png" width="500">             
+
+Now there are two launch types for ECS. The first one we are going to see is the **Amazon EC2 launch type** for ECS. Say we have a VPC with 2 AZ, and we have a ECS cluster. This is defined across multiple AZ but in a single VPC. Then we are going to create a ASG to create some EC2 (container) instances. The idea is that all of these containers are belonging to one or more ASG and then we want to register them with the Amazon ECS cluster. To do so we are going to run ECS agent onto these instances (we don't have to do this manually if we use AMI made for ECS, then the ECS agent is going to come pre-configured).               
+The ECS agent is going to be running on all these container instances and then thanks to this ECS agent, these container instances are going to be regiestered to the Amazon ECS cluster and they can be used to start launching some ECS tasks. Once we defined how to launch ECS task, then they will be running on our container instances. If your instances is big, it can run many ECS task.             
+This is EC2 launch type because to launch these ECS tasks, these Docker containers you first have to create and run some EC2 istances.          
+
+<img src="images/ecs_launch.png" width="500">                 
+
+What is Fargate ?            
+
+It allows us to launch Docker containers on AWS.            
+**You do not need to provision the infrastructure (no EC2 instances to manage) - simpler !**             
+**Serverless offering**        
+AWS just runs containers for you based on the CPU/RAM you need.         
+
+In Fargate, we need a new Docker container, a new ECS task to be run onto our Fargate cluster. Fargate will just run those wherever we need. The containers will just run without EC2 instances.               
+
+<img src="images/fargate.png" width="500">                
+
+**Fargate Launch Type for ECS**:           
+(Fargate is sort of part of ECS)         
+We have the same VPC and region and a cluster. This time the Fargate service is going to launch a task and there is no need to create an EC2 instance beforehand.        
+To access this Fargate task, we are going to have Elastic Network Interfaces (ENI), they are going to be also launched within our VPC to bind this task to a network IP. This is how we will access our tasks.            
+The more task we have, the more ENIs are going to be created and they are going to be unique for all of these tasks.              
+So because an ENI is a distinct IP, we need to make sure that we have enough free IP addresses (private IP addresses, within our VPC), so we need a big enough VPC to run a Fargate cluster in case we have many tasks.              
+
+<img src="images/fargate_launch.png" width="500">                 
+
+IAM Roles for ECS Tasks             
+All these ECS task will maybe perform some operations on your AWS services. There will be IAM roles for ECS tasks.           
+So for example we have EC2 launch type for ECS. Therefore we are going to have an ECS agent.         
+**EC2 Instance Profile**:        
+-> used by the **ECS agent** (the role is going to be attached to the Amazon EC2 instance)                
+-> makes API calls to ECS service to register your instance into your ECS cluster       
+-> send container logs to Amazon CloudWatch Logs          
+-> pull Docker image from ECR         
+-> Reference sensitive data in Secrets Manager or SSM Parameter Store      
+
+**ECS Task Role**:        
+-> these task roles are attached to task       
+-> when you create a task, you will attach a task role to it, so each task has a specific role      
+-> use different roles for the different ECS Service you run          
+-> Task Role is defined in the *task definition*         
+e.g. once a Task Role is attached to an ECS task, then the task role can access (e.g.) a S3 bucket and only that task running on the EC2 instance can have access your S3 bucket.           
+
+(EXAM) This is a much better separation of security. If you have an ECS service with task that need to access a specific AWS service, then create your own ECS task role.           
+<img src="images/ecs_iam.png" width="500">                 
+
+ECS Data Volumes - EFS File Systems           
+
+ECS has an integration with EFS file systems. If you have an EC2 instance and you have multiple tasks on it, it is possible for you to create an EFS file system and to mount the file system directly onto these ECS tasks. This works for EC2 instances and also for Fargate tasks.       
+Ability to mount EFS volumes onto tasks          
+Tasks launched in any AZ will be able to share the same data in the EFS volume         
+Fargate + EFS = serverless + data storage without managing servers          
+Use case: persistent multi-AZ shared storage for your containers           
+
+<img src="images/ecs_efs.png" width="500">              
+
+## ECS Services and Tasks, Load Balancing         
+
