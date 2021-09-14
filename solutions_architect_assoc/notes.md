@@ -4378,3 +4378,43 @@ Use case: persistent multi-AZ shared storage for your containers
 
 ## ECS Services and Tasks, Load Balancing         
 
+**ECS Service and Tasks**          
+
+If you have Amazon ECS cluster and we have EC2 Launch types. e.g. we have 2 container instances.         
+Then we can run multiple services onto our Amazon ECS cluster.            
+We can service A that will be running multiple tasks across multiple EC2 instances. And if we want to expose these tasks to our users, we could create an Application Load Balancer and we will have direct integration into our task. So that we can give our users the DNS or the URL of our ALB. The ALB will be forwarding all the requests into our ECS tasks.           
+We can have multiple Service as part of the one Amazon ECS cluster. We can link the same or a new ALB to expose our application.            
+It is common to have a big Amazon ECS cluster with 200 EC2 instances and 100 services that will be running various tasks.           
+
+<img src="images/ecs_service.png" width="500">              
+
+**Load Balancing for EC2 Launch Type**            
+
+When we are using the EC2 launch type, you can connect it to a load balancer. The best way to do so is to launch your container without a port assigned.         
+When we launch an application, it will get a random port assigned onto EC2 instance.         
+How does a load balancer know which port to talk to ?        
+with ECS we can expose the port 80/443 of our ALB        
+We get a **dynamic port** mapping feature of the ALB, the ALB supports finding the right port on your EC2 instances for your ECS tasks.         
+So the ALB, once it is registered witha specific service in ECS, we will find the task and we will talk to them on the right port automatically.             
+We can run many instances of a same container onto the same EC2 instance and have them exposed through the same ALB.       
+**You must allow on the EC2 instances's security group any port from the ALB security group**            
+
+<img src="images/ecs_lb.png" width="500">              
+
+**Load Balancing for Fargate**         
+
+We know Fargate creates an ENI for every task we run. So that ENI has a unique IP, but the port remain the same.         
+e.g. we have 3 tasks, each task has a different IP. but they are all on Port 80. And so when we create an application balancer, it will just talk to the different IPs, but talk to them on the same ports, e.g. 80.         
+For it to work from network securities perspective, you must allow on the ENI's security group *the task port* from the ALB security group.       
+
+<img src="images/fargate_lb.png" width="500">                
+
+**ECS tasks invoked by Event Bridge**                
+
+One last way to run ECS tasks is to have them invoked. You can invoke ECS task manually, we can start a task directly from the ECS console. If you want to automate it you can have ECS tasks being created and invoked by Amazon Event Bridge or CloudWatch events.         
+
+We have our region or VPC and Amazon ECS cluster. Say we have Fargate cluster. What we want is that whenever a user uploads an object onto our S3 buckets. We want to run a Fargate task to process that object and insert some metadata into DynamoDB.            
+
+We are goingt to create an Amazon Event Bridge event that will be coming from our S3 buckets and this Amazon Event Bridge events has a rule as a target, and this run is to run an ECS task. This will create a new target task for us. We need to make sure this task has the correct ECS task role to give it access. Both to Amazon S3 to retrieve the object and also DynamoDB to insert the metadata.            
+
+<img src="images/ecs_eventbridge.png" width="500">                 
