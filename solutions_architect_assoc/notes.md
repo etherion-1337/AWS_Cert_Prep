@@ -4364,7 +4364,7 @@ So for example we have EC2 launch type for ECS. Therefore we are going to have a
 e.g. once a Task Role is attached to an ECS task, then the task role can access (e.g.) a S3 bucket and only that task running on the EC2 instance can have access your S3 bucket.           
 
 (EXAM) This is a much better separation of security. If you have an ECS service with task that need to access a specific AWS service, then create your own ECS task role.           
-<img src="images/ecs_iam.png" width="500">                 
+<img src="images/ecs_iam.png" width="700">                 
 
 ECS Data Volumes - EFS File Systems           
 
@@ -4374,7 +4374,7 @@ Tasks launched in any AZ will be able to share the same data in the EFS volume
 Fargate + EFS = serverless + data storage without managing servers          
 Use case: persistent multi-AZ shared storage for your containers           
 
-<img src="images/ecs_efs.png" width="500">              
+<img src="images/ecs_efs.png" width="700">              
 
 ## ECS Services and Tasks, Load Balancing         
 
@@ -4386,7 +4386,7 @@ We can service A that will be running multiple tasks across multiple EC2 instanc
 We can have multiple Service as part of the one Amazon ECS cluster. We can link the same or a new ALB to expose our application.            
 It is common to have a big Amazon ECS cluster with 200 EC2 instances and 100 services that will be running various tasks.           
 
-<img src="images/ecs_service.png" width="500">              
+<img src="images/ecs_service.png" width="700">              
 
 **Load Balancing for EC2 Launch Type**            
 
@@ -4399,7 +4399,7 @@ So the ALB, once it is registered witha specific service in ECS, we will find th
 We can run many instances of a same container onto the same EC2 instance and have them exposed through the same ALB.       
 **You must allow on the EC2 instances's security group any port from the ALB security group**            
 
-<img src="images/ecs_lb.png" width="500">              
+<img src="images/ecs_lb.png" width="700">              
 
 **Load Balancing for Fargate**         
 
@@ -4407,7 +4407,7 @@ We know Fargate creates an ENI for every task we run. So that ENI has a unique I
 e.g. we have 3 tasks, each task has a different IP. but they are all on Port 80. And so when we create an application balancer, it will just talk to the different IPs, but talk to them on the same ports, e.g. 80.         
 For it to work from network securities perspective, you must allow on the ENI's security group *the task port* from the ALB security group.       
 
-<img src="images/fargate_lb.png" width="500">                
+<img src="images/fargate_lb.png" width="700">                
 
 **ECS tasks invoked by Event Bridge**                
 
@@ -4417,4 +4417,36 @@ We have our region or VPC and Amazon ECS cluster. Say we have Fargate cluster. W
 
 We are goingt to create an Amazon Event Bridge event that will be coming from our S3 buckets and this Amazon Event Bridge events has a rule as a target, and this run is to run an ECS task. This will create a new target task for us. We need to make sure this task has the correct ECS task role to give it access. Both to Amazon S3 to retrieve the object and also DynamoDB to insert the metadata.            
 
-<img src="images/ecs_eventbridge.png" width="500">                 
+<img src="images/ecs_eventbridge.png" width="700">                 
+
+## ECS Scaling           
+
+We can scale the ECS service on many different metrics.            
+e.g.we can use the service CPU usage. Say we have a service that is running two tasks and we have a user accessing so our CPU usage is pretty low.        
+But if we are going to setup auto-scaling so that if there are many type of users accessing our service then we get a higher level of CPU usage. We can set up a CloudWatch metric which represents the ECS service overall average CPU usage to trigger a CloudWatch alarm when it goes over a certain threshold. And then this will scale automatically our ECS service to launch a new task.             
+This works for both Fargate and EC2 launch type.        
+This is looks similar to ASG, but as sometimes we are launching these tasks onto EC2 instances in case we are using the EC2 launch type. Then we also need to scale the EC2 instances we have otherwise we don't have enough space on them to launch these new tasks.         
+Therefore we can scale our ECS cluster of EC2 instances at capacity by using an Amazon ECS capacity provider (if you have EC2 instance type of launch type, it will add more EC2 instances to our ECS cluster if we don't have enough space to run the tasks).             
+
+So ECS we have 2 level of scaling: service scaling and the backend EC2 instances scaling (if you are NOT using the Fargate type)                      
+
+<img src="images/ecs_scale_cpu.png" width="700">            
+
+ECS Scaling - SQS Queue Example         
+
+Another way to scale your ECS service is to use, e.g. an Amazon SQS queue length. Say we have a service that is reading message from an SQS queue. So they will be pulling for messages and we will set up auto-scaling onto our ECS service. So that if we look at Cloud's metrics queue length, and it goes over a threshold (i.e. too many messages in the queue), then it will trigger a CloudWatch alarm, which will scale our auto-scaling service. This will create a new task. Again if we need to scale the underlying EC2 instances if we're using them, then we can set up an ECS capacity provider.                     
+
+<img src="images/ecs_scale_sqs.png" width="700">          
+
+## ECS Rolling Updates            
+
+How do we update an ECS service ?        
+
+When updating from v1 to v2, we can control how many tasks can be started and stopped , and in which order            
+
+
+<img src="images/ecs_rolling.png" width="700">          
+
+<img src="images/ecs_50_100.png" width="700">              
+
+<img src="images/ecs_100_150.png" width="700">          
