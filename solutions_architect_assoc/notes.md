@@ -4442,11 +4442,79 @@ Another way to scale your ECS service is to use, e.g. an Amazon SQS queue length
 
 How do we update an ECS service ?        
 
-When updating from v1 to v2, we can control how many tasks can be started and stopped , and in which order            
-
+When updating from v1 to v2, we can control how many tasks can be started and stopped , and in which order.            
+So when we have an ECS updates, When you select a new task definition number and you want to update an ECS service, you will have 2 settings, "Minimum health percent" and "Maximum percent"           
+e.g. this one is running 9 tasks, which represents an actual running capacity of 100%.         
+If you set a minimum healthy precent of less than 100, this says that we are allowed to terminate all the tasks on the right hand side, as long as we have enough tasks to have a percentage over the minimum healthy percent.             
+And the maximum percent shows you how many new tasks you can create of the v2, to basically roll updates your service.            
+So it will create new tasks, and terminate all tasks so on. All to make sure that all your tasks are going to be terminated then updated to a newer version.                          
 
 <img src="images/ecs_rolling.png" width="700">          
 
+**ECS Rolling Update Scenario 1: Min 50%, Max 100%**                  
+
+1. Starting number of tasks: 4          
+2. We are going to lose 2 tasks to be terminated so that we are running at 50% capacity         
+3. Then two new tasks are going to be created (back at 100% capacity)          
+4. Then two old tasks are going to be terminated (back to 50% capacity)             
+5. Two new tasks are going to be created            
+6. Rolling updates done            
+
 <img src="images/ecs_50_100.png" width="700">              
 
+**ECS Rolling Update Scenario 2: Min 100%, Max 150%**                
+
+1. Starting number of tasks: 4        
+2. We CANNOT terminate a task because the minimum is 100%.          
+3. Therefore we are going to create 2 new tasks (this will bring our capacity to 150%).          
+4. Then because we are above the minimum 100%, we can determinate 2 old tasks (we are back to 100%)        
+5. Then we will create 2 new tasks             
+6. Terminate 2 old tasks        
+7. Rolling updates done            
+
 <img src="images/ecs_100_150.png" width="700">          
+
+## ECR Overview       
+
+ECR = Elastic Container Registry            
+
+Store, manage and deploy containers on AWS, pay for what you use           
+Fully integrated with ECS and IAM for security, backed by Amazon S3 (all the Docker images are stored in S3)          
+Supports image vulnerability scanning, version, tag, image lifecycle            
+
+So we are going to have different kind of images, when EC2 instance needs to create a Docker container from these images, it is going pull these images , and using the IAM role it is able to pull them.           
+It will then be able to run these tasks onto your EC2 instances.        
+To have the task to be put onto ECR service, we can run `Docker push` command on our terminal.         
+If we want to automate the whole process, we could be using CICD, e.g. CodeBuild could help us with this, to build a Docker image and then pushing it onto Amazon ECR to trigger an ECS update.         
+
+<img src="images/ecr.png" width="700">             
+
+## EKS Overview       
+
+Amazon EKS = Amazon Elastic Kubernetes Service                 
+
+Another way to run containers onto AWS             
+This is a service to launch **managed Kubernetes clusters on AWS**          
+
+Kubernetes is an open-source system for automatic deployment, scaling and management of containerized (usually Docker) application         
+
+It is an alternative to ECS, similar goal but different API       
+ECS is not open source but Kubernetes is open source           
+
+EKS supports 2 launch modes: supports **EC2** if you want to deploy worker nodes or **Fargate** to deploy serverless containers         
+
+Use case: if your company is already using Kubernetes on-premise or in another cloud, and wants to migrate to AWS using Kubernetes       
+
+(EXAM) Kubernetes is cloud-agnostic (can be used in any cloud, Azure, GCP)            
+
+e.g. we have a VPC, 3 AZ separated into public subnets and private subnets.        
+You would create EKS worker nodes, they would be EC2 instances for example, and each of these nodes will be running EKS Pods. They are very similar to ECS tasks but from a naming perspective, anytime you see "Pods", it relates to Amazon Kubernetes.         
+So we have EKS Pods and they are running onto EKS Nodes. And these nodes can be managed by an auto-scaling group.             
+Similar to ECS, if we want to expose EKS service on a Kubernetes service, we could set up a private load balancer or a public load balancer to talk to the web.                
+
+<img src="images/eks.png" width="700">             
+
+# Serverless Overviews from a Solution Architect Perspective        
+
+## Serverless Introduction     
+
