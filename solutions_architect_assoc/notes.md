@@ -4716,15 +4716,140 @@ You need to figure out how many writes or reads per second and write size we wan
 6. if the burst credit are empty, you will get a "ProvisionedThroughpytException".           
 7. it is then advised to do an exponential back-off retry         
 
-(EXTRA)
-DynamoDB Accelerator - DAX                
-Both can be used in the exam. This is Fully Managed **in-memory cache** for DynamoDB. (this is a cache specifically for DynamoDB)                 
+## DynamoDB Advanced Features           
 
-Say our application want to access DynamoDB. For this if you want to cache the most frequently read objects then we can use DAX as a cache in between. (DAX is made only for DynamoDB and we will not be using ElastiCache. We could but DAX is already really well integrated with DynamoDB)             
-**10X performance improvment** - single-digit millisecond latency to microseconds latency - when accessing your DynamoDB tables.               
-Secure, highly scalable and highly available           
+**DAX**                
+
+DAX = DynamoDB Accelerator                 
+This is Fully Managed **in-memory cache** for DynamoDB. (this is a cache specifically for DynamoDB)          
+Seamless cache for DynamoDB, no application re-write.          
+Writes go through DAX to DynamoDB.           
+Micro second latency for cached reads and queries          
+Solves the Hot Key problem (too many reads on one value in DynamoDB, you might get "ProvisionedThroughpytException")             
+5 minutes TTL for cache by default (it will be cached for 5 minute to relieve the pressure off from DynamoDB)           
+Up tp 10 DAX nodes in the cluster        
+Multi AZ (3 nodes minimum recommended for production)         
+Secure (Encryption at rest with KMS, VPC, IAM, CloudTrail...)                   
+
+e.g. we have maybe a lot of tables in our applicaiton. And will thus directly talk to DynamoDB accelerator (DAX) and DAX will talk to our table and basically, will make the caching wherever necessary.            
+DAX is a great way to speed up reads in your application               
+
+<img src="images/dax.png" width="400">            
 
 Difference with ElastiCache at the CCP level:         
-**DAX is only used for and is integrated with DynamoDB**, while ElastiCache can be used for other databases                     
+**DAX is only used for and is integrated with DynamoDB**, while ElastiCache can be used for other databases        
+
+**DynamoDB Streams**          
+Whenever you want to intercept changes in DynamoDB, e.g. something happens to a table, you want it to end up in DynamoDB stream.             
+-> Changes in DynamoDB (Create, Update, Delete) can end up in a DynamoDB Stream         
+
+The idea is that once you have this in a DynamoDB Stream, it is going to create a changelog of everything that happened to your table. That changelog can be read by AWS Lambda.                 
+-> React to changes in real time (welcome email to new users)         
+-> Analytics         
+-> Create derivative tables / views       
+-> Insert into ElastiSearch        
+
+Could implement cross region replication using Streams               
+Stream has 24 hours of data retention             
+Streams is mostly to be used with a Lambda function to be integrated.              
+
+<img src="images/dynamodb_stream.png" width="400">            
+
+**DynamoDB - New Features**: may not inside the exam yet !                      
+1. Transactions (new from Nov 2018)       
+-> all or nothing type of operations            
+-> coordinated Insert, Update and Delete across multiple tables           
+-> either all of them work or none of them work          
+-> include up to 10 unique items or up to 4MB of data           
+-> if you have financial transaction, you want to update everything as part of one transaction         
+
+2. On Demand (new from Nov 2018)          
+-> no capacity planning needed (WCU/RCU) - scales automatically         
+-> 2.5X more expensive than provisioned capacity (use with care)            
+-> helpful when spikes are un-predicatable or the application is very low throughput            
+
+**DynamoDB - Security and Other Features**             
+1. Security:         
+-> VPC Endpoints available to access DynamoDB without internet          
+-> Access fully controlled by IAM policies          
+-> Encryption at rest using KMS           
+-> Encryption in transit using SSL/TLS           
+2. Backup and Restore feature available       
+-> Point in time restore like RDS            
+-> No performance impact          
+3. Global Tables          
+-> multi region, fully replicated, high performance          
+4. Amazon DMS can be used to migrate to DynamoDB (from Mongo, Oracle, MySQL, S3, etc ...)           
+5. You can launch a local DynamoDB on your computer for development purposes            
+
+**DynamoDB - Other features**            
+
+1. Global Tables: (cross region replication)             
+-> Active Active replication, many regions will get to all other ones          
+-> Must enable DynamoDB Streams           
+-> Useful for low latency, disaster recovery purpose           
+
+We have the table and it is a global table. So it is in us-east-1 and ap-southeast-2.            
+If some writes happen to our table in us-east-1, they will automatically replicated to our table in ap-southeast-2.          
+If some writes happen on our table i nap-southeast-2, then they will be replicated back to us-east-1.            
+With the global table, you have region replication happening from all the region. All the tables are able to be written to get to each other, it is called an Active Active type of replication.               
+
+<img src="images/dynamodb_replication.png" width="400">            
+
+2. Capacity planning:            
+-> planned capacity: provision WCU and RCU, can enable auto scaling (for predictable workload)         
+-> on-demand capacity: get unlimited WCU and RCU, no throttle, more expensive (for unpredictable workload, or rare workload)            
+
+## API Gateway Overview        
+
+e.g. Building a Serverless API          
+We have seen how to create Lambda functions and how to use DynamoDB. The Lambda function can use DynamoDB as a database for our API, and we can do create, read, update, delete on our tables.           
+But we would like our clients to be able to invoke this Lambda function in some way and there are multiple ways to do it.         
+We can have our client direclty invoke the Lambda function (client will need IAM info), or we can use an ALB to have it in between the client and the Lambda function. This will expose our Lambda function as an HTTP endpoint.         
+There is another way we can use, that is called *API Gateway*. This is a serverless offering from AWS, which allows us to create REST APIs that are going to be public and accessible for clients.         
+The clients will talk to the API Gateway and API Gateway will then proxy the request to our Lambda functions.             
+We would use an API Gateway because it provides us more than just HTTP endpoint, it will provide us a lot of features.                          
+
+<img src="images/serverless_api.png" width="700">               
+
+Features:                  
+AWS Lambda + API Gateway: no infrastructure to manage                   
+Support for the WebSocket Protocol (we can do real time streaming through the API Gateway in 2 different ways)          
+Handle API versioning (v1, v2, ...)            
+Handle different environment (dev, test, prod)             
+Handle security (authentication and authorisation)            
+Create API keys, handle request throttling (in case some clients are doing too many requests on our API Gateway)                
+Swagger/Open API import to quickly define APIs           
+Transform and validate requests and responses in the API Gateway level            
+Generate SDK and API specifications             
+Cache API responses                
+
+**API Gateway - Integrations High Level**            
+1. Lambda function         
+-> invoke Lambda function          
+-> common and easy way to expose REST API backed by AWS Lambda            
+2. HTTP         
+-> expose any HTTP endpoints in the backend         
+-> e.g. internal HTTP API on premise, ALB etc.        
+-> why > add rate limiting, caching, user authentications, API keys, etc.        
+3. AWS Service           
+-> expose any AWS API through the API Gateway        
+-> e.g. start an AWS Step Function workflow, post a message to SQS             
+-> why ? add authentication, deploy publicly, rate control, etc.            
+
+**API Gateway - Endpoint Types**            
+There are 3 ways to deploy your API Gateway, these are called Endpoint types.              
+1. Edge-Optimised (default): for global clients            
+-> to be efficient, requests are routed through the CloudFront Edge locations (improves latency)            
+-> the API Gateway still lives in only one region (where you created it)           
+2. Regional: (don't want to use CloudFront Edge locations)            
+-> for clients within the same region where we created our API Gateway          
+-> could manually combine with CloudFront (more control over the caching strategies and the distribution)             
+3. Private:            
+-> can only be accessed from your VPC using an interface VPC endpoint (ENI)             
+-> to define access for an API Gateway, you can use a resource policy                    
+
+## API Gateway Security       
+
 
 
