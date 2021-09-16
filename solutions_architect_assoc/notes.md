@@ -4575,7 +4575,19 @@ Benefits of AWS Lambda:
 AWS Lambda language support:                            
 Node.js, Python, Java (Java 8 compatible), C# (.NET Core), Golang, C#/Powershell, Ruby, Custom Runtime API (community supported, e.g. Rust)             
 Lambda Container Image: the image must implement the Lambda Runtime API        
-Note (exam !): ECS/Fargate is preferred for running arbitrary Docker images                   
+Note (exam !): ECS/Fargate is preferred for running arbitrary Docker images                
+
+AWS Lambda Integrations: main ones          
+1. API Gateway: create REST API, they will invoke our Lambda functions         
+2. Kinesis: using Lambda to do some data transformation on the fly        
+3. DynamoDB: willbe used create some triggers, so whenever something happens in our database, a Lambda function will be triggered           
+4. S3: Lambda function will be triggered anytime e.g. a file is created in S3        
+5. CloudFront: Lambda at edge           
+6. CloudWatch Events/EventBridge: whenever things happen in our infrastructure on AWS, and we want to be able to react to things          
+7. CloudWatch Logs: to stream these logs wherever we want         
+8. SNS: react to notifications and your SNS topics              
+9. SQS: process messages from your SQS queues        
+10. Cognito: react to whenever, e.g. a user login to you database.          
 
 e.g. Serverless Thumbnail creation                
 <img src="images/lambda_thumbnail.png" width="700">                                
@@ -4594,8 +4606,11 @@ AWS Lambda Pricing (exam !):
 Pay per **calls**:                
 -> first 1,000,000 requests are free                     
 -> $0.20 per 1 million requests thereafter ($0.0000002 per request)                       
-also need to pay per **duration** (increment of 100ms)                            
--> 400,000 GB-second of compute time per month is FREE == 400,000 seconds if function is 1GB RAM                                  
+also need to pay per **duration** (increment of 1ms)                            
+-> 400,000 GB-second of compute time per month is FREE       
+== 400,000 seconds if function is 1GB RAM                     
+== 3,200,000 seconds if function is 128 MB RAM            
 -> after that $1 for 600,000 GB-seconds                      
 
-It is usually very cheap to run AWS Lambda so it's very popular     
+It is usually very cheap to run AWS Lambda so it's very popular            
+
