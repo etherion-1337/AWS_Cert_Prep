@@ -4582,7 +4582,7 @@ AWS Lambda Integrations: main ones
 2. Kinesis: using Lambda to do some data transformation on the fly        
 3. DynamoDB: willbe used create some triggers, so whenever something happens in our database, a Lambda function will be triggered           
 4. S3: Lambda function will be triggered anytime e.g. a file is created in S3        
-5. CloudFront: Lambda at edge           
+5. CloudFront: Lambda@Edge           
 6. CloudWatch Events/EventBridge: whenever things happen in our infrastructure on AWS, and we want to be able to react to things          
 7. CloudWatch Logs: to stream these logs wherever we want         
 8. SNS: react to notifications and your SNS topics              
@@ -4613,4 +4613,118 @@ also need to pay per **duration** (increment of 1ms)
 -> after that $1 for 600,000 GB-seconds                      
 
 It is usually very cheap to run AWS Lambda so it's very popular            
+
+## Lambda Limits        
+
+Lambda Limits - **per region**                 
+
+1. Execution:        
+-> memory allocation: 128MB -10GB (64MB increment)         
+--> when we increase the memory, we have more vCPU         
+-> maximum execution time: 900 seconds (15 minutes), i.e. anything above that is NOT a good use case for Lambda             
+-> environment variables (4KB)            
+-> disk capacity in the "function container" (in `/tmp`): 512MB          
+-> concurrency executions: 1,000 (can be increased)          
+
+2. Deployment        
+-> Lambda function deployment size (compressed .zip): 50MB           
+-> size of uncompressed deployment (code + dependencies): 250 MB (anything bigger we should use a `/tmp` space instead)            
+-> can use the `/tmp` directory to load other files at startup           
+-> size of environment variables: 4KB               
+
+(EXAM) e.g. we need 6GB of RAM or we need 30 minutes of execution time or we need a big file of 3 GB, then we know Lambda is not the right way to run this workload (6GB RAM though?)               
+
+## Lambda@Edge      
+
+Lambda@Edge is another type of synchronous invocation of Lambda.        
+Say you have deployed a CDN using CloudFront, what if you wanted to run a global Lambda function alongside each edge locations ? Or how to implement request filtering before reaching your application ?                         
+
+For this we can use **Lambda@Edge**:             
+deploy Lambda functions alongside your CloudFront CDN (not in a specific region, but to each region around the world)                      
+Why ?             
+-> build more responsive applications          
+-> you don't manage servers, Lambda is deployed globally         
+-> customise the CDN content           
+-> pay only for what you use            
+
+You can use Lambda to change CloudFront requests and responses (there are 4 types of Lambda function at the edge):              
+If we look at our integration we have our user, talking to your CloudFront edge locations, that are going to be talking to your origin.         
+1. we can change **Viewer Request**: after CloudFront receives a request from a viewer (viewer request), we can modify that request              
+2. we can change **Origin Request**: this request is before CloudFront forwards the request to the Origin.             
+3. we can change **Origin Response**: this is done when CloudFront received the response from the Origin, we can modify that             
+4. we can change **Viewer Response**: this is done before CloudFront forward the response to the viewer.              
+
+<img src="images/lambda_edge.png" width="700">                
+
+You can also generate responses to viewers without ever sending the request to the origin (by just using the Viewer Request or Viewer Response Lambda functions).               
+
+**Lambda@Edge: Global Application**             
+
+e.g. Our website will be statically hosted onto Amazon S3 in the HTML form. Then the user will visit it and will be asked with some client side JavaScript to do some API requests to CloudFront. CloudFront will be triggering our Lambda@Edge function which is globally and running globally alongside your edge locations, and then your Lambda function maybe querying data in DynamoDB.            
+
+<img src="images/lambda_edge_global.png" width="700">              
+
+Use cases:         
+1. website security and privacy           
+2. dynamic web application at the edge        
+3. search engine optimisation (SEO)        
+4. intelligently route across Origins and Data Centers          
+5. bot mitigation at the edge        
+6. real-time image transformation          
+7. A/B testing       
+8. user authentication and authorisation        
+9. user prioritisation         
+10. user tracking and analytics           
+
+(EXAM) whenever you need to integrate a Lambda function with your CloudFront distribution to modify these 4 kinds of reqeusts.            
+
+## DynamoDB Overview          
+
+**Serverless Database**                
+
+Fully Managed Highly available with replication across 3 AZ                 
+NoSQL database - **NOT a relational database**                   
+Scales to massive workloads, distributed "serverless" database (we don't provision any servers, with RDS or ElastiCache we need to provision an instance type. There are still servers at the backend for DynamoDB but we don't see them)                              
+It scales with millions of requests per seconds, trillions of rows, 100s of TB of storage                  
+Fast and consistent in performance                 
+**Single-digit millisecond latency - low latency retrieval** (Key words in the exam: serverless, low latency, single-digit millisecond latency)                         
+Integrated with IAM for security, authorization and administration               
+Enables event driven programming with DynamoDB Streams             
+Low cost and auto scaling capability                
+
+DynamoDB - Basics:             
+1. DynamoDB is made of **tables**           
+2. each table has a **primary key** (must be decided at creation time)            
+3. each table can have infinite number of items (=rows)         
+4. each item (or row) has **attributes** (can be added over time - can be null, attributes are like columns in RDS)            
+5. maximum size of a item is 400KB           
+6. data types supported are:         
+-> scalar types: string, number, binary, boolean, null       
+-> document types: list, map       
+-> set types: string set, number set, binary set           
+
+DynamoDB - Provisioned Throughput:            
+1. table must have provisioned read and write capacity units        
+2. **Read Capacity Units (RCU)**: throughput for reads ($0.00013 per RCU)            
+-> 1 RCU = 1 strongly consistent read of 4KB per second                          
+-> 1 RCU = 2 eventually consistent read of 4KB per second          
+3. **Write Capacity Units (WCU)**: throughput for writes ($0.00065 per WCU, 5x expensive to RCU)           
+-> 1 WCU = 1 write of 1KB per second           
+You need to figure out how many writes or reads per second and write size we want, then we can compute the RCU and WCU.                       
+4. option to setup auto-scaling of throughput to meet demand         
+5. throughput can be exceeded temporarily using "burst credit"           
+6. if the burst credit are empty, you will get a "ProvisionedThroughpytException".           
+7. it is then advised to do an exponential back-off retry         
+
+(EXTRA)
+DynamoDB Accelerator - DAX                
+Both can be used in the exam. This is Fully Managed **in-memory cache** for DynamoDB. (this is a cache specifically for DynamoDB)                 
+
+Say our application want to access DynamoDB. For this if you want to cache the most frequently read objects then we can use DAX as a cache in between. (DAX is made only for DynamoDB and we will not be using ElastiCache. We could but DAX is already really well integrated with DynamoDB)             
+**10X performance improvment** - single-digit millisecond latency to microseconds latency - when accessing your DynamoDB tables.               
+Secure, highly scalable and highly available           
+
+Difference with ElastiCache at the CCP level:         
+**DAX is only used for and is integrated with DynamoDB**, while ElastiCache can be used for other databases                     
+
 
