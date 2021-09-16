@@ -4547,5 +4547,55 @@ Some of the AWS Serverless service:
 9. Step Functions          
 10. Fargate            
 
+## Lambda Overview    
 
+If we use EC2 services:                       
+-> we have virtual servers in the cloud              
+-> limited by RAM and CPU             
+-> continuously running            
+-> scaling means intervention to add / remove servers                     
 
+With Amazon Lambda, there is a new way to think about it:                
+-> we have virtual **functions** - no servers to manage             
+-> limited by time - intended for **short executions**                
+-> run **on-demand**              
+-> **scaling is automated**                
+
+Benefits of AWS Lambda:                
+1. Easy Pricing:            
+-> pay per request and compute time                
+-> free tier (every month) of 1,000,000 AWS Lambda requests and 400,000 GBs of compute time                  
+2. integrated with the whole AWS suite of services                 
+3. **event-driven**: functions get invoked by AWS when needed (reactive kind of service)            
+4. integrated with many programming languages                  
+5. easy monitoring through AWS CloudWatch             
+6. easy to get more resources per functions (up to 10GB of RAM)                       
+7. **increasing RAM will also improves CPU and network**                
+
+AWS Lambda language support:                            
+Node.js, Python, Java (Java 8 compatible), C# (.NET Core), Golang, C#/Powershell, Ruby, Custom Runtime API (community supported, e.g. Rust)             
+Lambda Container Image: the image must implement the Lambda Runtime API        
+Note (exam !): ECS/Fargate is preferred for running arbitrary Docker images                   
+
+e.g. Serverless Thumbnail creation                
+<img src="images/lambda_thumbnail.png" width="700">                                
+Say we have a S3 bucket and we add image to it. The S3 bucket will trigger a Lambda function once the image is uploaded. That Lambda function will change it into a thumbnail.                 
+It will push the thumbnail back to the S3 bucket or it will push some of the metadata into DynamoDB.           
+Fully event-driven and serverless !                         
+This can scale really well and we don't provision any server.                       
+
+e.g. Serverless CRON job                   
+CRON allows to create a schedule (e.g. every hour) and it will run a script.                          
+By default, a CRON job is run on an Linux AMI. But since it is serverless, we will not be running on EC2 Instance.                 
+Instead we use CloudWatch Events (or EventBridge, also serverless) will be triggering every one hour our Lambda function to perform a task.                    
+Effectively we are launching a scirpt every hour through a Lambda function.                                 
+
+AWS Lambda Pricing (exam !):                         
+Pay per **calls**:                
+-> first 1,000,000 requests are free                     
+-> $0.20 per 1 million requests thereafter ($0.0000002 per request)                       
+also need to pay per **duration** (increment of 100ms)                            
+-> 400,000 GB-second of compute time per month is FREE == 400,000 seconds if function is 1GB RAM                                  
+-> after that $1 for 600,000 GB-seconds                      
+
+It is usually very cheap to run AWS Lambda so it's very popular     
