@@ -4516,5 +4516,36 @@ Similar to ECS, if we want to expose EKS service on a Kubernetes service, we cou
 
 # Serverless Overviews from a Solution Architect Perspective        
 
-## Serverless Introduction     
+## Serverless Introduction       
+
+What is serverless ?            
+
+Serverless is a new paradigm in which the developers don't have to manage servers anymore.         
+(you still have servers, just that you don't manage them anymore)               
+
+They just deploy code and functions              
+Initially serverless meant Function as a Service (FaaS)         
+
+Serverless was pioneered by AWS Lambda but now also includes anything that's (remotely) managed:"databases, messaging, storage, etc.", as long as you don't provision servers.            
+
+Serverless in AWS           
+e.g.          
+We have our users, and they will get static content from our S3 buckets delivered as a website (or CloudFront + S3).      
+Then we will login with Cognito, this is where our users would have their identity stored. They would invoke your REST API through the API gateway, the API Gateway would invoke Lambda function, the Lambda function will store or retrieve data from DynamoDB.            
+
+<img src="images/aws_serverless.png" width="400">               
+
+Some of the AWS Serverless service:      
+1. AWS Lambda         
+2. DynamoDB           
+3. AWS Cognito          
+4. AWS API Gateway         
+5. Amazon S3           
+6. AWS SNS and SQS         
+7. AWS Kinesis Data Firehose (based on the throughput)        
+8. Aurora Serverless        
+9. Step Functions          
+10. Fargate            
+
+
 
