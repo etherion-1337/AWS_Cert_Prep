@@ -5013,11 +5013,45 @@ We want to create a mobile application with the following requirements:
 -> users can write and read to-dos, but they mostly read them           
 -> the database should scale, and have some high read throughput             
 
+**Mobile app: REST API layer**            
+
+We have a mobile client and we will use API Gateway to handle the REST HTTPS.          
+In the classic serverless setting, the API Gateway will invoke a Lambda function, which basically allows us to scale and use serverless infrastructure. Amazon Lambda needs to be able to store and read to-do from a database. A database that scales really well that is serverless is DynamoDB.        
+We will use a serverless technology for authentication: Cognito. Then API Gateway will verify the authentication with Cognito.         
+
 <img src="images/todo_restapi.png" width="700">                
+
+**Mobile app: giving users access to S3**            
+
+We have our mobile clients that authenticates to Amazon Cognito. And Cognito that can generate temporary credentials for us using AWS STS and return these credentials to our mobile clients.         
+These credentials allow our mobile client to store and retrieve files in Amazon S3. Basically access their own little space in S3.             
+(EXAM) WRONG ANS: store AWS user credentials on your mobile clients.            
 
 <img src="images/todo_s3.png" width="700">               
 
+**Mobile app: high read throughput, static data**          
+
+Our app starts to scale as we get more users. We figured out that we have very high read throughput. So we have many RCUs, and the to-dos don't change much.           
+
+We can use DAX as a caching layer to increase read throughput and decrease the cost. This will basically have a caching layer and because we are doing so many reads, now the reads will be cached in DAX. This means that DynamoDB will not need as much RCU.              
+
+There could be another way of doing caching. We can start caching the responses at the API Gateway level. If the answer never change and we can start caching a few reponses for some API routes.           
+
 <img src="images/todo_cache.png" width="700">              
+
+In this lecture:         
+1. Serverless REST API: HTTPS, API Gateway, Lambda, DynamoDB         
+2. Using Cognito to generate temporary credentials with STS to access S3 buckets with restricted policy        
+-> App users can directly access AWS resources this way. Pattern can be applied to DynamoDB, Lambda, etc.         
+3. Caching the reads on DynamoDB using DAX         
+4. Caching the REST requests at the API Gateway level         
+5. Security for authentication and authorisation with Cognito, STS        
+
+## Serverless Website: MyBlog          
+
+
+
+
 
 
 
