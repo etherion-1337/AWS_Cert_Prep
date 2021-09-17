@@ -5001,6 +5001,23 @@ SAM will help you deploy that automatically.
 SAM can help you run Lambda, API Gateway, DynamoDB locally            
 SAM can use CodeDeploy to deploy Lambda functions            
 
+# Serverless Solution Architecture Discussions                     
+
+## Mobile Application: MyToDoList             
+
+We want to create a mobile application with the following requirements:           
+-> expose as REST API with HTTPS endpoints                          
+-> serverless architecture              
+-> users should be able to directly interact with their own folder in S3            
+-> users should be able to authenticate through a managed serverless service         
+-> users can write and read to-dos, but they mostly read them           
+-> the database should scale, and have some high read throughput             
+
+<img src="images/todo_restapi.png" width="700">                
+
+<img src="images/todo_s3.png" width="700">               
+
+<img src="images/todo_cache.png" width="700">              
 
 
 
