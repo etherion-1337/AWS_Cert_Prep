@@ -4851,5 +4851,161 @@ There are 3 ways to deploy your API Gateway, these are called Endpoint types.
 
 ## API Gateway Security       
 
+There are 3 aspect of security we need to know for API Gateway                 
+
+**IAM Permissions**           
+
+1. Create an IAM policy authorisation and attach to User/Role            
+-> you want to give one of your user, or role access to your API, it make sense to attach an IAM policy to your user and your role                
+2. Then the API Gateway verifies IAM permissions passed by the calling application (when you call your REST API)           
+3. Good to provide access within your own infrastructure           
+4. Leverages "Sig v4" capability where IAM credential are in headers           
+
+So we have our client, it is calling API Gateway with Sig v4, and then API Gateway calls IAM to verify the policies, make sure it all checks out.            
+And then if everything is good, it will goes to the backend.        
+There is no added cost to this solution            
+(EXAM) anytime you see Sig v4 in the exam, think IAM permissions for API Gateway             
+Easy solution, but if you give access to users outside of your AWS, then you cannot use IAM for missions.          
+
+<img src="images/api_gateway_iam.png" width="700">               
+
+**Lambda Authorizers** (formerly CustomAuthorizers)                      
+
+(EXAM) if you see Custom Authorizer, think Lambda Authorizer            
+
+1. Uses AWS Lambda to validate the token in header being passed (in your request)               
+2. Option to cache result of authentication           
+-> i.e. you don't need to call your Authorizer Lambda everytime a request comes in, just once.            
+3. Helps to use OAuth/SAML/3rd party type of authentication            
+-> anytime you need to evaluate the credentials given by a third party, Lambda authorizer is a great candidate for it           
+4. Lambda must return an IAM policy for the user               
+-> the IAM policy will define whether or not the user can call the API         
+
+Our client calls a REST API with a token, a 3rd party token. And our API Gateway will call the Lambda Authorizer passing the token to the Lambda authorizer.       
+And the Lambda will return an IAM Policy, and if everything checks out, then API Gateway talks to the backend and we are good to go.         
+
+<img src="images/api_gateway_lambda.png" width="700">                
+
+**Cognito User Pool**               
+
+1. Cognito fully manage user lifecycle         
+2. API Gateway verifies identity automatically from AWS Cognito           
+3. No custom implementation requred          
+4. Free !           
+5. **Cognito only helps with authentication, not authorisation**            
+-> Cogntio just say the user talking to you right now is indeed the right user              
+
+Clients will call the Cognito user pool to authenticate and then the Cognito user pool gives back a token to the client.              
+The client now calls our API Gateway, as a REST API and it passes on the token it received from the Cognito user pool.                    
+The API Gateway will then make sure that the Cognito token is correct by talking to Cognito directly.           
+If everything checks out the client can talk to the backend.                
+The backend must ensure that you are authorised to make the call.         
+In this type of solution, you manage your own user pool so that this is going to be great when we see Cognito.           
+
+<img src="images/api_gateway_cognito.png" width="700">            
+
+Summary:           
+1. IAM:          
+-> Great for users / roles already within your AWS account          
+-> Handle authentication + authorisation          
+-> Leverage Sig v4            
+2. Custom Authorizer:          
+-> Great for 3rd party tokens             
+-> Very flexible in terms of what IAM policy is returned            
+-> Handle authentication + authorisation          
+-> pay per Lambda invocation (can use caching to limit number of calls you do to your Lambda function)           
+3. Cognito User Pool:            
+-> You manage your own user pool (can be backed by Facebook, Google login etc)            
+-> No need to write any custom code         
+-> **Must implement authorisation in the backend**           
+
+## AWS Cognito Overview                    
+
+We want to give our users an identity so that they can interact with our application.             
+
+There are several products:            
+
+1. **Cognito User Pools**       
+-> sign in functionality for app users           
+-> integrate with API Gateway          
+
+2. **Cognito Identity Pools (Federated Identity)**         
+-> provide AWS credentials to (app) users so they can access AWS resources directly            
+-> integrate with Cognito User Pools as an identity provider            
+
+3. **Cognito Sync**        
+-> synchronise data from device to Cognito         
+-> maybe deprecated and replaced by AppSync           
+
+AWS Cognito User Pools (CUP)                 
+
+1. Create a serverless database of user for your mobile apps           
+2. Simple login: Username (or email) / password combination             
+3. Possibility to verify emails / phone numbers and add MFA            
+4. Can enable Federated Identities (Facebook, Google, SAML)         
+-> you can allow your user to login through Facebook etc and get an identity into your User Pool          
+5. Sends back a JSON Web Tokens (JWT)          
+6. **Can be integrated with API Gateway for authentication**            
+
+We have our app and it wants to authenticate to CUP. It is going to register our login using a password. CUP, after verifying the login, sends back the JWT.       
+So a database of users, you can have email password, Facebook or Google login etc.            
+
+<img src="images/cognito_cup.png" width="600">                   
+
+AWS Cognito - Federated Identity Pools           
+
+1. Goal:     
+-> Provide direct access to AWS Resources from the Client Side (no proxy, no API, just straight access)           
+2. How:              
+-> Log in to federated identity provider - or remain anonymous         
+-> Get temporary AWS credentials back from the Federated Identity Pool         
+-> These credentials come with a pre-defined IAM policy stating their permissions            
+3. e.g.:       
+-> provide (temporary) access to write to S3 bucket using Facebook Login        
+
+We have our app, and our app is able to login to an identity provider.           
+From there our app gets to login and gets a token.         
+Now using this token, we are going to pass it on to our Federated Identity Pool, it will verfity the token with our identity provider.           
+The Federated Identity will then talk to the STS service to get temporary credentials for AWS.           
+It will then pass on the temporary credentials back to our application.                
+Our application now has these temporary AWS credentials.             
+e.g. it can directly interact with our S3 bucket, we have an IAM policy which allows us to do certain things.                               
+
+The main idea is that we trade in a login for an identity provider and we get, in the end, temporary AWS credentials.               
+
+<img src="images/cognito_federated_id.png" width="600">           
+
+AWS Cognito Sync              
+
+1. **Deprecated - use AWS AppSync now**          
+2. Store preferences, configuratio, state of app          
+3. Cross device synchronisation (any platform - iOS, Andriod, etc.)           
+4. Offline capability (synchronisation when back online)             
+5. **Requires Federated Identity Pool in Cognito (not User Pool)**             
+6. Store data in dataset (up to 1MB)          
+7. Up to 20 datasets to synchronise          
+
+## Serverless Application Model (SAM) Overview           
+
+SAM = Serverless Application Model            
+
+It is a framework for developing and deploying serverless applications             
+All the configuration is YAML code            
+-> you can configure your Lambda functions        
+-> DynamoDB tables           
+-> API Gateway        
+-> Cognito User Pools             
+
+SAM will help you deploy that automatically.            
+
+SAM can help you run Lambda, API Gateway, DynamoDB locally            
+SAM can use CodeDeploy to deploy Lambda functions            
+
+
+
+
+        
+
+
 
 
