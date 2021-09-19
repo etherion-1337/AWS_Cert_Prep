@@ -5047,7 +5047,96 @@ In this lecture:
 4. Caching the REST requests at the API Gateway level         
 5. Security for authentication and authorisation with Cognito, STS        
 
-## Serverless Website: MyBlog          
+## Serverless Website: MyBlog         
+
+Requirement:        
+1. This website should scale globally         
+2. Blogs are rarely written, but often read          
+3. Some (or most) of the website is purely static files, the rest is dynamic REST API           
+4. Caching must be implemented where possible        
+5. Any new users that subscribe should receive a welcome email          
+6. Any photo uploaded to the blog should have a thumbnail generated         
+(go serverless where possible)         
+
+The SA for various purposes              
+
+1. **Serving static content, globally**             
+We have our clients and our static content maybe stored in Amazon S3. How do we expose that bucket ? Remember the Amazon S3 bucket is in specific region and we want to expose it globally. We can use CloudFront to achieve this. It is a global distribution CDN.             
+Our clients are going to interact with edge locations on Amazon CloudFront. It is going to cache data coming straight from S3.            
+
+2. **Serving static content, globally, securely**           
+We have the same architecture. But we are going to use OAI (Origin Access Identity) from CloudFront to S3. Basically we are going to add a bucket policy and this policy on S3 will only authorize the OAI (so CloudFront) to read and block other request.            
+So now our clients cannot go directly to our S3 bucket.             
+
+<img src="images/myblog_1.png" width="700">             
+
+3. **Adding a public serverless REST API**                    
+We now want to add a public servless REST API. We have a REST HTTPS talking to API Gateway, invoking a Lambda function, maybe querying and reading from DynamoDB. Because we have so many reads, maybe DAX is a great caching layer we could use.         
+
+4. **Leveraging DynamoDB Global Tables**                 
+If we are going global, maybe we could use DynamoDB global databases to reduce the latencies in part of the world.         
+
+<img src="images/myblog_2.png" width="700">                 
+
+5. **User Welcome email flow**            
+In DynamoDB, we want to enable streams of changes, so we will have DynamoDB stream being created. That DynamoDB stream will invoke a Lambda function. That Lambda function is going to have an IAM role which allows us to use Amazon (Simple Email Service) SES.             
+
+<img src="images/myblog_3.png" width="700">   
+
+6. **Thumbnail Generation Flow**           
+We want thumbnails to be created. Our client is going to upload to our S3 bucket directly, or maybe we again have an OAI in a CloudFront distribution. Our client will upload photos to CloudFront, and CloudFront will forward them onto Amazon S3 bucket. This is called S3 transfer acceleration.       
+Whenever a file is added to S3, it is going to trigger a Lambda function, and it will create a thumbnail into an S3 bucket.          
+S3 also has triggers to SQS and SNS.                    
+
+<img src="images/myblog_4.png" width="700">           
+
+AWS Hosted Website Summary           
+1. We have seen static content being distributed using CloudFront with S3.        
+2. The REST API was serverless, didn't need to go Cognito because public REST API         
+3. We leverage a Global DynamoDB table to serve the data globally          
+4. (We could have used Aurora Global Tables, but it won't serverless, needs to be provisioned)        
+5. We enabled DynamoDB streams to trigger a Lambda function            
+6. The Lambda function had an IAM role which could use SES           
+7. SES (Simple Email Service) was used to send emails in a serverless way          
+8. S3 can trigger SQS/SNS/Lambda to notify of events             
+
+## MicroServices Architecture             
+
+We want to switch to a micro service architecture          
+Many services interact with each other directly using a REST API             
+Each architecture for each micro service may vary in form and shape             
+
+We want a micro-service architecture so we can have a leaner development lifecycle for each service.               
+We want each service to scale indepentently and have its own code repository.             
+
+**Micro Service Environment**            
+
+Our user will talk to our first micro service over HTTPS, and we decided to have an Elastic Load Balancer talking to ECS, and then talking to DynamoDB.            
+This micro service usually has a DNS name or URL, so maybe it is `service1.example.com` and to get all that information we will do a DNS query to Route 53, to get an Alias record back and then we can interact with that service.           
+
+Now we have a second service, and this one using a classic architecture for serverless, but we have ElastiCache. The second service may also interact with service 1. The Lambda function may make a call to our ELB because it needs to have some information from the 1st micro service to be able to make a response.          
+
+We have a third micro service, also using ELB but this time it is not serverless but using EC2 and ASG, and also with RDS database. Maybe the EC2 instance must make a call to the 2nd micro service before making a decision.        
+
+<img src="images/micro_svc_env.png" width="700">               
+
+Discussions on Micro Services          
+1. You are free to design each micro-service the way you want          
+2. Two patterns for micro services:        
+-> synchronous patterns: API Gateway, Load Balancers (makes explicit call to micro services) to make HTTPS calls to other micro services        
+-> asynchronous patterns: SQS, Kinesis, SNS, Lambda triggers (S3), (not in the above diagram). We will put a message in SQS but I don't care when I will get a response.            
+3. Challenges with micro services:           
+-> repeated overhead for creating each new microservices        
+-> issues with optimising server density/utilisation         
+-> complexity of running multiple versions of multiple microservices simultaneously        
+-> proliferation of client-side code requirements to integrate with many separate services         
+4. Some of the challenges are solved by Serverless patterns:        
+-> API Gateway, Lambda scale automatically and you pay per usage (no need to worry about server utilisation)     
+-> You can easily clone API, reproduce environments          
+-> Generated client SDK through Swagger integration for the API Gateway            
+
+## Distributing Paid Content            
+
 
 
 
