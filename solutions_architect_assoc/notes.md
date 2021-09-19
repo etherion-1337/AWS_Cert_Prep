@@ -5137,6 +5137,49 @@ Discussions on Micro Services
 
 ## Distributing Paid Content            
 
+We sell videos online and users have to pay to buy videos          
+Each video can be bought by many different customers        
+We only want to distribute videos to users who are premium users           
+We have a database of premium users           
+Links we send to premium users should be short lived and secured (no other uses can use that link)        
+Our application is global            
+We want to be fully serverless           
+
+1. **Start Simple, permium user service**             
+We have our clients using HTTPS REST API talk to the API Gateway, invoke Lambda function and talkingto DynamoDB table. We can read/update/delete a table of users. This table can tell us whether or not they are premium.            
+
+2. **Add authentication**           
+We may want to authenticate with Amazon Cognito, and verify authentication with API Gateway.             
+
+<img src="images/video_simple.png" width="700">            
+
+3. **Add Video Storage Service, Distribute Globally and Secure**          
+Our video is going to be in S3. We want to be global and secure.        
+We are going to have a CloudFront global distribution using an OAI talking to S3 with a bucket policy. We now ensure people can only access our content through CloudFront, and it is distributed globally.                    
+
+<img src="images/video_auth_storage.png" width="700">                 
+
+4. **Distribute Content only to premium users**            
+We are going to want to use the feature of signed URL. CloudFront has the feature of signed URL and it is a great way to distribute premium content.            
+We have to create our own application that will generate our signed URL. We will create an API Gateway (2nd API) and it will verify the authentication of the clients and the client will say, it will invoke that API and gives a signed URL. The API Gateway will invoke a Lambda function that has been coded to create a signed URL. It will first verify if the user is premium. If it is a premium user, it is going to use CloudFront API using the SDK, to generate a signed URL.        
+When it is done, the Lambda will return the value to API Gateway, which returns the signed URL to our clients.             
+Clients can use the signed URL to access our CloudFront global distribution.           
+
+<img src="images/video_premium.png" width="700">           
+
+Premium User Video service             
+1. We have implemented a fully serverless solution       
+-> Cognito for authentication          
+-> DynamoDB for storing users that are premium         
+-> 2 serverless applications          
+--> premium user registration       
+--> CloudFront Signed URL generator           
+-> Content is stored in S3 (serverless and scalable)       
+-> Integrated with CloudFront with OAI for security (users cannot bypass)           
+-> CloudFront can only be used using Signed URLs to prevent unauthorised users             
+-> What about S3 signed URL ? They are not efficient for global access (CloudFront is more efficient, also we have OAI to only allow CloudFront to access S3, S3 pre-signed URLs would have not worked)           
+
+## Software updates distribution          
 
 
 
