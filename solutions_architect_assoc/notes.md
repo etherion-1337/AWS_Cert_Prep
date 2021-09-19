@@ -5181,13 +5181,62 @@ Premium User Video service
 
 ## Software updates distribution          
 
+We have an application running on EC2, that distributes software updates once in a while            
+When a new software update is out, we get a lot of request and the content is distributed in mass over the network. It is costly.          
+We don't want to change our application, but what to optimise our cost and CPU, how can we do it ?             
 
+So we have a classic ELB plus ASG applications, running in multi-AZ and we will assume that these M5 instances are the instances distributing.           
+Let's say these software updates they are put in Amaz EFS (Elastic File System).               
+We want to enable the application to scale more globally and to reduce CPU utilisation.            
+We put CloudFront on top of it.             
 
+<img src="images/sa_sw_update.png" width="700">           
 
+Why CloudFront ?         
+1. No changes to architecture          
+2. Will cache software updates files at the edge         
+3. Software update files are not dynamic, they are static (never changing)          
+4. Our EC2 instances aren't serverless            
+5. But CloudFront is, and will scale for us           
+6. Our ASG will not scale as much, and we will save tremendously in EC2           
+7. We will also save in availability, network bandwidth cost, etc.         
+8. Easy way to make an existing application more scalable and cheaper        
 
+## Big Data Ingestion Pipeline            
 
+We want the ingestion pipeline to be fully serverless          
+We want to collect data in real time       
+We want to transform the data         
+We want to query the transformed data using SQL        
+The reports created using the queries should be in S3        
+We want to load that data into a warehouse and create dashboards          
 
-        
+The producers of data are from IoT devices.                      
+(EXAM) AWS IoT Core helps you manage these IoT devices.                
+These devices can send data in real-time, to IoT core and IoT Core directly into a Kinesis Data Stream.          
+Kinesis Data Stream allows us to pipe big data, in real-time into Kinesis service. It will then talk to Kinesis Data Firehose. Firehose allows us to, e.g., every 1 minute, put and offload data into an Amazon S3 bucket, and will be an Ingestion Bucket. What we have here is a whole pipeline to get a lot of data from a lot of devices in real-time, and put it every one minute into an S3 bucket.         
+
+It is possible for us to cleanse or quickly transform the data using Lambda function that is directly linked to Kinesis Data Firehose.             
+Once we have the ingestion bucket, we can trigger an SQS Queue. The queue can trigger an Lambda. Lambda can be directly triggerd by S3 hence SQS is optional.           
+Lambda will trigger Athena SQL query. This Athena query will pull data from the Ingestion Bucket and will do an SQL query, that is all serverless and their outputs. And the outputs of this serverless query will go into a reporting bucket.             
+
+We can either directly visualise it, using QuickSight. QuickSight is a way for us to visualise the data into an S3 bucket, or we can load our data into a proper data warehouse for analytics, such as Redshift (not serverless).                            
+
+<img src="images/sa_bigdata_pipeline.png" width="700">                 
+
+Discussion:             
+1. IoT Core allows you to harvest data from IoT devices         
+2. Kinesis is great for real-time data collection         
+3. Firehose helps with data delivery to S3 in near real-time (1 minute)                
+4. Lambda can help Firehose with data transformations          
+5. Amazon S3 can trigger notifications to SQS            
+6. Lambda can subscribe to SQS (we could have connecter S3 to Lambda)            
+7. Athena is a serverless SQL service and results are stored in S3          
+8. The reporting bucket contains analysed data and can be used by reporting tool such as AWS QuickSight, Redshift, etc.             
+
+# Databases in AWS           
+
+## Choosing the right database
 
 
 
