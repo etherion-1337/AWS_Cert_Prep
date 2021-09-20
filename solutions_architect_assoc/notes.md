@@ -5236,7 +5236,50 @@ Discussion:
 
 # Databases in AWS           
 
-## Choosing the right database
+## Choosing the right database        
+
+We have a lot of managed databases on AWS to choose from             
+Questions to choose the right database based on your architecture:          
+1. Read-heavy. write-heavy, or balanced workload ? Throughput needs ? Will it change, does it need to scale or fluctuate during the day ?      
+2. How much data to store and for how long ? Will it grow ? Average object size ? How are they accessed ?          
+3. Data durability ? Source of truth for the data ?             
+4. Latency requirements ? Concurrent users ?         
+5. Data model ? How will you query the data ? Joins ? Structured ? Semi-Structured ?          
+6. Strong schema ? More flexibilty ? Reporting ? Search ? RBDMS/NoSQL ?           
+7. License costs ? Switch to Cloud Native DB such as Aurora ?         
+
+Database Types:       
+1. RDBMS (=SQL/OLTP Online Transaction Processing): RDS, Aurora - great for joins          
+-> great for creating website, great for normalised data, basically anytime we see data in tabular form                      
+2. NoSQL database: DynamoDB (~JSON), ElastiCache (key/value pairs), Neptune (graphs) - no joins, no SQL          
+3. Object Store: S3 (for big objects) / Glacier (for backups/archives)          
+4. Data Warehouse (=SQL Analytics/BI): Redshift (OLAP, Online Analytical Processing), Athena            
+5. Search: ElasticSearch (JSON) - free text, unstructured searched            
+6. Graphs: Neptune - displays relationships between data            
+
+## RDS              
+
+Managed PostgreSQL/MySQL/Oracle/SQL Server       
+Must provision an EC2 instance & EBS Volume type and size        
+Support for Read Replicas (to scale reads) and Multi AZ (for disaster recovery)           
+Security through IAM, Security Groups, KMS, SSL in transit           
+Backup / Snapshot / Point in time restore feature            
+Managed and scheduled maintenance         
+Monitoring through CloudWatch           
+
+Use case: Store relational datasets (RDBMS/OLTP), perform SQL queries, transactional inserts/update/delete is available             
+
+**RDS for Solution Architect**           
+
+The well-architecture framework has 5 pillars. We will compare RDS to each of the pillars.         
+1. Operations: small downtime when failover happens, when maintenance happens, scaling in read replicas/EC2 instance/restore EBS implies manual interventio, application changes          
+2. Security: AWS responisible for OS security, we are responsible for setting up KMS, security groups, IAM policies, authorising users in DB, using SSL.          
+3. Reliability: Multi AZ feature, failover in case of failures              
+4. Performance: depends on EC2 instance type, EBS volume type, ability to add Read Replicas. Storage auto-scaling & manual scaling of instances          
+5. Cost: Pay per hour based on provisioned EC2 and EBS         
+
+
+
 
 
 
