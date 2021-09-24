@@ -5278,9 +5278,907 @@ The well-architecture framework has 5 pillars. We will compare RDS to each of th
 4. Performance: depends on EC2 instance type, EBS volume type, ability to add Read Replicas. Storage auto-scaling & manual scaling of instances          
 5. Cost: Pay per hour based on provisioned EC2 and EBS         
 
+## Aurora Overview      
+
+1. Aurora has a compatible API for PostgreSQL/MySQL          
+2. Data is held in 6 replicas, across 3 AZ
+3. Auto healing capability          
+4. Out-of-box Multi-AZ, Auto Scaling Read Replicas (in case there is an increase in CPU)          
+5. Read Replicas can be Global            
+6. Aurora database can be Global for Disaster Recovery or latency purposes           
+7. Auto scaling of storage from 10GB to 64TB             
+8. Define EC2 instance type for aurora instances         
+9. Same security/monitoring/maintenance features as RDS          
+10. **Aurora Serverless** - for unpredictable/intermittent workloads             
+11. **Aurora Multi-Master** - for continuous writes failover             
+
+Use case: same as RDS, but with less maintenance/more flexibility/more performance               
+
+**Aurora for Solution Architect**                 
+
+1. Operations: less operations, auto scaling storage           
+2. Security: AWS responsible for OS security, we are responsible for setting up KMS, security groups, IAM policies, authorising users in DB, using SSL            
+3. Reliability: multi AZ, highly available, possibly more than RDS, Aurora Serverless option, Aurora, Multi-Master option          
+4. Performance: 5x performance (according to AWS) due to Architectural optimisation. Up to 15 Read Replicas (only 5 for RDS)            
+5. Cost: pay per hour based on EC2 and storage usage. Possibly lower costs compared to Enterprise grade databases such as Oracle           
 
 
+## ElastiCache Overview               
+
+1. Managed Redis/Memcached (similar offering as RDS, but for caches)            
+2. cache: in-memory data store, sub-millisecond latency         
+3. Must provision (similar to RDS) an EC2 instance type              
+4. Support for Clustering (Redis) and Multi AZ, Read Replicas (sharding)           
+5. Security through IAM, Security Groups, KMS, Redis Auth         
+6. Backup/Snapshot/Point in time restore feature         
+7. Managed and Scheduled maintenance         
+8. Monitoring through CloudWatch (similar to RDS)            
+9. ElastiCache is NOT a SQL database, but a key/value store           
+
+Use case: Key/Value store, Frequent reads, less writes, cache results for DB queries, store session data for websites, cannot use SQL            
+
+**ElastiCache for Solution Architect**                  
+
+1. Operations: same as RDS            
+2. Security: AWS responsible for OS security, we are responsible for setting up KMS, security groups, IAM policies, users (Redis Auth, not IAM), using SSL              
+3. Reliability: Clustering, Multi AZ          
+4. Performance: sub-millisecond performance, in memory, read replicas for sharding, very popular cache option          
+-> (EXAM) if you see sub-millisecond performance, in-memory, think ElastiCache          
+5. Cost: Pay per hour based on EC2 and storage usage           
+
+## DynamoDB                 
+
+1. Pure Cloud-based technology. AWS proprietary technology, managed NoSQL database
+2. Serverless, provisioned capacity, auto scaling, on demand capacity (Nov 2018)               
+3. Can replace ElastiCache as a key/value store (storing session data for example)             
+-> advantage: no need to provision                
+-> disadvante: no sub-millisecond performance on DynamoDB, 1-9 millisecond performance instead              
+4. High Available, Multi AZ by default, Read and Writes are decoupled, DAX for read cache          
+5. It is a distributed database, Reads can be eventually consistent or strongly consistent (stale data vs always new data)          
+6. Security, authentication and authorisation is done through IAM          
+7. DynamoDB Streams to integrate with AWS Lambda (reacts to events)         
+8. Backup/Restore feature, GlobalTable feature       
+9. Monitoring through CloudWatch        
+10. Can only query on primary key, sort key, or indexes         
+-> (need to be careful when creating the database)            
+-> cannot query on attribute, only query on the few selected things          
+
+Use case: Serverless applications development (small documents 100s KB), distributed serverless cache, doesn't have SQL query language available, has transactions capability from Nov 2018.            
+
+**DynamoDB for Solution Architect**            
+
+1. Operations: no operations needed, auto scaling capability, serverless         
+2. Security: full security through IAM policies, KMS encryption, SSL in flight        
+3. Reliability: Multi AZ, Backups       
+4. Performance: single digit millisecond performance, DAX for caching reads, performance doesn't degrade if your application scales        
+5. Cost: pay per provisioned capacity and storage usage (no need to guess in advance any capacity - can use auto scaling)           
+
+## S3             
+
+1. S3 is a key/value store for objects         
+-> long key (full path to the object), the value is the object itself.          
+2. Great for big objects, not so great for small objects        
+-> S3 does not replace RDS or DynamoDB           
+3. Serverless, scales infinitely, max object size is 5TB          
+-> e.g. movie database, each object is a movie          
+4. Strong consistency        
+5. Tiers: S3 Standard, S3 IA, S3 One Zone IA, Glacier for backups          
+6. Features: Versioning, Encryption, Cross Region Replication, etc.         
+7. Security: IAM, Bucket Policies, ACL          
+8. Encryption: SSE-S3, SSE-KMS, SSE-C, client side encryption, SSL in transit         
+
+Use case: static file, key value store for big files, website hosting            
+
+**S3 for Solution Architect**           
+
+1. Operations: no operations needed         
+2. Security: IAM, Bucket Policies, ACL, Encryption (Server/Client), SSL         
+3. Reliability: 99.999999999% durability / 99.99 availability, Multi AZ, CRR (Cross Region Replication)           
+4. Performance: scales to thousands of read/writes per second, transfer acceleration/multi-part for big files           
+5. Cost: pay per storage usage, network cost, requests number          
+
+## Athena            
+
+Athena is not a database in terms of hosting the data, it does provide a query engine on top of S3.        
+-> Can be seen as a SQL layer on top of S3        
+
+1. Fully serverless database with SQL capabilities            
+2. Used to query data in S3        
+3. Pay per query        
+4. Output results back to S3             
+5. Secured through IAM        
+
+Use case: one time SQL queries, serverless queries on S3, log analytics           
+-> we can use Athena to query extra logs such as: S3 logs, ELB logs etc.          
+
+**Athena for Solution Architect**           
+
+1. Operations: no operations needed, serverless         
+2. Security: IAM + S3 security (usually through Bucket Policies)       
+3. Reliability: managed service, uses Presto engine, highly available         
+4. Performance: queries scale based on data size          
+5. Cost: pay per query / per TB of data scanned, serverless         
+
+## Redshift          
+
+1. Redshift is based on PostgreSQL, but **it is NOT used for OLTP (Online Transaction Processing)**             
+2. It is **OLAP** - Online Analytical Processing (analytics and data warehousing)           
+3. Has really good performance: 10x better performance than other data warehouse, scale to PBs of data          
+4. **Columnar** storage of data (instead of row based)            
+5. Massively Parallel Query Execution (MPP), reason why it has high performance             
+6. Pay as you go based on the instance provisioned (as paft of your Redshift cluster)           
+7. Has a SQL interface for performing the queries           
+8. BI tools such as AWS Quicksight or Tableau integrate with it          
+9. Data is loaded from S3, DynamoDB, DMS, other DBs         
+10. In the Redshift cluster, from 1 node to 128 nodes, up to 160 GB of space per node           
+11. We have 2 types of nodes in RedShift:             
+-> Leader node: for query planning, results aggregation           
+-> Compute node: for performing the queries, send results to leader           
+12. Redshift Spectrum: perform queries directly against S3 (no need to load)        
+13. Backup & Restore, Security VPC/IAM/KMS/, Monitoring             
+14. Redshift Enhanced VPC Routing: COPY / UNLOAD goes through VPC (without going throught the public internet, they go through S3)           
+
+Snapshots and Disaster Recovery           
+1. RedShift has no "Multi-AZ" mode, all your cluster is in 1 AZ          
+2. You need to take snapshots for Disaster Recovery         
+3. Snapshots are point-in-time backups of a culster, stored internally in S3        
+4. Snapshots are incremental (only what has changed is saved)          
+5. You can restore a snapshot into a **new cluster**          
+6. We have 2 modes for snapshot          
+-> Automated: every 8 hours, every 5 GB, or on a schedule. Set retention             
+-> Manual: snapshot is retained until you delete it          
+7. **You can configure Amazon Redshift to automatically copy snapshots (automated or manual) of a cluster to another AWS Region**         
+-> this can give a Disaster Recovery strategy            
+
+Say you have a original RedShift cluster in us-east-1. We are going to take snapshot and automatically/manual copy into your new region. From there we can restore a new RedShift cluster from that copy of snapshot.           
+
+<img src="images/redshift_dr.png" width="700">                
+
+There are 3 ways to ingest data into RedShift.               
+1. Use Amazon Kinesis Data Firehose: so we have Firehose that can receive data from different sources and it will send it to RedShift. To do so it will first write the data to an S3 bucket, and then Kinesis Data Firehose will issue automatically an S3 COPY command to load the data into RedShift.             
+2. S3 using COPU command: we can also issue this command manually. You will load data into S3. You will issue a copy command directly from Redshift, to copy the data from a S3 bucket, using an IAM role into your Redshift cluster.            
+-> you might go through the internet         
+-> can enable enhanced VPC Routing to have all the data flow through the VPC.          
+3. EC2 Instance with JDBC driver: e.g. you have EC2 instance wnat to write data into the RedShift Cluster, you will need to use this method.           
+-> it is much better to write large batch of data into Amazon RedShift.          
+
+<img src="images/redshift_load.png" width="700">             
+
+RedShift Spectrum           
+
+Query data that is already in S3 without loading it (into Redshift). (uses a lot more processing power)                          
+**Must have a Redshift cluster available to start the query**           
+The query is then submitted to thousands of Redshit Spectrum nodes            
+
+e.g. you have a RedShift cluster with a Leader node and a bunch of Compute Node.          
+The data you want to analyse is in Amazon S3. So we are going to run a query on our RedShift cluster.          
+The table we want to query is in S3.           
+RedShift Spectrum will launch automatically and the query is going to be submitted to thousands of RedShift Specturm nodes (read into S3 and perform some aggregation).         
+Once they are done, they are going to send the results back to your own Amazon RedShift cluster and it will get back into whoever initiated the query.            
+
+<img src="images/redshift_spectrum.png" width="700">          
+
+**RedShift for Solution Architect**            
+
+1. Operations: like RDS             
+2. Security: IAM, VPC, KMS, SSL (like RDS)        
+3. Reliability: auto healing features, cross-region snapshot copy          
+4. Performance: 10x performance vs other data warehousing, compression          
+5. Cost: pay per node provisioned, 1/10th of the cost vs other warehouses          
+
+vs Athena: Faster queries/joins/aggregations thanks to indexes           
+
+(EXAM) Redshift = Analytics/BI/Data Warehouse
+
+## Glue             
+
+1. Glue is a managed **extract, transform, and load (ETL) service**            
+2. Useful to prepare and transform data for analytics         
+3. Fully **serverless service**         
+ 
+We are going to take data from S3 or RDS, once it is in Glue, the data is going to be transformed and use Glue to load this data into RedShift data warehouse (so we can perform more analytical query directly)            
+
+<img src="images/aws_glue.png" width="700">                    
+
+Glue Data Catalog           
+
+It is a catelog of all datasets you have. It is metadata.              
+So we have the Glue Data Catalog and we will define Glue Data Crawlers, and these crawlers can connect to various type of sources.           
+The crawlers are going to navigate your database and crawl for your data.          
+After the crawl is run, it is going to write the metadata into the Glue Data Catelog.            
+The Data Catalog is going to be populated with the metadata of your databases.         
+The Catalog can be used by Glue Jobs doing the ETL, to make sure they completes correctly.           
+The Catalog can be leveraged by Athena for data discovery, by RedShift Spectrum and Amazon EMR for data analytics.            
+
+<img src="images/aws_glue_catalog.png" width="700">              
+
+## Neptune            
+
+1. Fully managed **graph database**        
+2. When do we use Graphs ?          
+-> High relationship data         
+-> Social Networking: Users friends with Users, replied to comment on post of user and likes other comments         
+-> Knowledge graphs (Wikipedia)         
+3. Highly available across 3 AZ, with up to 15 read replicas        
+4. Point-in-time recovery, continuous backup to Amazon S3         
+5. Support for KMS encryption at rest + HTTPS          
+
+(EXAM) when you see Graphs, it is going to be Neptune                      
+
+**Neptune for Solution Architect**           
+
+1. Operations: similar to RDS               
+2. Security: IAM, VPC, KMS, SSL (similar to RDS) + IAM Authentication         
+3. Reliability: multi-AZ, clustering          
+4. Performance: best suited for graphs, clustering to improve performance         
+5. Cost: pay per node provisioned (similar to RDS)           
+
+(EXAM) Neptune = Graphs database             
+
+## ElasticSearch            
+
+Elastic Search is an open-source technology and it is sold as a service on AWS.               
+
+e.g. In DynamoDB, you can only find by primary key or indexes.           
+-> can only find exact matches             
+
+1. With ElasticSearch, you can search any field, even partially matches.            
+2. It is common to use ElasticSearch as a complement to another database            
+3. ElasticSearch also has some usage for Big Data applications             
+4. You can provision a cluster of instances         
+5. Built-in integrations: Amazon Kinesis Data Firehose, AWS IoT, and Amazon CloudWatch Logs for data ingestion            
+6. Security through Cognito & IAM, KMS encryption, SSL & VPC          
+7. Comes with Kibana (visualisation) and Logstash (log ingestion) - ELK stack             
+
+(EXAM) ElasticSearch allows you to search any field           
+
+**ElasticSearch for Solution Architect**            
+
+1. Operations: similar to RDS         
+2. Security: *Cognito*, IAM, VPC, KMS, SSL       
+3. Reliability: Multi-AZ, clustering            
+4. Performance: based on ElasticSearch project (open source), petabyte scale           
+5. Cost: pay per node provisioned (similar to RDS)         
+
+(EXAM) ElasticSearch = Search / Indexing capability
+
+# AWS Monitoring & Audit: CloudWatch, CloudTrail & Config           
+
+## AWS CloudWatch Metrics            
+
+CloudWatch provides metrics for every services in AWS               
+
+**Metric** is a variable to monitor (CPUUtilization, NetworkIn ...)                   
+Metrics belongs to **namespaces** (each services has their own namespace for naming the metrics)          
+**Dimension** is an attribute of metric (instance id, environment, etc)             
+Up to 10 dimensions per metric              
+
+Metrics have *timestamps*               
+
+Can create **CloudWatch dashboards** of metrics if we want to see all metrics all the same time                  
+
+e.g. CloudWatch Billing metrics              
+
+EC2 Detailed monitoring           
+1. EC2 instance metrics have metrics "every 5 minutes"            
+2. With detailed monitoring (for a cost), you get data "every 1 minute"                
+3. Use detailed monitoring if you want to scale faster for your ASG          
+4. The AWS Free Tier allows us to have 10 detailed monitoring metrics           
+Note: EC2 Memory usage is by default not pushed (must be pushed from inside the instance as a custom metric)             
+
+Important Metrics:                  
+**EC2 Instances**: CPU Utilization, Status Check, Network (not RAM)                  
+-> Default metrics every 5 minutes                     
+-> Option for Detailed Monitoring: metrics every 1 minute ($$$)            
+**EBS volumes**: Disk Read / Writes                   
+**S3 Buckets**: BucketSizeBytes, NumberOfObjects, AllRequests                          
+**Billing**: Total Estimated Charge (only in us-east-1, but its for your entire account)                 
+**Service Limits**: how much you've been using a service API                 
+**Custom metrics**: push your own metrics                        
+
+## CloudWatch Custom Metrics            
+
+1. Possibility to define and send your own custom metrics to CloudWatch            
+e.g. memory (RAM) usage, disk space, number of logged in users, etc.            
+2. Use API call **PutMetricData**               
+3. Ability to use dimensions (attributes) to segment metrics           
+-> instance.id         
+-> Environment.name        
+4. Metric resolution (**StorageResolution API parameter - two possible value**):             
+-> standard: 1 minute (60 seconds)          
+-> High Resolution: 1/5/10/30 seconds - higher cost              
+
+**Important**: Accepts metric data points 2 weeks in the past and 2 hours in the future (you can push in your metrics with a specific timestamp stating what time this data point (the metric) belongs to), make sure to configure your EC2 instance time correctly.                
+
+## AWS CloudWatch Dashboards                 
+
+1. Great way to setup custom dashboards for quick access to key metrics and alarms           
+2. **Dashboards are global**         
+3. **Dashboards can include graphs from different AWS accounts and regions**                 
+4. You can change the time zone & time range for the dashboards             
+5. You can setup automatic refresh (10s, 1m, 2m, 5m, 15m)             
+6. Dashboards can be shared with people who don't have an AWS account (public, email address, 3rd party SSO provider through Cognito)               
+7. Pricing:               
+-> 3 dashboards (up to 50 metrics) for free           
+-> $3/dashboard/month afterwards              
+
+## AWS CloudWatch Logs                
+
+1. Applications can send logs to CloudWatch using SDK              
+2. CloudWatch can collect log from (AWS services):                 
+-> Elastic Beanstalk: collection of logs from application         
+-> ECS: collection from containers         
+-> AWS Lambda: collection from function logs         
+-> VPC Flow Logs: VPC specific logs            
+-> API Gateway         
+-> CloudTrail based on filter          
+-> CloudWatch log agents: for example on EC2 machines            
+-> Route53: Log DNS queries             
+3. CloudWatch Logs can go to:            
+-> Batch exporter to S3 for archival         
+-> Stream to ElasticSearch cluster for further analytics           
+4. Logs storage architecture (you need to store logs in 2 things):               
+-> Logs groups: arbitrary name, usually representing an application         
+-> Log stream: instances within application/log files/containers            
+5. (after defining Log groups/stream) Can define log expiration policies (never expire, 30 days, etc)          
+-> you got to pay for data retention !              
+-> the more data you store in CloudWatch, the more you are going to pay           
+6.  Using the AWS CLI we can tail CloudWatch logs         
+7. To send logs to CloudWatch, make sure IAM permissions are correct !           
+8. Security: encryption of logs using KMS at the Group Level             
+
+CloudWatch Logs Metric Filter & Insights            
+1. CloudWatch Logs can use filter expressions         
+-> e.g. find a specific IP inside of a log         
+-> metric filters can be used to trigger alarms           
+2. CloudWatch Logs Insights (new - Nov 2018) can be used to query logs and add queries to CloudWatch Dashboards           
+
+## CloudWatch Agent & CloudWatch Logs Agent          
+
+We can use the CloudWatch Agents to take logs from EC3 instances as well as metrics, and have them onto CloudWatch.          
+By default, no logs from your EC2 machine will go to CloudWatch.           
+We need to run a CloudWatch agent on EC2 to push the log files you want.             
+Make sure IAM permissions are correct            
+
+The idea is that your EC2 instances will have the CloudWatch Logs Agent running, sending the logs to CloudWatch Logs.            
+The CloudWatch log agent can be setup on-premises too         
+
+<img src="images/cloudwatch_agent.png" width="500">                
+
+We have 2 types of CloudWatch agents:                 
+1. Logs Agent (older one)              
+2. Unified Agent (newer one)               
+They are both for virtual servers (EC2 instances, on-premise servers)            
+
+**CloudWatch Logs Agent**                
+-> old version of the agent             
+-> can only send to CloudWatch Logs              
+
+**CloudWatch Unified Agent**            
+-> collect additional system-level metrics such as RAM, processes, etc.            
+-> collect logs to send to CloudWatch Logs            
+-> centralised configuration using SSM Parameter Store             
+
+CloudWatch Unified Agent - Metrics              
+-> Collected directly on your Linux server / EC2 instance            
+-> CPU metrics (active, guest, idle, user, steal)         
+-> Disk metrics (free, used, total), Disk IO (writes, reads, bytes, iops)          
+-> RAM (free, inactive, used, total, cached)          
+-> Netstat (number of TCand UDP connections, net packets, bytes)             
+-> Process (total, dead, bloqued, idle, running, sleep)            
+-> Swap Space (free, used, used %)           
+
+Reminder: out-of-the box metrics for EC2 - disk, CPU, netowrk (high level)           
+(EXAM) if you need more fined metrics, think CloudWatch Unified Agent                
+
+##  AWS CloudWatch Alarms        
+
+Alarms are used to trigger notification for any metric (once the metrics goes above a threshold, then we can have a CloudWatch Alarm action)                            
+Alarm actions:                        
+Auto Scaling Group: increase or decrease EC2 instances "desired" count               
+EC2 Actions: stop, terminate, reboot or recover an EC2 instance                  
+SNS notification: send a notification into SNS topic (e.g. if my EC2 instance's utilization is more than 90%, send us an email)                          
+
+Various options (sampling, percentage, max, min, etc)                    
+Can choose the period on which to evaluate an alarm               
+e.g. create a billing alarm on the CloudWatch Billing metric                     
+Alarm states:         
+1. OK: it is not triggered          
+2. INSUFFICIENT_DATA: not enough data for the alarm to determine a state                
+3.  ALARM: your threshold has been breached.             
+Period: how long you want the alarm to evaluate on the metric             
+-> can be length of time in seconds to evaluate the metric            
+-> high resolution custom metrics: 10 sec, 30 sec or multiples of 60 sec            
+
+CloudWatch Alarm Targets            
+It has 3 main targats:          
+1. actions on EC2 instances: stop, terminate, roboot or recover                    
+2. trigger EC2 Auto Scaling actions: scale out/in            
+3. send a notification to SNS: hook it to a Lmabda function or anything we want               
+
+EC2 Instance Recovery            
+1. Status Check:            
+-> Instance status = check the EC2 VM           
+-> System status = check the underlying hardware              
+
+You can define a CloudWatch Alarm on both these 2 checks.          
+In the case that the alarm is being breached, then you can start an EC2 instance recovery to make sure e.g. move your instance from one host to another.         
+
+When you do recovery, you get the same Private, Public, Elastic IP, metadata, placement group.            
+You can also send an alarm to your SNS topic (to get an alert that your EC2 instance is getting recovered).             
+
+<img src="images/cloudwatch_ec2_recover.png" width="700">               
+
+CloudWatch Alarm: good to know         
+-> Alarms can be created based on CloudWatch Logs Metrics Filters          
 
 
+The CloudWatch Logs can be filtered and be used to create CloudWatch Alarm.            
 
+<img src="images/cloudwatch_alarm.png" width="700">               
+
+To test alarms and notifications, set the alarm state to Alarm using CLI            
+`aws cloudwatch set-alarm-state --alarm-name "myalarm" --state-value ALARM --state-reason "testing purposes"`               
+This is helpful when you want to trigger alarm even though it did not reach a specific threshold.               
+
+## EC2 Instance Recovery with CloudWatch Alarms              
+
+This is a use case about CloudWatch Alarms we should know: EC2 instance recovery                        
+The main idea: On EC2 instance you have status check
+1. Status Check:         
+-> Instance status = check the EC2 VM            
+-> System status = check the underlying hardware             
+
+<img src="images/cloudwatch_ec2_recover.png" width="700">             
+
+You can setup a CloudWatch Alarm to monitor a specific EC2 instance. This CloudWatch Alarm will look at the e.g. `StatusCheckFailed_System`, and if this alarm gets triggered. You can have an action called "EC2 Instance Recovery". This will trigger some internal mechanism in AWS to recover your instance.           
+Recovery means: you have the same Private IP, same Public IP, same Elastic IP (if it was attached), same metadata and the same placement group as before.           
+Any data stored on the Instance Store will NOT be kept. If you have EBS volume, then the data will be kept.           
+(EXAM) will ask you how to recover an instance automatically, so you setup a CloudWatch alarm that will be checking for the `StatusCheckFailed_system` of the EC2 instance and that action of the CloudWatch Alarm can be an EC2 Instance Recovery.              
+It can be triggered and send a notification into an SNS topic.             
+
+## AWS CloudWatch Events        
+
+CloudWatch Events is now EventBridge as well but still available within CloudWatch.               
+
+1. Event Pattern: Intercept events from AWS services (Sources)             
+-> e.g. source: EC2 Instance Start, CodeBuild Failure, S3, Trusted Advisor         
+-> can intercept any API call with CloudTrail integration       
+
+2. Schedule or Cron (e.g. create an event every 4 hours)             
+3. A JSON payload is created from the event and passed to a target, target includes:         
+-> compute: Lambda, Batch, ECS task           
+-> Integration: SQS, SNS, Kinesis Data Streams, Kinesis Data Firehose         
+-> Orchestration: Step Functions, CodePipeline, CodeBuild            
+-> Maintenance: SSM, EC3 Actions        
+
+## EventBridge Overview           
+
+EventBridge is the next evolution of CloudWatch Events          
+**Default event bus**: generated by AWS services (CloudWatch Events)           
+In EventBridge we have added multiple buses:          
+1. **Partner event bus**: receive events from SaaS service or applications (Zendesk, DataDog, Segment, Auth0, etc.)              
+-> other services can send event into your AWS account, and we can react to these events in real time.             
+2. **Custom Event buses**: for your own applications            
+
+Event buses can be accessed by other AWS accounts            
+We can create **rules**: how to process the events (similar to CloudWatch Events)            
+
+Amazon EventBridge Schema Registry              
+-> EventBridge can analyze the events in your bus and infer the **schema**.           
+-> The **Schema Registry** allows you to generate code for your application, that will know in advance how data is structured in the event bus               
+-> Schema can be versioned         
+
+Amazon EventBridge vs CloudWatch Events            
+1. EventBridge builds upon and extends CloudWatch Events           
+2. It uses the same service API and endpoint, and the same underlying service infrastructure.              
+3. EventBridge allows extension to add event buses for your custom applications and your 3rd party SaaS apps           
+4. EventBridge has the Schema Registry capability          
+5. EventBridge has a different name to mark the new capabilities             
+
+Overtime, the CloudWatch Events name will be replaced with EventBridge                 
+
+(EXAM) EventBridge is (sort of) the same as CloudWatch, but with added capability of 3rd party SaaS, custom event buses, and Schema Registry
+
+## CloudTrail Overview           
+
+**Provides governance, compliance and audit for your AWS Account**          
+CloudTrail is enabled by default         
+Get **an history of events / API calls made within your AWS Account by**:                 
+-> console        
+-> SDK        
+-> CLI          
+-> AWS Services         
+Can put logs from CloudTrail into CloudWatch Logs or S3            
+
+**A trail can be applied to All Regions (default) or a single Region**               
+
+Use case: If a resource is deleted in AWS, investigate CloudTrail first          
+-> CloudTrail will have the API call in it, and it can investigate who/when/how             
+
+CloudTrail sits in the middle. The actions of SDK, CLI, console or IAM users/roles will be in the CloudTrail Console. If we want all the events to be more than 90 days, we can send them to CloudWatch Logs or to a S3 bucket.            
+
+<img src="images/cloudtrail.png" width="700">                 
+
+CloudTrail Events (3 kinds of events):                 
+1. Management Events:                  
+-> operations that are performed on resources in your AWS account                   
+e.g.                          
+whenever someone configure security (they will use the API code: `IAM AttachRolePolicy`)               
+Setting up logging (AWS CloudTrail `CreateTrail`)                            
+-> **by default, trails are configured to log management events**                         
+-> can separate **Read Events** (that don't modify resources, e.g. someone try to list all the users in IAM) from **Write Events** (that may modify resources, e.g. someone try to delete a DynamoDB)                    
+
+2. Data Events ($$$):                       
+-> by default, data events are **NOT** logged (because high volume operations)                
+e.g.                            
+*Amazon S3* object-level activity (e.g. `GetObject`, `DeleteObject`): can separate Read and Write Events                      
+AWS *Lambda* function execution activity (the `Invoke` API)                    
+
+3. CloudTrail Insights Events ($$$):                     
+Enable **CloudTrail Insights** to detect unusual activity in your account:                        
+e.g.                
+inaccurate resource provisioning                        
+hitting service limit                  
+bursts of AWS IAM actions                    
+gaps in periodic maintenance activity                      
+CloudTrail Insights analyze normal management events to create a baseline. Then it continuously analyzes **write** events to detect unusualy patterns.                  
+These insights events will appear in CloudTrail, or S3 buckets or EventBridge event               
+        
+CloudTrail Insights         
+
+Enable **CloudTrail Insights to detect unusual activity** in your account:              
+-> inaccurate resource provisioning         
+-> hitting service limits        
+-> burst of AWS IAM actions         
+-> Gap in periodic maintenance activity          
+
+CloudTrail Insights analyzes normal management events to create a baseline          
+And then **continuously analyzes WRITE events to detect unusual patterns**           
+-> i.e. whenever something is changed or tried to be changed          
+
+Management Events are continously analysed by CloudTrail Insights, which will generate Insights Events in case something is detected. These Insights Events will appear in the CloudTrail console. They will also be sent to Amazon S3 if you want to, or EventBridge (in case you want to automate certain process).            
+
+<img src="images/cloudtrail_insight.png" width="700">              
+
+CloudTrail Events Retention         
+
+Events are stored for 90 days in CloudTrail           
+To keep events beyond this period, log them to S3 and use Athena            
+
+We can log these into S3 bucket for long-term retention. Then use Athena to find events you are interested in.                   
+
+<img src="images/cloudtrail_event.png" width="700">          
+
+## AWS Config - Overview           
+
+Helps with **auditing and recording compliance of your AWS resources**                    
+Helps **recording configurations and changes over time**                
+
+Everytime we manually change some configuration, Config will track them. This configuration data can be stored in S3 (analyzed by Athena)            
+
+Questions that can be solved by AWS Config:              
+-> Is there unrestricted SSH access to my security groups ?             
+-> Do my buckets have any public access ?             
+-> How was my ALB configuration changed over time ?             
+
+Can receive alerts (SNS notifications) for any changes              
+AWS Config is a per-region service               
+Can be aggregated across regions and accounts               
+
+Note: not a free service    
+
+Config Rules:            
+1. Can use AWS managed config rules (over 75)         
+2. Can make custom config rules (must be defined in AWS Lambda)           
+-> e.g. evaluate if each EBS disk is of type gp2         
+-> e.g. evaluate if each EC2 instance is t2.micro          
+3. Rules can be evaluated / triggered:          
+-> for each config change        
+-> and/or: at regular time intervals        
+4. **AWS Config Rules does not prevent actions from happening (no deny action, such as IAM)**            
+-> this gives you an overview of your configuration and the compliance of your resources.           
+5. Pricing: no free tier, $0.003 per configuration item recorded per region, $0.001 per config rule evaluation per region           
+
+**AWS Config Resource**         
+Example of resource we can see.       
+
+<img src="images/config_resource.png" width="700">               
+
+**Config Rules - Remediations**       
+Although we cannot deny any action from happening from within the Config, you can do remediations of your non-compliant resources             
+
+Automate remediation of non-compliant resources using SSM Automation Documents          
+The idea is that you are monitoring whether your IAM access keys have expired, e.g. they are older than 90 days, in which case you want to mark them as non-compliant. So this will not prevent them from not being compliant, but you can trigger whenever a resource is not compliant, a *remediation action*.         
+e.g. there is a SSM document named `RevokeUnusedIAMUserCredentials`, and this is going to be applied to whatever resources you have, and in this case it is going to deactivate your IAM access keys.             
+So either using AWS Automation documents, or your own automation documents, you can have remediations of your non-compliant resources.         
+You could create a document that will invoke a Lambda function, and you can do whatever you want with the Lambda function there.        
+Your remediation might have re-tries in case the resource is still non-compliance after an auto-remediation, it might re-try (e.g.) up to 5 times.                
+
+<img src="images/config_remediation.png" width="700">              
+
+**Config Rules - Notifications**              
+Use EventBridge to trigger notifications when AWS resources are non-compliant        
+e.g. we monitor our security group, it becomes not compliance. Then we can trigger an event in EventBridge, and then pass it on to whatever resource you want.         
+
+We can also pass on all the changes and all the compliance state notifications to SNS from Config.         
+You can then filter for only some events.            
+
+<img src="images/config_notification.png" width="700">              
+
+## CloudTrail vs CloudWatch vs Config              
+
+1. CloudWatch         
+-> Performance monitoring (metrics, CPU, network, etc.) & dashboards          
+-> Events & Alerting        
+-> Log Aggregation & Analysis        
+2. CloudTrail        
+-> Record API calls made within Account by everyone          
+-> Can define trails for specific resources         
+-> Global Service           
+3. Config          
+-> Record configuration changes         
+-> Evaluate resources against compliance rules         
+-> Get timeline of changes and compliance        
+
+e.g. For an Elastic Load Balancer            
+1. CloudWatch:          
+-> monitoring incoming connections metric         
+-> visulaise error codes as a % over time         
+-> make a dashboard to get an idea of your load balancer performance          
+2. Config:         
+-> track security group rules for the Load Balancer        
+-> track configuration changes for the Load Balancer        
+-> ensure an SSL certificate is always assigned to the Load Balancer (compliance)          
+3. CloudTrail           
+-> track who made any changes to the Load Balancer with API calls          
+
+# Identity and Access Management (IAM) - Advanced              
+
+## Security Token Service (STS) Overview             
+
+This is in the backbone of all the AWS services.            
+Allows to grant limited and temporary access to AWS resources          
+It will issue a token, and that token is valid up to 1 hour (must be refreshed)           
+There are a bunch of API in STS, but the most important one is **AssumeRole**:         
+**AssumeRole**
+-> within your own account: for enhanced security        
+e.g. you have your users assume a role that allows them to delete EC2 instances. We want to have an extra layer of security such as they don't accidentally delete EC2 instances, they have to assume a role first to do that.         
+-> Cross Account Access: assume role in target account to perform actions there       
+e.g. we can use the resources in that account            
+**AssumeRoleWithSAML**            
+-> return credentials for users logged with SAML           
+**AssumeRoleWithWebIdentity**            
+-> return creds for users logged with an IdP (Facebook Login, Google Login, OIDC compatible)             
+-> AWS recommends *against* this, and using **Cognito** instead.          
+**GetSessionToken**           
+-> for MFA, from a user or AWS account root user          
+i.e. everytime user uses MFA, they have to use GetSessionToken, to get a token allowing them access.           
+
+Using STS to Assume a Role           
+1. Define an IAM Role within your account or cross-account           
+2. Define which principals (e.g. users or other roles) can access this IAM Role           
+3. Use AWS STS (Security Toekn Service) to retrieve credentials and impersonate the IAM Role you have access to (**AssumeRole API**)        
+4. Temporary credentials can be valid between 15 minutes to 1 hour.           
+
+So we have the user, and it wants to assume a role within the same (or another account). So he is going to use the AssumeRole API and invoke STS. STS is going to check with IAM if we have the permissions to do so. Then it will return us temporary credentials. And these credentials can be used to access that role in our account.            
+
+<img src="images/sts_assume.png" width="500">                
+
+Similarly for cross account. We have a production account and a development account.              
+You never share credential across the account, you create a role, and you make sure your user assume that role, and STS will return to you role credentials that are temporary.             
+
+<img src="images/sts_cross.png" width="700">          
+
+(EXAM) Anytime you see Cross Account Access, Assumeing Roles, think STS.              
+
+## Identity Federation & Cognito         
+
+Federation lets users *outside* of AWS to assume temporary role for accessing AWS resources          
+These users assume identity provided access role            
+
+Federations can have many flavors:        
+1. SAML 2.0         
+2. Custom Identity Broker        
+3. Web Identity Federation with Amazon Cognito         
+4. Web Identity Federation without Amazon Cognito         
+5. Single Sign On        
+6. Non-SAML with AWS Microsoft AD        
+
+**Using federation, you don't need to create IAM users (user management is outside of AWS**          
+
+We have our user, and we have 3rd party source for our users. So AWS is going to trust that 3rd party source for managing our users. The user will login to a 3rd party, get credentials from it an dbe able to access AWS this way.      
+
+<img src="images/identity_federation.png" width="500">               
+
+**SAML 2.0 Federation**         
+This is the first common way to do federation.        
+SAML 2.0 integrate Active Directory / ADFS with AWS (or any SAML 2.0)            
+Using SAML 2.0 Federationwe can get access to the AWS console or CLI (through temporary credentials)         
+No need to create an IAM user for each of your employees         
+It is common for people to be on-premise through AD, you create your users on AD and they will have AWS access thanks for SAML 2.0 Federation          
+
+Our client application wants to acess to an Amazon S3 buckets, but the user management is done outside (with on premise in your organisation). So the first thing your client app will do will be a request to your identity provider. Your identify provider will check with LDAP. It will return back what is called a SAML assertion. The client will have this assertion and we are going to exchange that SAML assertion for some AWS credentials.       
+So we are going to call the **AssumeRole** from STS API. STS will look at the SAML assertion, then it will return a temporary security credentials. We can use these credentials to access the S3 bucket.         
+
+We have the same process if we want to access the console. The console will again authenticate with our LDAP and our identity provider, which will return a SAML 2.0 assertion. We are going to post this assertion automatically to the sign in URL of AWS. Then we get back some credentials and the client is redirected to the AWS management console.        
+
+<img src="images/federation_saml.png" width="500">           
+
+**SAML 2.0 Federation - Active Directory FS**           
+
+Same process as with any SAML 2.0 compatible IdP.        
+
+Our browser interface will login with ADFS, and ADFS will check that our user is properly authenticated with our identity store. Then ADFS will return us a SAML response. We are going to exchange the SAML response with STS with the assume role with SAML.          
+We get credentials back and we can access some resource in AWS or the management console.           
+
+<img src="images/federation_saml_ad.png" width="500">             
+
+SAML 2.0 Federation        
+-> needs to setup a trust between AWS IAM and SAML (both ways)          
+-> SAML 2l0 enables web-based, cross domain SSO        
+-> Uses the STS API: **AssumeRoleWithSAML**            
+-> Note federation through SAML is the "old way" of doing things         
+-> Amazon Single Sign On (SSO) federation is the new managed and simpler way.           
+
+If our current on-premise store is not compatible with SAML 2.0 ? We have to write our own Custom Identity Broker Application.         
+
+-> use only if identity provider is not compatible with SAML 2.0        
+-> **The identity broker must detrmine the appropriate IAM policy**          
+Uses the STS API: **AssumeRole** or **GetFederationToken**            
+
+The user will authenticate with the Identity Broker and the Identity Broker will verify that the user is correctly authenticaed.         
+This time is not AWS gives us the credential, but the identity broker that will talk to STS to request some credentials for some specific action and the identity broker we have to write ourself.             
+The broker will return the credentials to us and we can then access the console.             
+
+The difference is that the identity itself is talking to STS and giving us feedback some credentials.          
+
+<img src="images/federation_custom.png" width="500">           
+
+**Web Identity Federation - AssumeRoleWithIdentity**          
+
+Previously the discussion is how user on-premise within our company to access AWS through Identity Federation. What if we want to have users of our applications access AWS ?            
+We have to use Web Identity Federation.        
+
+**NOT recommended by AWS, use Cognito instead (allows for anonymous user, data synchronisation, MFA)**           
+
+Our mobile client, which is our app is going to login (maybe facebook, amazon or google). And then it is going to get back some credentials. And that token is going to be exchanged with STS using **AssumeRoleWithIdentity**. STS is going to look at this and let you return back some AWS credentials. Then the mobile client has some AWS credentials and can access a different IAM policy.           
+
+This is a 3-way process, we first login with our identity provider, we then exchange it with a STS and then we have access to AWS. 
+
+<img src="images/federation_webid.png" width="500">           
+
+AWS Cognito:        
+
+1. Goal:         
+-> provide direct access to AWS resources from the client side (mobile, web app)       
+2. Example:        
+-> provide (temporary) access to write to S3 bucket using Facebook Login           
+3. Problem:         
+-> we don't want to create IAM users for our app users.            
+4. How:        
+-> log in to federated identity provider - or remina anonymous            
+-> get temporary AWS credentials back from the Federated Identity Pool           
+-> these credentials come with pre-defined IAM policy stating their permissions.          
+
+Our application is going to login with an identity provider (can be google etc), and we will get back a token. This token can be exchanged with Cognito Federated Identity, which is going to verify the token first, then get the credentials from STS in the backend, and give us back some temporary AWS credentials. These credentials itself can be used to access our S3 buckets thanks to the policy we have attached to this role.               
+
+<img src="images/federation_cognito.png" width="500">          
+
+## Directory Services - Overview           
+
+What is Microsoft Active Directory (AD) ?            
+
+AD is found on any Windows server that has AD domain services.              
+
+It is a database of **objects**: User Accounts, Computers, Printers, File Shares, Security Groups                
+
+With AD, you have centralized security management, create account, assign permissions.                 
+
+Objects are organised in **trees**            
+
+A group of trees is a **forest**            
+
+If you log onto any of the machiens belong to the company, because they are connected to the domain controller, you can use this combination of users and password on any of these machine.               
+<img src="images/ad.png" width="500">                    
+
+AWS Directory Services              
+3 flavours                             
+1. AWS Managed Microsoft AD           
+-> create your own AD in AWS, manage users locally, **supports MFA**               
+-> establish "trust" connections with your on-premise AD               
+-> your AD can be trusted with on-premise AD. The trust / look up is 2 ways.            
+
+2. AD Connector         
+-> Directory Gateway (proxy) to redirect to on-premise AD            
+-> Users are managed on the on-premise AD                
+
+3. Simple AD       
+-> AD-compatible managed directory on AWS         
+-> cannot be joined with on-premise AD                   
+-> if you don't have a on-premise AD, can use this one                   
+
+3 flavours:            
+
+<img src="images/aws_ad.png" width="500">                   
+
+(exam) Directory Services is used whenver you hear about Active Directory           
+
+## Organization - Overview             
+
+*Global* service             
+
+By creating an organization, we can manage **multiple AWS accounts**                   
+
+The main accout is the *master* account (in AWS also called Management Account) - you cannot change it          
+And the rest is called *member* (or child) account           
+Member accounts can only be part of one organisation         
+They can be moved from one organisation to another.            
+             
+Cost Benefits:             
+-> **consolidated billing** across all accounts - single payment method (paid by the master account, no payment method for other accounts)            
+-> pricing benefits from **aggregated usage** (volume discount for EC2, S3 ...)             
+-> pooling of **Reserved EC2 instances** for optimal savings              
+
+API is available to **automate AWS account creation**               
+
+**Restric account privileges using Service Control Policies (SCP)**               
+
+Multi Account Strategies       
+Create accoutns per **department**, per **cost center**, per **dev/test/prod**, based on **regulatory restriction** (using SCP), for **better resource isolation (e.g. VPC)**, have **separate per-account service limits**, isolated account for **logging**          
+
+Multi Account vs One Account Multi VPC            
+Use tagging standards for billing purposes                 
+Enable CloudTrail on all accounts, send logs to central S3 account              
+Send CloudWatch Logs to central logging account               
+Establish Cross Account Roles for Admin purposes            
+
+Organizational Units (OU) - Examples            
+
+<img src="images/ou.png" width="700">                    
+
+AWS Organization:        
+
+<img src="images/ou_tree.png" width="700">             
+
+Service Control Policies (SCP)             
+Whitelist or Blacklist IAM actions              
+Applied at the **OU** or **Account** level            
+Does not apply to the Master Account             
+SCP is applied to all the **Users and Roles** of the Account, including Root               
+SCP does not affect service-linked roles               
+-> service-linked roles enable other AWS services to integrate with AWS Organizations and cannot be restriced by SCP.           
+
+SCP must have an explicit Allow (does not allow anything by default) (actually Deny also, i.e. whitelist or blacklist)                 
+
+(EXAM) use case:             
+-> restric access to certain services (e.g cannot use EMR)                   
+-> enforce PCI compliance by explicitly disabling services                     
+
+A SCP example:               
+<img src="images/scp_eg.png" width="700">                
+
+SCP can be a JSON file (like IAM Policy)                 
+
+<img src="images/scp_json.png" width="700">             
+
+Note: Master Account in the organisation has a Star symbol                 
+
+Root OU is going to be the top most OU.               
+We can then create a new OU within the Root OU.              
+SCP of the subsequent OU will inheret the the SCP of the OU from above (or it is in)               
+
+**Tag Policies** (compared to SCP) is out of scope of CCP   
+
+AWS Organization - Moving Account            
+
+Say we have Org A and Org B and we want to move an account from Org A to Org B. The process will be:       
+1. Remove the member account from the old organization        
+2. Send an invite to the new organisation         
+3. Accept the invite to the new organisation from the member account           
+
+If you want the master account of the old organisation to also join the new organisation, do the following:         
+1. Remove the member accounts (all of them) from the organizations using the procedure above         
+2. Delete the old organization        
+3. Repeat the process above to invite the old master account to the new organization         
 
