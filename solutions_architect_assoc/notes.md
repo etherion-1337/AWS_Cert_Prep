@@ -6301,3 +6301,78 @@ ans: NO. since this is an IAM policy, there is not allow or deny, but you cannot
 
 ## Resource Access Manager (RAM)          
 
+Share AWS resources that you own with other AWS accounts            
+
+Share with any account or within your Organisation            
+
+Avoid resource duplication !             
+
+You can share:        
+1. VPC Subnets:        
+-> allow to have all the resources launched in the same subnets           
+-> must be from the same AWS Organisations          
+-> Cannot share security groups and default VPC        
+-> participants can manage their own resource in there          
+-> participants cannot view, modify, delete resources that belong to other participants or the owner         
+i.e. you share the VPC, but don't share the resource in VPC          
+
+2. AWS Transit Gateway            
+3. Route53 Resolver Rules          
+4. License Manager Configurations           
+
+Resource Access Manager - VPC example           
+
+So we have AWS accounts, and it is going to be the VPC owner, and we are going to create a VPC within that accounts. The VPC will have a private subnet where we deploy our resources. And other accounts are going to be sharing the same VPC. Account 1 and 2 is going to share the same VPC thanks for RAM.           
+
+Each account:       
+-> is responsible for its own resources         
+-> cannot view, modify or delte other resources in other accounts         
+-> only thing shared is the private subnet (it is the networking layer)                
+
+Network is shared, so:          
+-> anything deployed in the VPC can talk to other resources in the VPC           
+-> applications are accessed easily across acounts, *using private IP* (not public IP), this can be a huge security benefit             
+-> security groups from other accounts can be referenced for maximum security                    
+
+(EXAM) if you see shaing VPC subnet, think Resource Access Manager            
+
+<img src="images/ram_vpc.png" width="500">             
+
+## AWS Single Sign On (SSO) - Overview            
+
+Centrally managed Single Sign On to access **multiple accounts** and **3rd party business applications**         
+
+Once you are at the SSO portal, you can log in to any of your AWS accounts, Dropbox, Office365, Slack etc, without re-entering your log in.        
+
+Integrated with AWS Organisations        
+-> if you have a lot of acounts within your organisation, you just set up AWS SSO and you will have access to log in to all the accounts within that organisation           
+
+Supports SAML 2.0 markup           
+
+Integrate with on-premise **Active Directory**         
+
+Centralised permission management            
+
+Centralised auditing with CloudTrail           
+
+(EXAM) anytime you see a use case talking about doing sign-on to multiple AWS accounts or to business applications that require SAML 2.0, think Single Sign-On          
+
+AWS SSO - Setup with AD          
+
+From SSO, we set up a connection to on-premise AD (or managed service by AWS), SSO know how to get the users from there. Then the users can connect to SSO and from SSO we can integrate it different OUs and accounts within our organisation.                     
+
+<img src="images/sso_ad.png" width="700">              
+
+SSO vs AssumeRoleWithSAML           
+
+If we use AssumeRoleWithSAML, we have to setup our 3rd party IDP login portal, that will check our identity with the identity store, that will return to us a SAML 2.0 assertion, then we have to send that assertion to STS to use the right AssumeRoleWithSAML, and we get back security credentials, then we can connect to AWS.         
+-> if you have multiple accounts on AWS, we need to setup this process for each and single accounts        
+-> we have to manage the login portal           
+
+With SSO, a browser interface will log in through SSO, so we don't have to set up login portal ourselves. SSO is already integraed with your identity store                 
+-> can give us many other AWS account
+
+<img src="images/sso_vs_assumerole.png" width="700">              
+
+# AWS Security & Encryption: KMS, SSM Parameter Store, CloudHSM, Shield, WAF            
+
