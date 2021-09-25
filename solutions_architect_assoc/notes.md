@@ -6182,3 +6182,122 @@ If you want the master account of the old organisation to also join the new orga
 2. Delete the old organization        
 3. Repeat the process above to invite the old master account to the new organization         
 
+## IAM - Advanced           
+
+**IAM Conditions**            
+
+They are ways to make your IAM policy abit more restrictive based on a condition.          
+
+(EXAM)               
+There are a few example that can come out in the exam:              
+
+1. `aws:SourceIP`            
+
+This is to restrict the client IP **from** where the API calls are being made.         
+There is a "deny" and "resource" `*` which deny everything, the condition is `NotIpAddress`.           
+To translate this condition: deny anything that does not come from these 2 SourceIP ranges - enhanced security          
+
+This is the IP of the clients where the AWS calls are being made.            
+
+2. `aws:RequestedRegion`          
+
+This is to restrict the region the API calls are made **to**.            
+If you are making API calls on these AWS services, they has to come from these requested regions.          
+We are NOT trying to see where is client is, but we are trying to see where the client is trying to make an API call to.           
+
+<img src="images/iam_condition_1.png" width="700">             
+
+3. Restriction based on tags          
+
+e.g. We can start/stop EC2 instances only and only if your project is `DataAnalytics` and your department is `Data`.           
+These are the ResourceTag of your EC2 instance and PrincipalTag of your user.            
+
+4. Force MFA           
+
+e.g. We can stop/terminate instances only if you have MFA present.         
+
+<img src="images/iam_condition_2.png" width="700">             
+
+5. IAM for S3          
+
+e.g. we allow list bucket on this resource, which is a bucket called `test`.          
+The allow action has `test/*`.       
+ListBucket permission applies to          
+-> `arn:aws:s3:::test`        
+This is a bucket leve permission, so this is just the bucket name (so no need `\*`)         
+GetObject, PutObject, DeleteObject applies to anything within and so there the arn needs `\*`           
+-> `arn:aws:s3:::test\*`       
+This is applied to all the objects within the bucket.             
+This is an object level permission         
+
+<img src="images/iam_s3.png" width="500">             
+
+IAM Roles vs Resource Based Policies              
+
+-> Attach a policy to a resource (example: s3 bucket policy) VS using a role as proxy.          
+
+Assume the user is in Account A, and the Amazon S3 bucket is in Account B and we want to access it.      
+Option A: create a role in Account B, assume that role using STS and then by assuming that role in Account we will be able to issue API calls against S3 bucket in Account B.         
+Option B: use the same bucket, create an S3 bucket policy that allows directly the user accounts from Account A to access the S3 bucket.            
+
+When you assume a role (user, application or servce), you give up your original permissions and take the permissions assigned to the role          
+
+When using a resource based policy, the principal does not have to give up his permissions.           
+i.e. you can do actions both in Account A and B.               
+
+e.g. User in Account A needs to scan a DynamoDB table in Account A and dump it in an S3 bucket in Account B.        
+-> use case for resource-based policy.         
+-> Option A, you cannot do anything back on your DynamoDB in Account A.             
+
+Supported by: S3, SNS topics, SQS queues          
+
+<img src="images/iam_vs_resrc.png" width="700">         
+
+## IAM - Policy Evaluation Logic         
+
+IAM Permission Boundaries            
+
+1. IAM Permission Boundaries are supported for users and roles (**not groups**)             
+2. Advanced feature to use a managed policy to set the maximum permissions an IAM entity can get         
+
+e.g. we have this IAM permission boundary, which looks like an IAM policy.        
+We allow everything on S3, EC2 and CloudWatch. We attach this to IAM user. This is a permission boundary, means that it can only do things specified.       
+You then need to specify on top of things an IAM permission through policy.         
+This will give no permission.            
+This is because the IAM permission is outside the IAM Permission Boundary.           
+This user is NOT allowed to create other IAM users.          
+
+<img src="images/iam_perm_bound_1.png" width="700">             
+
+This can be used in combinations of AWS Organisation SCP.           
+Identity-based policy: whatever is attached to your user or your group        
+Permission boundary: only applies to a user or a role, and NOT a group       
+Organisation SCP: applies to every single IAM entity in your account            
+
+Use case:         
+-> delegate responsibilities to non administrators within their permission boundaries, e.g. create new IAM users           
+-> allow developers to self-assign policies and manage their own permissions, while making sure they cannot escalate their privileges (= make themselves admin)            
+-> useful to restrict one specific user (instead of a whole account using Organisation and SCP)            
+
+<img src="images/iam_perm_bound_2.png" width="500">           
+
+IAM Policy Evaluation Logic         
+Explicit deny check: if anything in all the policy has a Deny, then it is denied.           
+
+<img src="images/iam_perm_bound_3.png" width="900">          
+
+Example IAM Policy         
+
+1. Can you perform `sqs:CreateQueue` ?        
+ans: NO, there is a Deny in SQS          
+
+2. Can you perform `sqs:DeleteQeue` ?         
+ans: NO, as soon as you have an explicit Deny, it will be denied            
+
+3. Can you perform: `ec2:DescribeInstances` ?       
+ans: NO. since this is an IAM policy, there is not allow or deny, but you cannot perform this action (implicit Deny)           
+
+<img src="images/iam_perm_bound_4.png" width="300">          
+
+## Resource Access Manager (RAM)          
+
