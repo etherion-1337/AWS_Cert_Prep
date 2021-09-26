@@ -6418,5 +6418,11 @@ Upon retrieval, our client will receive the encrypted object and it will decrypt
 
 ## KMS Overview           
 
-
+Anytime you hear "encryption" for an AWS service, it is most likely KMS            
+Easy way to control access to your data, AWS manages keys for us          
+Fully integrated with IAM for authorisation         
+Seamlessly integrated into:           
+-> Amazon EBS: encrypt volumes            
+-> Amazon S3: server side encryption of objects           
+-> Amazon Redshift 
 
