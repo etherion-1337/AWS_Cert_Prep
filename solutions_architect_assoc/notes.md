@@ -6424,5 +6424,92 @@ Fully integrated with IAM for authorisation
 Seamlessly integrated into:           
 -> Amazon EBS: encrypt volumes            
 -> Amazon S3: server side encryption of objects           
--> Amazon Redshift 
+-> Amazon Redshift: encryption of data        
+-> Amazon RDS: encryption of data          
+-> Amazon SSM: Parameter store           
 
+You can also use the CLI/SDK         
+
+KMS - Customer Master Key (CMK) Types           
+1. Symmetric (AES-256 keys)             
+-> first offering of KMS, single encryption key that is used to Encrypt and Decrypt         
+-> AWS services that are integraed with KMS use Symmetric CMKs           
+-> necessary for envelope encryption         
+-> you never get access to the Key unencrypted (must call KMS API to use, you actually never see the key)          
+2. Asymmetric (RSA & ECC Key pairs)           
+-> Public (Encrypt) and Private (Decrypt) key pair, basis for how SSL works         
+-> used for Encrypt/Decrypt, or Sign/Verify operations         
+-> the public key is downloadable, but you cannot access the private key unencrypted (cannot be accessed)            
+-> use case: encryption outside of AWS by users who cannot call the KMS API          
+
+AWS KMS      
+1. Able to fully manage the keys & policies:        
+-> Create       
+-> Rotation policies          
+-> Disable        
+-> Enable         
+2. Able to audit key usage (using CloudTrail)            
+3. Three types of Customer Master Keys (CMK):          
+-> AWS Managed Service Default CMK: *free* (e.g. EBS volume use this to encrypt)        
+-> User Keys created in KMS: $1/month        
+-> User Keys imported (must be 256-bit symmetric key): $1/month           
+4. Plus pay for API call to KMS ($0.03/10,000 calls)           
+
+AWS KMS 101        
+1. Anytime you need to share sensitive information, use KMS       
+-> database passwords      
+-> credentials to external service        
+-> private key of SSL certificates       
+2. The value in KMS is that the CMK used to encrypt data can never be retrieved by the users, (the whole security belongs to AWS) and the CMK can be rotated for extra security          
+3. Never ever store your secrets in plaintext, especially in your code !           
+4. Encrypt secrets can be stored in the code/environment variables              
+5. **KMS can only help in encrypting up to 4KB of data per call**          
+6. if data > 4KB, *use envelope encryption*                 
+7. To give access to KMS to someone:        
+-> make sure the Key Policy allows the user        
+-> make sure the IAM Policy allows the API calls        
+
+**Copying Snapshots across regions**         
+
+KMS keys are bound to a specific region. So that means that when you create a KMS key in region A, it cannot be transmitted over to region B. 
+
+e.g. say we have an encrypted EBS volume with KMS and a KMS key in the region eu-west-2 and we would like to copy that volume across to a new region. Because KMS keys are linked to a specific region, you would need to do a specific operation.          
+This is the process (this applies to EBS volume, Redshift snapshots and pretty much everything that is encrypted with a AWS KMS)         
+-> you would create a snapshot of your volume     
+(any snapshot made from an encrypted volume is also encrypted with KMS and the same key)       
+-> copy that snapshot over to the new region        
+(but you will specify a new KMS key to re-encrypt the data with)         
+-> when you re-create a volume from that snapshot, then that volume will be encrypted with a new KMS Key B.            
+**when you copy the snapshot over, it needs to be re-encrypted**         
+
+<img src="images/kms_copy.png" width="700">                
+
+**KMS Key Policies**           
+
+1. Control access to KMS keys, "similar" to S3 bucket policies          
+2. Difference: you cannot control access without them: if you don't specify a key policy, then no one can access your key           
+3. **Default KMS Key Policy**:         
+-> very permissive, created if you don't provide a specific KMS Key Policy         
+-> Complete access to the key to the root user = entire AWS account        
+-> gives access to the IAN policies to the KMS key          
+4. **Custom KMS Key Policy**:             
+-> define user, roles that can access the KMS key       
+-> define who can administer the key        
+-> useful for cross-account access of your KMS key        
+
+**Copying Snapshots across accounts**        
+
+1. create a snapshot, encrypted with your own CMK        
+2. **attach a KMS Key Policy to authorize cross-account access**         
+3. share the encrypted snapshot        
+4. (in target) create a copy of the snapshot (which is now possible as the target has access to the Key in the original account), encrypt it with a KMS key in your account           
+5. create a volume from the snapshot          
+
+Example of Key Policy:          
+allow target account to read our KMS key        
+
+<img src="images/kms_cross_policy.png" width="500">                
+
+## KMS Key Rotation           
+
+You can enable automatic key rotation
