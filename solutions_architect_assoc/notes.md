@@ -6376,3 +6376,47 @@ With SSO, a browser interface will log in through SSO, so we don't have to set u
 
 # AWS Security & Encryption: KMS, SSM Parameter Store, CloudHSM, Shield, WAF            
 
+## Encryption 101           
+
+**Encryption in Flight (SSL)**         
+
+HTTPS protocol (green lock) to make sure that the website is SSL-certified and the data in flight in encrypted.         
+Data is encrypted before sending and decrypted after receiving         
+SSL certificates help with encryption (HTTPS)           
+(almost) the whole web needs to be run on SSL and HTTPS          
+Encryption in flight ensures no MITM (man in the middle attack) can happen            
+
+In this protocol. we are going to add the super secret data, encrypt it with SSL encryption, and send this over the network, then website will receive the data and know how to decrypt it.            
+
+<img src="images/https_ssl.png" width="700">                
+
+**Server side encryption at rest**             
+
+Data is encrypted after being received by the server          
+(if someone hijacked the server we don't want anyone to look at the data)                     
+Data is decrypted before sending out           
+It is stored in an encrypted form thanks to a key (usuall a data key)            
+The encryption / decryption keys must be managed somewhere (KMS, Key Managerment Service) and the server must have access to it.            
+
+e.g. EBS will use a data key to encrypt the object.            
+The server manages the encryption / decryption           
+
+<img src="images/encrypt_atrest.png" width="700">                      
+
+**Client side encryption**            
+
+Data is encrypted by the client and never decrypted by the server          
+Data will be decrypted by a receiving client         
+i.e. the server just store the data, but doesn't know what the data means             
+The server *should not* be able to decrypt the data        
+Could leverage Envelope Encryption          
+
+e.g. The client is going to encrypt the object using the client side data key.         
+Upon retrieval, our client will receive the encrypted object and it will decrypt it at client side.             
+
+<img src="images/encrypt_clientside.png" width="700">           
+
+## KMS Overview           
+
+
+
