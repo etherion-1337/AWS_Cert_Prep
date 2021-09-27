@@ -6550,10 +6550,58 @@ From the application POV, the change will not be detected.
 
 ## SSM Parameter Store Overview       
 
+1. Secure storage for configuration and secrets      
+2. Optional seamless encryption using KMS (store your secrets, have them KMS-encrypted directly within SSM Parameter Store)      
+3. Serverless, scalable, durable, easy SDK         
+4. Version tracking of configurations/secrets        
+5. Configuration management using path and IAM        
+6. Notifications with CloudWatch Events         
+7. Integration with CloudFormation         
+
+At its core, we have the applications and they have (e.g.) a parameter stored in SSM Parameter Store. It can be plaintext configuration. SSM will check with IAM. If it is encrypted configuration, then SSM Parameter Store will check with KMS and use it to decrypt and give us the decrypted secret.           
+
 <img src="images/ssm_para_store.png" width="500">             
+
+**SSM Parameter Store Hierarchy**            
+
+We can create a hierarchy (e.g.) my department.        
+If you have a Lambda function and wish to access your dev parameters, then you would set an environment variable and then you will end the functionwith GetParameters or Path (then everything in the path or in the tree will be retrieved) and retrieve them.           
+This is how we could use (e.g.) Lambda and parameter store.               
 
 <img src="images/ssm_hierarchy.png" width="700">             
 
+**Standard and Advanced parameter tiers**          
+
 <img src="images/ssm_para_tier.png" width="700">             
 
-<img src="images/ssm_para_policy.png" width="700">  
+**Parameters Policues (for advanced parameters)**          
+
+1. Allow to assign a TTL to a parameter (expiration date) to force updating or deleting sensitive data such as passwords          
+2. Can assign multiple policies at a time         
+
+Three examples:         
+1. Expiration: my parameter expires in Dec 2020        
+2. ExpirationNotification: send me a notification through CloudWatch events 15 days before the expiration happens          
+3. NoChageNotification: if my parameter hasn't been changed in 20 days, sned me a notification through CloudWatch events            
+
+So this is the kind of policy you can attach to your advanced parameter to trigger some sort of automation and to force yourself to change them often.            
+
+<img src="images/ssm_para_policy.png" width="700">           
+
+Note: This service is in AWS Systems Manager              
+
+## AWS Secrets Manager - Overview                 
+
+Newer service, meant for storing secrets               
+Capability to force rotation of secrets every X days                 
+Automate generation of secrets on rotation (use Lambda)                
+
+Integration with Amazon RDS (MySQL, PostgreSQL, Aurora)              
+
+Secrets are encypted using KMS               
+
+Mostly meant for RDS integration           
+
+(EXAM) anytime we see secret to be managing in RDS and to be rotated, think about Secrets Manager    
+
+
