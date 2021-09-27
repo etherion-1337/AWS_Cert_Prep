@@ -6512,4 +6512,48 @@ allow target account to read our KMS key
 
 ## KMS Key Rotation           
 
-You can enable automatic key rotation
+**KMS Automatic Key Rotation**            
+
+1. **For Customer-managed CMK (not AWS managed CMK)**        
+2. if enabled: automatic key rotation happens **every 1 year**         
+3. Previous key is kept active so you decrypt old data          
+4. The new key has the same CMK ID (only the backing key is changed, i.e. the backing material)            
+
+e.g. we have the backing key and the CMK ID. After automatic rotation (which happens every 1 year and you cannot change the period), the backing key is going to change but the CMK ID is the same.                   
+
+<img src="images/kms_rotation.png" width="700">           
+
+**KMS Manual Key Rotation**            
+
+1. when you want to rotate your key every 90 days, 180 days, etc.          
+2. new key has a different CMK ID (because you create it manually)        
+3. keep the previous key active so you can decrypt old data        
+4. better to use aliases in this case (to hide the change of key for the application)         
+5. good solution to rotate CMK that are not eligible for automatic rotation (like asymmetric CMK)             
+
+e.g. the client is currently talking to alias = MyCustomKey, and we have a backing key with the CMK ID. And then we are going to rotate the key manually, by creating a new key and we are going to use the same alias. But the new key has a new CMK ID.             
+
+<img src="images/kms_manual_rotation.png" width="700">             
+
+**KMS Alias Updating**          
+
+1. better to use aliases in this case (hide the change of key for the application)        
+
+The application only interacts with (from the API perspective) with your key alias MyAppKey.            
+The old key, old key alias, is the one that you had before rotation, and after rotation we are going to create a new key.        
+And we are going to issue an UpdateAlias API code, and this updated alias will have the alias point to the new key.         
+From the application POV, the change will not be detected.           
+
+<img src="images/kms_alias.png" width="700">          
+
+(EXAM) if you want to have automatic key rotation, the period is 1 year. If you want to have manual key rotation, you can go to 90 days or 180 days. Exam will not test you on the details.           
+
+## SSM Parameter Store Overview       
+
+<img src="images/ssm_para_store.png" width="500">             
+
+<img src="images/ssm_hierarchy.png" width="700">             
+
+<img src="images/ssm_para_tier.png" width="700">             
+
+<img src="images/ssm_para_policy.png" width="700">  
