@@ -6605,3 +6605,213 @@ Mostly meant for RDS integration
 (EXAM) anytime we see secret to be managing in RDS and to be rotated, think about Secrets Manager    
 
 
+## CloudHSM            
+ 
+KMS => AWS manages the software for encryption (and we have control over the encryption keys)                 
+CloudHSM => AWS provisions encryption **hardware**, but we are managing the keys ourselves            
+Dedicated Hardware (HSM = Hardware Security Module)               
+We managed your encryption keys entirely (not AWS)                
+HSM device is tamper resistant, FIPS 140-2 Level 3 compliance                  
+Supports both symmetric and asymmetric encryption (SSL/TLS keys)          
+No free tier available           
+Must use the CloudHSM Client Software (out of scope)             
+Redshift supports CloudHSM for database encryption and key management          
+**Good option to use with SSE-C encryption** e.g. on top of S3, as you are managing your own encryption keys and storing them in CloudHSM         
+
+**CloudHSM Diagram**          
+
+With CloudHSM, AWS will manage your hardware where the service itself can be used on your own. The CloudHSM Client is something you have to use to establish a connection into the CloudHSM service. And you are going to manage the keys overall.           
+The IAM permissions are going to be used to do a create/read/update/delete (CRUD) at a high level, but you are going to use a CloudHSM software to manage the keys and manage the users and their permissions to access the keys.            
+This is differenet from KMS as in KMS everything is managed using IAM.        
+    
+<img src="images/cloudhsm_diag.png" width="700">               
+
+**CloudHSM - High Availability**           
+
+1. CloudHSM clusters are spread across multi AZ (HA)       
+2. Great for availability and durability        
+
+You can have 2 AZ, one is going to be replicated from another and your HSM Client can connect to either of them.            
+
+<img src="images/cloudhsm_ha.png" width="700">             
+
+**CloudHSM vs KMS**           
+
+If we want to import an asymmetric key from on-premesis, we can only do it with CloudHSM.           
+
+<img src="images/cloudhsm_kms_1.png" width="700">              
+
+<img src="images/cloudhsm_kms_2.png" width="700">            
+
+Types of Customer Master Keys (CMK):              
+1. Customer Managed CMK ($$$):              
+-> create, manage and used by the customer, can enable or disable                 
+-> possibility of rotation policy (new key generated every year, old key preserved)             
+-> possibility to bring-your-own-key          
+2. AWS managed CMK:              
+-> created, managed and used on the customer's behalf by AWS             
+-> used by AWS service (aws/s3, aws/ebs)            
+3. AWS owned CMK:                
+-> Collection of CMKs that an AWS service owns and manages to use in multiple accounts             
+-> AWS can use those to protect resources in your account (but you can't view the keys)              
+4. CloudHSM Keys (custom keystore):           
+-> keys are generated from your own CloudHSM hardware device              
+-> cryptographic operations are performed within the CloudHSM cluster       
+
+## Shield - DDoS Protection            
+
+DDoS: Distributed Denial-of-Service               
+
+The attacker will launch multiple masters server and these servers are going to launch bots and they are going to send requests to our application server. The application server will be overwhelmed and it will not be working anymore.                  
+             
+DDoS Protection on AWS              
+1. AWS Shield Standard: protects against DDoS attack for your website and applications, for all customers at *no* additiomal costs          
+2. AWS Shield Advanced: 24/7 premium DDoS protection              
+3. AWS WAF (Web Application Firewall): Filter specific requests based on rules               
+4. CloudFront and Route 53:                 
+-> Availability protection using global edge network             
+-> Combined with AWS Shield, provides attack mitigation at the edge locations                  
+5. Be ready to scale - leverage AWS Auto Scaling           
+    
+AWS Shield Standard:             
+-> Free service that is activated for every AWS customer                 
+-> Provides protection from attacks such as SYN/UDP Floods, Reflection attacks and other layer 3/ layer 4 attacks               
+AWS Shield Advanced:                
+-> Optional DDoS migigation service ($3,000 per month per organization)              
+-> Protect against more sophisticated attack on Amazon EC2, Elastic Load Balancing (ELB), Amazon CloudFront, AWS Global Accelerator, and Route 53.                
+-> 24/7 access to AWS DDoS response team (DRP)             
+-> Protect against higher fees during usage spickes due to DDoS           
+(exam) free version is activated by default for every customer.           
+
+## Web Application Firewall (WAF)              
+
+AWS WAF - Web Application Firewall           
+Protects your web applications from common web exploits (Layer 7)                   
+**Layer 7 is HTTP (vs Layer 4 is TCP)**              
+(Layer 7 is a higher level, has more info into how a request is structured, Layer 4 is just around the protocol of the transport mechanism)                
+
+(EXAM) Deploy on (HTTP friendly devices) **Application Load Balancer (newer version of the load balancer), API Gateway, CloudFront**                   
+
+(EXAM) Define Web ACL (Web Access Control List)            
+-> rules can include *IP addresses*, HTTP headers, HTTP body, or URI strings              
+-> Protects from common attack - *SQL injection* and *Cross-Site Scripting (XSS)*                 
+-> Size constraints, **geo-match (block countries)**                 
+-> **Rate-based rules (to count occurrences of events) - for DDoS protection**               
+
+**AWS Firewall Manager**     
+1. Manage rules in all accounts of an AWS Organisation         
+2. Common set of security rules        
+3. WAF rules (Application Load Balancer, API Gateway, CloudFront)         
+4. AWS Shield Advanced (ALB, CLB, Elastic IP, CloudFront)         
+5. Security Groups for EC2 and ENI resources in VPC         
+
+So it is a centralised way to manage all these things together within your organisation            
+
+e.g. Sample Reference Architecture for DDoS Protection          
+We have our users that goes through Route 53 for the DNS service, this is protected by Shield.           
+And then it goes through CloudFront distribution, again protected by Shield, we can also install WAF to control the type of request (and maybe deny then at the Edge).            
+If the request overflow, it will go to Load Balacner, also protected by Shield.         
+And finally go to your ASG, which will scale if you are experiencing an attack.                 
+
+<img src="images/ddos_arch.png" width="700">                 
+
+## GuardDuty          
+
+Intelligent Threat discovery to Protect AWS account              
+Uses Machine Learning Algorithms, anomaly detection, 3rd party data               
+One click to enable (30 days trial), no need to install software                 
+
+Input data includes:             
+-> CloudTrail Logs: unusual API calls, unauthorized deployments             
+-> VPC Flow Logs: unusual internal traffic, unusual IP address                   
+-> DNS logs: compromised EC2 instances sending encoding data within DNS queries                
+
+Can setup **CloudWatch Event rules** to be notified in case of findings                
+
+CloudWatch Events rules can target AWS Lambda or SNS                  
+
+(EXAM) Can protect against CryptoCurrency attacks (has a dedicated "finding" for it)                  
+
+Amazon GuardDuty          
+All the logs go into the GuardDuty services, then a CloudWatch Event rule can be triggered when there is a finding.        
+Then the data can be sent into a Lambda function or a SNS topic.                
+
+<img src="images/guardduty.png" width="700">                
+
+## Inspector          
+
+**Automated Security Assessment** for *EC2 instances*                                            
+Analyze the running OS against **known vulnerabilities**                
+Analyze against **unintended network accessibility**                   
+
+AWS Inspector Agnet must be installed on OS in EC2 instances               
+
+After the assessment, you get a report with a list of vulnerabilities          
+Possibility to send notifications to SNS         
+
+<img src="images/inspector.png" width="300">          
+
+What does AWS Inspector evaluate ?            
+**Only for EC2 instances**             
+1. For Network assessment: (agentless, i.e. no need agent to be installed)             
+-> network reachability          
+2. For Host assessments: (with agent)          
+-> common vulnerabilities and exposures        
+-> Center for Internet Security (CIS) benchmarks         
+-> security best practices         
+
+Remember this service is really to run a security assessment from within your EC2 instances.            
+
+## Macie           
+
+Fully managed data security and data privacy service that uses **machine learning and pattern matching to discover and protect your sensitive data in AWS**                  
+
+Macie helps identify and alert you to **sensitive data, such as personally identifiable information (PII)**          
+
+In this example, it will be used to find the sensitive data in S3 buckets, that's all. (one click, specify the S3 buckets)              
+With integration with CloudWatch Event, you can have integration into SNS topic, Lambda function etc.            
+
+<img src="images/macie.png" width="700">                
+
+## Shared Responsibility Model              
+
+1. AWS responsibility - Security **of** the Cloud        
+-> protecting infrastructure (hardware, software, facilities, and networking) that runs all the AWS services          
+-> managed services like S3, DynamoDB, RDS, etc.         
+2. Customer responsibility - Security **in** the Cloud         
+-> for EC2 instance, customer is responsible for management of the guest OS (including security patches and updates), firewall & network configuration, IAM          
+-> encrypting application data        
+3. Shared controls:            
+-> patch management (RDS: AWS, EC2: us), configuration management, awareness & training        
+
+Example: for RDS             
+1. AWS responsibility:           
+-> manage the underlying EC2 instance, disable SSH access          
+-> automated DB patching         
+-> automated OS patching          
+-> audit the underlying instance and disk & guarantee it functions           
+2. Your responsibility:         
+-> check the ports/IP/security group inbound rules in DB's SG           
+-> in-database user creation and permissions           
+-> creating a database with or without public access            
+-> ensure parameter groups or DB is configured to only allow SSL connections          
+-> database encryption setting          
+
+Example: for S3           
+1. AWS responsibility:        
+-> guarantee you get unlimited storage        
+-> guarantee you get encryption        
+-> ensure separation of the data between different customers          
+-> ensure AWS employees cannot access your data        
+2. You responsibility:       
+-> bucket configuration         
+-> bucket policy/public setting         
+-> IAM user and roles         
+-> enabling encryption         
+
+<img src="images/aws_share_res.png" width="700">             
+
+# Networking - VPC          
+
+## CIDR, Private vs Public IP           
+
