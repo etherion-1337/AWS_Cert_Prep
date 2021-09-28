@@ -6815,3 +6815,94 @@ Example: for S3
 
 ## CIDR, Private vs Public IP           
 
+CIDR - IPv4 : Classless Inter-Domain Routing        
+1. CIDR are used for Security Group rules, or AWS networking in general        
+-> e.g. `0.0.0.0/0` or `122.149.196.85/32`, these are actually CIDR, but are very specific ones             
+2. They help to define an IP address range        
+-> WW.XX.YY.ZZ/32 == one IP         
+-> 0.0.0.0/0 == all IPs          
+-> we can define (e.g.): 192.168.0.0/26 which represents 192.168.0.0 - 192.168.0.63 (64 IPs)            
+
+Understanding CIDR        
+1. a CIDR has two components:         
+-> the base IP (XX.XX.XX.XX)            
+-> the Subnet Mask (/26)         
+2. The base IP represents an IP contained in the range          
+3. The subnet mask defines how many bits can change in the IP            
+4. The subnet mask can take 2 forms, e.g.:         
+-> 255.255.255.0 (less common, maybe on Windows)         
+-> /24 (more common, AWS)            
+
+**Subnet Masks**          
+The subnet masks basically allows part of the underlying IP to get additional next values from the base IP         
+-> `/32` allows for 1 IP = 2^0         
+-> `/31` allows for 2 IP = 2^1          
+-> `/30` allows for 4 IP = 2^2               
+-> `/29` allows for 8 IP = 2^3                
+-> `/28` allows for 16 IP = 2^4              
+-> `/27` allows for 32 IP = 2^5           
+-> `/26` allows for 64 IP = 2^6                 
+-> `/25` allows for 128 IP = 2^7                
+-> `/24` allows for 256 IP = 2^8                
+-> `/16` allows for 65,536 IP = 2^16                
+-> `/0` allows for ALL IP = 2^32          
+
+**Quick Memo**:        
+1. `/32` - no IP number can change        
+2. `/24` - last IP number can change        
+3. `/16` - last IP 2 numbers can change         
+4. `/8` - last IP 3 numbers can change        
+5. `/0` - ALL IP numbers can change            
+
+e.g.        
+1. 192.168.0.0/24 = 192.168.0.0 - 192.168.0.255 (256 IP)             
+2. 192.168.0.0/16 = 192.168.0.0 - 192.168.255.255 (65,536)            
+3. 134.56.78.123/32 = 134.56.78.123 (1 IP)          
+4. 0.0.0.0/0 = 0.0.0.0 - 255.255.255.255 (ALL IP)             
+
+Private vs Public IP (IPv4)            
+Allowed ranges           
+1. The Internet Assigned Numbers Authority (IANA) established certain blocks of IPv4 addresses for the use of private (LAN) and public (Internet) addresses.           
+2. Private IP can only allow certain values            
+-> 10.0.0.0 - 10.255.255.255 (10.0.0.0/8) <= in big networks            
+-> 172.16.0.0 - 172.31.255.255 (172.16.0.0/12) <= default AWS one              
+-> 192.168.0.0 - 192.168.255.255 (192.168.0.0/16) <= e.g. home networks                
+
+All the test of the IP on the internet are public IP               
+
+## Default VPC Overview           
+
+As soon as you create your account, you will get a default VPC.              
+New instances are launched into default VPC if no subnet is specified             
+Default VPC have internet connectivity and all instances have public IP           
+We also get a public and a private DNS name            
+
+Each VPC has a few subnet (AZ) and each subnet has their own CIDR (but within the VPC CIDR)               
+
+The default VPC comes with:        
+1. 1 VPC       
+2. 3 subnets        
+3. 1 route table          
+4. 1 Internet Gateway          
+5. 1 network ACL list            
+
+## VPC Overview and Hands On         
+
+VPC = Virtual Private Cloud          
+You can have multiple VPCs in a region (max 5 per region - soft limit)           
+Each VPC can have up to 5 CIDR. For each CIDR:          
+-> min size is `/28` = 16 IP Addresses        
+-> max size is `/16` = 65,536 IP Addresses        
+Because VPC is private, only the Private IP ranges are allowed:       
+-> 10.0.0.0 - 10.255.255.255 (10.0.0.0/8)        
+-> 172.16.0.0 - 172.31.255.255 (172.16.0.0/12)         
+-> 192.168.0.0 - 192.168.255.255 (192.168.0.0/16)          
+
+**Your VPC CIDR should not overlap with your other networks (e.g. your corporate network)**           
+
+
+
+
+
+
+
