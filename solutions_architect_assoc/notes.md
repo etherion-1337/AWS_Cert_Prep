@@ -7083,6 +7083,38 @@ Network ACLs
 2. Default NACL allows everything outbound and everything inbound         
 3. **One NACL per subnet, new subnets are assigned the Default NACL**             
 4. Define NACL rules:          
--> rules have a number (1-32766) and higher precedence with a lower number (highest number wins)        
+-> rules have a number (1-32766) and higher precedence with a lower number (lower number wins)        
 -> e.g. if you define #100 ALLOW IP_1 and #200 Deny IP_1, IP_1 will be allowed           
+-> last rule is an asterisk `*` and denies a request in case of no rule match (i.e. all the request will be denied if there is no rule match), and you cannot change that          
+-> AWS recommends adding rules by increment of 100 (in case you need to add rules in between)         
+5. Newly created NACL will deny everything (inbound or outbound)       
+6. NACL are a great way of blocking a specific IP at the subnet level                   
+
+
+<img src="images/nacl_vs_sg.png" width="700">            
+
+Ephemeral ports must be opened in the NACL, if you have a very restricted one.             
+
+## VPC Peering              
+
+1. Connect two VPC, privately using AWS's network           
+2. Make them behave as if they were in the same network         
+3. Must not have overlapping CIDR           
+4. VPC Peering connection is **not transitive** (must be establised for each VPC that need to communicate with one another)            
+5. You can do VPC peering with another AWS account         
+6. **You must update Route Tables in EACH VPC's subnets to ensure instances can communicate**         
+
+e.g. we have VPC-A and VPC-B, and we want them to be connected.          
+We have to create a VPC Peering connection between A and B, and then update some Route Table.          
+We can establish B and C, but A and C are NOT connected. We need another peering between A and C.           
+
+<img src="images/vpc_peer_1.png" width="700">              
+
+VPC Peering - Good to know             
+1. VPC peering can work **inter-region, cross-account**         
+2. You can also reference a security group of a peered VPC (work cross account)         
+
+We can add VPC Peering to the default VPC.              
+
+<img src="images/vpc_peer_2.png" width="700">             
 
