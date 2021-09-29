@@ -7120,3 +7120,28 @@ We can add VPC Peering to the default VPC.
 
 ## VPC Endpoints          
 
+Now lets talk about how VPC talk to AWS services, such as DynamoDB, CloudWatch or S3.           
+These services are all within AWS Cloud. Although if we want to access it from a Private EC2 instance, what we need to do is have that EC2 instance talk to our VPC NAT Gateway. And then to the Internet Gateway, and we will have an internet route through the public internet directly into these services.          
+But this is problematic, because we would like all these traffic to remain private.        
+So we can use VPC Endpoints, it is meant for us to access AWS services within a private network.           
+
+With VPC Endpoint, it will create an (e.g.) endpoint to S3 or CloudWatch etc.       
+Our instance is, through some Route Table access directly that endpoint and talk to S3 privately.        
+
+<img src="images/vpc_endpoint.png" width="700">              
+
+**VPC Endpoints**        
+1. Endpoints allow you to connect to AWS service using a private network instead of the public www network         
+2. They scale horizontally and are redundant          
+3. They remove the need of IGW, NAT, etc to access AWS Services         
+4. There are 2 kind of VPC Endpoints:           
+-> **Interface** VPC Endpoints: provisions an ENI (private IP address) as an entry point (must attach security group) - most AWS services           
+-> **Gateway** VPC Endpoints: provisions a target and must be used in a Route TAble - S3 and DynamoDB          
+5. In case of issue:         
+-> check DNS Setting Resolution in your VPC        
+-> Check Route Tables         
+
+Remember the default region for AWS CLI is us-east-1. so need to select the region before use CLI to talk to VPC Endpoint in other region.
+
+## VPC Flow Logs + Athena          
+
