@@ -6900,9 +6900,189 @@ Because VPC is private, only the Private IP ranges are allowed:
 
 **Your VPC CIDR should not overlap with your other networks (e.g. your corporate network)**           
 
+## Subnet Overview and Hands On            
+
+In the previous section we created an empty VPC within the AWS cloud.       
+Subnet is going to be tied to a specific AZ.         
+In practice we will have 2 AZ for HA, so within each Az, our goal is to create different subnets.        
+So we can create one public subnet and one private subnet.             
+
+<img src="images/subnet_add.png" width="700">              
+
+Usually Public Subnet is smaller (less IP addresses): you only put your Load Balancer         
+Private Subnet you will put your application etc in it.          
+
+When creating subnet and provision the IP through specifying CIDR, there is 5 IP addresses less than what we specified.           
+
+**Subnets - IPv4**           
+1. AWS reserves 5 IPs address (first 4 and last 1 IP address) in each Subnet        
+2. These 5 IPs are NOT available for use and cannot be assigned to an instance         
+3. e.g. if CIDR block `10.0.0.0/24`, reserved IP are:         
+-> `10.0.0.0`: network address          
+-> `10.0.0.1`: reserved by AWS for the VPC router           
+-> `10.0.0.2`: reserved by AWS for mapping to Amazon-provided DNS           
+-> `10.0.0.3`: reserved by AWS for future use         
+-> `10.0.0.255`: network broadcast address. AWS does not support broadcast in a VPC, therefore the address is reserved         
+
+**EXAM TIPS**         
+If you need 29 IP addresses for EC2 instances, you cannot chose a subnet of size `/27` (32 IP)           
+You need at least 64 IP, subnet size `/26`               
+
+## Internet Gateways & Route Tables            
+
+In Subnet, you have an option to auto-assign IP settings. This is for EC2 intance launched in this subnet.         
+When we right-click on the subnet and choose this option, we can check the box stating `Enable auto-assign public IPv4 address`.         
+So by default the EC2 instances launched in this subnet gets a public IPv4 address.          
+
+If we directly launch EC2 instance in the public subnet we have just configured, we cannot SSH into the instance with our CLI. The reason is that we do not have internet connection.           
+-> we have to setup the Internet Gateway            
+
+**Internet Gateways (IGW)**         
+1. Internet gateways helps our VPC instances connect with the internet         
+2. it scales horizontally and is HA and redundant        
+3. must be created separately from VPC          
+4. (EXAM) One VPC can only be attached to one IGW and vice versa          
+5. Internet Gateway is also a NAT device for the instances that have a public IPv4           
+6. Internet Gateways on their own do not allow internet access => **Route tables must also be edited !**          
+
+We are going to add an Internet Gateway at the very top of the VPC            
+This should provide internet access for our instances         
+
+<img src="images/vpc_igw.png" width="700">            
+
+**Route Table**             
+In our setup, we have our EC2 instances and it is public and has a security group attached to it.        
+We need to edit the Route Table for our subnet and make sure that it points to the Internet Gateway for a specific IP range.       
+From there, our EC2 will get routed directly into the Internet Gateway and we will be able to access the internet.          
+Then we can SSH into our EC2 instance.         
+
+<img src="images/vpc_routetable.png" width="700">                  
+
+1. In the Route Table, we add the public subnet into the Route Table         
+2. Add the CIDR (`0.0.0.0/0`) as Destination and the Target is the Internet Gateway. The private CIDR will still Target at Local. Means anytime the IP hit the private IP address, it will remain local, but anything else it will point to the IGW.         
+
+So now EC2 instance that go into the public subnet has internet access. But private subnet remains closed for now.         
+
+## NAT Instances              
+
+Our instance in the public subnet have internet connectivity thanks to the Internet Gateway, but for our instance in the private subnet, they cannot access the internet. If they were to access it through the Internet Gateway, they would also be directly accessible from the internet.        
+
+For this we need NAT - Network Address Translation          
+
+NAT comes with 2 flavours:        
+1. NAT Instances (outdated but still at the exam)            
+2. NAT Gateways          
+
+**NAT Instances**        
+
+1. allows instances in the private subnets to connect to the internet          
+2. the NAT instances must be launched in a public subnet              
+3. must disable EC2 flags: Source/Destination Check           
+4. must have Elastic IP attached to it            
+-> our Route Table will be going to directly a fixed IP           
+5. Route table must be configured to route traffic from private subnets to NAT Instance             
+
+If we have an instance in a private subnet. We have to make a NAT Instance in our public subnet, it will have an Elastic IP attached to it (the little arrow) and its own security group.         
+Then this NAT Instance, thanks to the router in the Route Table, will be able to talk to the Internet Gateway and access the internet.           
+We now need to do a bridge between our private EC2 and our NAT Instance.        
+We are going to change the Route Table in our Private Subnet, and this route table is going to point to the NAT Instance directly and this will allow our private EC2 to be directed to the NAT Instance which will be directed all the way to the internet.         
+
+<img src="images/nat_instance.png" width="700">              
+
+The NAT Instance's Security Group:        
+1. SSH: 0.0.0.0/0       
+2. HTTP: allow port 80, but only from our VPC's CIDR        
+3. HTTPS: allow port 443, but only from our VPC's CIDR           
+
+NAT Instances - Comments        
+1. Amazon Linux AMI pre-configured are available        
+2. Not highly available/resilient setup out of the box         
+3. Would need to create ASG in multi-AZ + resilient user-data script           
+4. Internet traffic bandwidth depends on EC2 instance performance            
+5. must manage security groups and rules:         
+-> inbound:         
+--> allow HTTP/HTTPs traffoc coming from Private Subnets        
+--> allow SSH from your home network (access is provided through Internet Gateway)           
+-> outbound:         
+--> allow HTTP/HTTPS traffic to the internet       
+
+## NAT Gateways          
+
+1. AWS managed NAT, higher bandwidth, better availability, no admin          
+2. Pay by the hour for usage and bandwidth        
+3. NAT is created in a specific AZ, uses an EIP        
+-> we don't need to worry about all that         
+4. Cannot be used by an instance in that subnet (only form other subnets)       
+5. Requires an IGW to be setup         
+-> Private Subnet => NAT Gateway => IGW          
+6. 5 Gbps of bandwidth with automatic scaling up to 45 Gbps            
+7. No security group to manage/required           
 
 
+We have a NAT Gateway now in our Public Subnet that is automatically connected to the internet thanks to the Route Table.  Our Route Table for our Private Subnet will have a direct link, a direct route to our VPC NAT Gateway.         
 
+<img src="images/nat_gateway.png" width="700">           
 
+NAT Gateway with High Availability                
 
+The NAT Gateway is resilient, but only resilient within a single AZ.        
+If you want high availability, then you will need a NAT Gateway in multiple AZ.         
+Must create multiple NAT Gateway in multiple AZ for fault-tolerance.          
+
+Say we have 2 AZ, each AZ will have a public and a private subnet. You want to make sure we have one NAT Gateway in each AZ, so that we have high availability.         
+
+There is no cross AZ failover needed because if an AZ goes down it doesn't need NAT.       
+
+<img src="images/nat_gateway_ha.png" width="700">             
+
+## DNS Resolution Options & Route 53 Private Zones              
+
+There are 2 important settings in exam.       
+1. **enableDnsSupport** : (= DNS Resolution setting)          
+-> default is True        
+-> help decides if DNS resolution is supported for the VPC           
+-> if True, queries the AWS DNS server at 169.254.169.253        
+2. **enableDnsHostname**: (= DNS Hostname setting)           
+-> False by default for newly created VPC, True by default for Default VPC           
+-> won't do anything unless **enableDnsSupport** = True        
+-> if True, Assign public hostname to EC2 instance if it has a public IP           
+
+If you use custom DNS domain names in a private zone in Route 53, you must set both these attributes to True.            
+
+## NACL & Security Groups            
+
+Very important to understand the difference between Network ACLs & Security Group !          
+
+**Incoming Request**           
+
+We have an EC2 instance and we have a security group. Our EC2 instance resides within the subnets.         
+Outside of the subnet there is a Network Access Control List (NACL) at the subnet level, i.e. sits before traffic even gets into our subnet or EC2 instance.        
+Incoming request coming in and the first thing gets evaluated is the NACL inbound rules.       
+If the inbound rule passes, then it will get passed on to the Security Group inbound rule. If that passes, then our EC2 instances receive the request on the web server and now is going to serve it.                   
+
+The outbound will be allowed no matter what, becuase Security Groups are stateful (i.e. if an inbound request passes, then the outbound request will pass as well), even if there is a rule to deny any traffic out of the EC2 instance.          
+
+NACL outbound rules are stateless, so it will gets evaluated by the NACL.          
+
+NACL: stateless, both inbound and outbound rules gets evaluated          
+Security Group: stateful, if inbound rule passes, outbound rule passes as well.        
+
+<img src="images/nacl_sg_income.png" width="700">             
+
+**Outgoing Request**                       
+
+This time our EC2 instance is making a request and we are going to evaluate the outbound rules of the security group.           
+It will get evaluated at the NACL outbound rules.         
+We will receive a request from outside and gets evaluated against the NACL inbound rules (stateless)          
+It goes back into our EC2, inbound will be allowed, no matter what, since it is stateful.           
+
+<img src="images/nacl_sg_outgo.png" width="700">             
+
+Network ACLs         
+1. NACL are like a firewall which contril traffic from and to subnet (*at subnet level*)        
+2. Default NACL allows everything outbound and everything inbound         
+3. **One NACL per subnet, new subnets are assigned the Default NACL**             
+4. Define NACL rules:          
+-> rules have a number (1-32766) and higher precedence with a lower number (highest number wins)        
+-> e.g. if you define #100 ALLOW IP_1 and #200 Deny IP_1, IP_1 will be allowed           
 
