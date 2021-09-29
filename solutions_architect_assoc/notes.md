@@ -7118,3 +7118,5 @@ We can add VPC Peering to the default VPC.
 
 <img src="images/vpc_peer_2.png" width="700">             
 
+## VPC Endpoints          
+
