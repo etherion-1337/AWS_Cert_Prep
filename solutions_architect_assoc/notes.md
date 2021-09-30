@@ -7185,5 +7185,45 @@ The only thing Bastion need is port 22 from your IP.
 
 ## Site to Site VPN, Virtual Private Gateway & Customer Gateway            
 
+The last thing we have to do is to connect our corporate data center to the AWS Cloud, somewhat directly or not.                
+
+To do site to site VPN, this will establish a Virtual Private Network, that will basically make it seem like your corporate network and it uses Cloud VPC, are part of the same network.            
+
+For this to work, we have to create a customer gateway onto the corporate DC and this is something you have to setup. Could be hardware/softare. Then on the VPC side we will provision what is called a VPN Gateway.        
+
+After that, between the VPN Gateway and Customer Gateway, we will set up a site to site VPN connection.              
+And then our VPC and Corporate DC will be able to talk to each other.              
+
+<img src="images/site_vpn.png" width="700">           
+
+Site to Site VPN          
+
+1. Virtual Private Gateway:         
+-> VPN concentrator on the AWS side of the VPN connection         
+-> Virtual Private Gateway (VGW) is created and attached to the VPC from which you want to create the Site to Site VPN connection (i.e. this is at the VPC level)           
+-> Possibility to customize the ASN           
+2. Customer Gateway:         
+-> software application or physical device on customer side of the VPN connection         
+-> there is a list of all the devices that AWS has tested.            
+-> (EXAM)IP Address:        
+--> use static, internet-routable IP address for your customer gateway device          
+--> if behind a CGW behind NAT (with NAT-T, your NAT at your customer side, not AWS NAT), use the public IP address of the NAT (instead of the IP address of your Customer Gateway)         
+
+
+## Direct Connect & Direct Connect Gateway          
+
+Direct Connect (DX)            
+
+1. Provides a dedicated **private** connection from a remote network to your VPC          
+2. Dedicated connection must be setup between your DC and AWS Direct Connect locations               
+3. You also need to setup a Virtual Private Gateway on your VPC, to make the connectivity between your on-premise data center and AWS.                    
+4. On the same connection, you can access both public resources (e.g. S3) and private resources (e.g. EC2)           
+5. Use cases:          
+-> increase bandwidth throughput - working with large data sets - lower cost          
+-> more consistent network experience - applications using real-time data feeds            
+-> supports hybrid environment (on premise + cloud)            
+6. Supports both IPv4 and IPv6         
+
+
 
 
