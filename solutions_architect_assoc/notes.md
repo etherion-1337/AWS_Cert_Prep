@@ -7160,3 +7160,30 @@ Captures network information from AWS managed interfaces too: ELB, RDS, ElastiCa
 
 Flow Log Syntax         
 
+There are a bunch of fields, `<version> <account-id> <srcaddr> <dstaddr> <srcport> <dstport> <protocol> <packets> <bytes> <start> <end> <action> <log-status>` etc          
+
+We need to understand the important ones:        
+1. srcaddr, dstaddr help identify problematic IP        
+2. srcport, dstport help identify problematic ports           
+3. action: success or failure of the request due to Security Group/NACL        
+4. can be used for analytics on usage patterns, or malicious behavior         
+
+**Query VPC flow logs using Athena on S3 or CloudWatch Logs Insights**            
+
+## Bastion Hosts            
+
+We have Bastion host user, and we SSH into the Bastion Host, which is in a public subnet. And then from the Bastion Host, we are able to SSH into other Linux instance.           
+
+1. We can use a Bastion Host to SSH into our private instances          
+2. The bastion is in the public subnet which is then connected to all other private subnets       
+3. **Bastion Host security group must be tightned**          
+
+(EXAM) make sure the bastion host only has port 22 traffic from the IP you need, not from the security groups of your other instances.      
+The only thing Bastion need is port 22 from your IP.            
+
+<img src="images/bastion_host.png" width="700">          
+
+## Site to Site VPN, Virtual Private Gateway & Customer Gateway            
+
+
+
