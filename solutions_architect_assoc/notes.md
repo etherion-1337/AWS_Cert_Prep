@@ -7145,3 +7145,18 @@ Remember the default region for AWS CLI is us-east-1. so need to select the regi
 
 ## VPC Flow Logs + Athena          
 
+Capture information about IP traffic going into your interfaces (we have 3 kind of flow log):           
+1. VPC Flow Logs (applies to everything within your VPC)         
+2. Subnet Flow Logs (applies just to the subnet)       
+3. Elastic Network Interface Flow Logs (just for one network interface)          
+
+If you define a VPC flow log, then it is going to have included the subnet flow log, and the ENI flow logs as well.           
+
+Helps to monitor & troubleshoot connectivity issues          
+Flow Logs data can go to S3/CloudWatch Logs           
+Captures network information from AWS managed interfaces too: ELB, RDS, ElastiCache, Redshift, WorkSpaces           
+
+<img src="images/vpc_flowlog.png" width="700">           
+
+Flow Log Syntax         
+
