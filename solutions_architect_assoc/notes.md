@@ -7224,6 +7224,370 @@ Direct Connect (DX)
 -> supports hybrid environment (on premise + cloud)            
 6. Supports both IPv4 and IPv6         
 
+**Direct Connect Diagram**             
+
+So we have a region, and we want to connect it into our corporate data center.            
+We are going to commission an AWS Direct Connect Location (their physical location that you have to find on their website)           
+There is going to be a Direct Connect Endpoints and there is going to be a customer or partner router that you have to rent from a customer or partner cage.        
+So you have 2 cages in this Direct Connect Location.        
+And on your on-premises data center you are going to set up a customer router with firewall.        
+Then we are going to setup a Private Virtual Interface (Private VIF), the Private VIP first to access your private resources into your VPC. To do this you setup Private VIP between all these locations, into a Virtual Private Gateway.           
+This Virtual Private Gateway is attached to your VPC.         
+Through the Private VIF, you are able to access your private subnet with your EC2 instances.               
+All these things (blue line) happens privately.               
+
+The alternative is to connect to public services within AWS (e.g. S3, Glacier) and for this we are going to setup a Public Virtual Interface (Public VIF).         
+It goes to the same path but it does not connect into a Virtual Private Gateway. It connects directly into AWS.          
+
+<img src="images/dx_diagram.png" width="700">            
+
+**Direct Connect Gateway**        
+
+What if we want to connect to one or more VPCs in different regions ?        
+Must use Direct Connect Gateway            
+
+**If you want to setup a Direct Connect to one or more VPC in many different regions (same account), you must use a Direct Connect Gateway**                         
+
+e.g. we have 2 regions, and they have two different VPC (two different CIDR), and we want to connect our on-premise data center into both VPC.            
+
+So we are going to establish a Direct Connect connection then using the Private VIF we are going to connect to the Direct Connect Gateway.        
+This Gateway will have a Private Virtual Interface (VIF) to Virtual Private Gateway in the first region and also in the second region.            
+
+Using this setup we can connect to multiple VPCs and multiple regions.          
+
+<img src="images/dx_gateway.png" width="700">                
+
+**Direct Connect - Connection Types**            
+
+1. **Dedicated Connections**: 1 Gbps and 10 Gbps capacity            
+-> Physical ethernet port dedicated to a customer           
+-> Request made to AWS first, then completed by AWS Direct Connect Partner           
+
+2. **Hosted Connections**: 50 Mbps, 500 Mbps, to 10 Gbps            
+-> Connection requests are made via AWS Direct Connect Partners           
+-> Capacity can be **added or removed on demand** (abit more flexible than Dedicated Connection)          
+-> 1,2,5,10 Gbps available at select AWS Direct Connect Partners          
+
+Lead times are often longer than **1 month** to establish a new connection         
+(EXAM) if they ask you transfer some data in within one week, then answer CANNOT be Direct Connect            
+
+**Direct Connect - Encryption**            
+
+When you have a Direct Connect, there is no encryption           
+Data in transit is *NOT* encrypted but is private             
+
+If you want encryption on top of it, you need AWS Direct Connect + VPN, they provides an IPsec-encrypted private connection               
+
+Good for an extra level of security, but slightly more complex to put in place.              
+
+e.g. Same as before, but on the connection you are going to set up a VPN connection on top of it.           
+
+<img src="images/dx_encryption.png" width="700">              
+
+**Direct Connect - Resiliency**                 
+
+(EXAM) We have TWO mode of resiliency and architectures.         
+
+1. High Resiliency for Critical Workloads             
+
+We set up multiple Direct Connects. So we have 2 corporate DC, and we have two different Direct Connection locations.          
+This gives us some redundancy.       
+In the first case we have private VIF to both place.        
+**One connection at multiple locations.**    
+If one of the DX goes down, we have some backup.              
+
+2. Maximum Resiliency for Critical Workloads            
+
+This is for Maximum resiliency. This time each DX location will have 2 connections independently.           
+
+<img src="images/dx_resiliency.png" width="700">           
+
+
+## Egress Only Internet Gateway          
+
+Egress = Outgoing        
+
+Egress only Internet Gateway is for IPv6 only        
+-> if you have an IPv4 instance, this does not apply to it           
+
+Similar function as a NAT, but a NAT is for IPv4           
+They perform the exact functions.                
+-> NAT allow our private instances that had an IPv4 to access the internet           
+-> Egress Only Gateway will allow our IPv6 instance to access the internet, BUT not being accessible              
+
+Good to know: IPv6 are all public addresses                  
+If you want private ranges, you use IPv4           
+
+Therefore all our instances with IPv6 are publicly accessible             
+What if we don't want all our IPv6 instances to be publicly accessible ?              
+Egress Only Internet Gateway gives our IPv6 instances access to the internet, but they won't be directly reachable by the internet         
+
+After creating an Egress Only Internet Gateway, edit the Route Tables          
+
+## AWS PrivateLink - VPC Endpoint Services              
+
+Problem:           
+We have VPC in our account, and we have a service we have created our application and we want to expose that application to other VPCs in other accounts.         
+1. Option 1: Make it public         
+-> goes through the public www         
+-> tough to manage access           
+
+e.g. we have our servers VPC with our application service. And we have a bunch of customers VPC that have Internet Gateway (IGW) to access the internet. And we expose our application publicly.             
+
+2. Option 2: VPC Peering:          
+-> must create many peering relations        
+-> opens the *whole* network (not just that application we have created, but every other application in our VPC will be networkly accessible from the other VPC)               
+
+e.g. we create several Peering Connection and it is abit hard to manage.             
+
+Both way works, but not great              
+
+<img src="images/vpc_to_vpc.png" width="700">             
+
+AWS Private Link (VPC Endpoint Services)              
+
+1. most secure and scalable way to expose a service to 1000s of VPC (own or other accounts)          
+2. Does not require VPC peering, internet gateway, NAT, route table, etc.           
+3. Requires a network load balancer (Service VPC) and ENI (Customer VPC)          
+4. if the MLB is in multiple AZ, and the ENI in multiple AZ, the solution is fault tolerant !            
+
+e.g. we gave our service VPC and we have our application service. We want to access it from the customer VPC, which has consumer applications.             
+We create our NLB and ENI respectively.           
+And we want to link these two privately.            
+
+(EXAM) if you see any question that ask you to expose services from 1 VPC to anther, or 100s of VPC, think Private Link            
+
+<img src="images/aws_private_link.png" width="700">              
+
+AWS Private Link & ECS              
+
+You have a VPC with maybe 2 private subnets and ECS to run multiple tasks.        
+They are all exposed to a ALB.          
+For Private Link, you need to have a NLB.       
+We are going to create a NLB and connec it to our ALB.          
+Then we connect it to Private Link, and then we connect to the VPC with the ENI.           
+Or we can establish a direct connect or a site to site VPN connection to access that Private Link              
+
+<img src="images/aws_private_link_ecs.png" width="700">           
+
+## AWS ClassicLink             
+
+EC2-Classic & AWS ClassicLink (deprecated)         
+
+(EXAM) if you see them in exam, most likely they are distractor           
+
+**EC2-Classic**: instance run in a single network shared with other customers            
+**Amazon VPC**: your instances run logically isolated to your AWS account          
+
+**ClassicLink** allows you to link EC2-Classic instances to a VPC in your account          
+-> must associate a security group         
+-> enables communication using a private IPv4 addresses         
+-> removes the need to make use of public IPv4 addresses or Elastic IP addresses          
+
+## VPN CloudHub            
+
+Provides secure communication between sites, if you have multiple VPN connections           
+
+e.g. we would have multiple on-premise sites (say 3), and these sites maybe connected already through some privite network. But we want some alternative to connect these network together.           
+-> we can use VPN CloudHub          
+
+We establish VPN connections between each customer site and this VPN Cloudhub.          
+It will allow us to connect (e.g.) network 3 to network 1.           
+
+
+Low cost hub-and-spoke model for primary or secondary network connectivity between locations        
+
+It is a VPN connection so it goes over the public internet            
+-> but it is going to be encrypted          
+
+<img src="images/vpn_cloudhub.png" width="700">              
+
+## Transit Gateway            
+
+Network topologies can become complicated with VPC Peering to each VPC (or DX or VPN connection).               
+
+1. For having transitive peering between 1000s of VPC and on-premises, hub-and-spoke (star) connection         
+2. Regional resource, can work cross-region          
+3. Share cross-account using Resource Access Manager (RAM)          
+4. You can peer Transit Gateways across regions         
+5. Route Tables: limit which VPC can talk with other VPC           
+-> full control of all the routing within the transit gateway to give you network security             
+6. (EXAM) Supports **IP Multicast** (not supported by any other AWS service)              
+
+e.g. The Transit Gateway at the center that can connect multiple VPC through the Gateway. These VPC are connected transitively, so all the VPC can talk to each other.                           
+You can also connect to a Direct Connect Gateway, or VPN connection (for Site to Site connection)               
+
+<img src="images/transit_gateway.png" width="700">               
+
+**Transit Gateway: Site-to-Site VPN ECMP**                 
+
+Another use case of the Transit Gateway is to increase the bandwidth of your site-to-site VPN connection using ECMP            
+
+ECMP = Equal-cost multi-path routing          
+
+It is a routing strategy to allow to forward a packet over multiple best path          
+
+Use case: create multiple Site-to-Site VPN connections to **increase the bandwidth of your connections to AWS**              
+
+e.g. we have 4 VPC attached to our transit gateway, and we have a corporate data center that is connected using site-to-site VPN to a transit gateway.          
+When you establish a site-to-site VPN connection, there are actually 2 tunnels, one going forward and one going back.            
+When you are connecting site-to-site VPN into a VPC directly, both tunnels are used, one at a time.     
+But when using the transit gateway, two tunnels can be used at a time.           
+So with Gateway, you create a second site-to-site VPN attachment into your Transit Gateway.         
+You are increasing the throughput with 4 tunnels.            
+
+<img src="images/transit_ecmp.png" width="700">            
+
+**Transit Gateway: throughput with ECMP**           
+
+If you do VPN to Virtual Private Gateway:        
+You get 1 tunnel, 1 connection into 1 VPC            
+this connection gives you 1.5 Gbps         
+In this case VPN connection is made of 2 tunnels        
+
+If you are using a VPN into a Transit Gateway:          
+You  get one site-to-site VPN into many VPC.            
+1 site-to-site VPN connection gives you 2.5 gbps (2 tunnels are used)             
+we can add more site-to-site VPN connections into the Transit Gateway to increase throughput           
+
+<img src="images/ecmp_throughput.png" width="700">           
+
+**Transit Gateway - Share Direct Connect between Multiple Accounts**           
+
+We are going to establish a DX connection between your corporate DC and a DX location.           
+Then we are going to setup a Transit Gateway into both VPCs in two different accounts.       
+We connect the DX location into DX Gateway and connect the 2 Gateway.            
+This will share a Direct Connect connection between multiple accouts and multiple VPC            
+
+<img src="images/transit_dx.png" width="700">              
+
+(EXAM) the above architectures can come up in the exam !            
+
+## VPC Section Summary           
+
+1. CIDR: IP Range          
+2. VPC: Virtual Private Cloud => we define a list of IPv4 and IPv6 CIDR         
+3. Subnets: tied to an AZ, we define a CIDR within the subnet where our instances would be defined          
+4. Internet Gateway: at the VPC level, provide IPv4 and IPv6 internet access            
+5. Route Tables: Internet Gateway does not work on its own, must edit this table to add routes from subnets to the IGW, VPC Peering Connection, VPC Endpints, etc, based on the CIDR rule.                       
+6. NAT Instances: gives internet access to instances in private subnets. Old, must be setup in a public subnet, disable Source/Destination check flag          
+7. NAT Gateway: managed by AWS, provides scalable internet access to private instances, IPv4 only          
+8. Private DNS + Route 53: enable DNS Resolution + DNS hostnames (VPC)           
+9. NACL: stateless, subnet rules for inbound and outbound, don't forget ephemeral ports (otherwise certain traffic will not go through)        
+10. Security Groups: stateful, operates at the EC2 instance level         
+11. VPC Peering: connect 2 VPC with non overlapping CIDR, non-transitive        
+12. VPC Endpoints: provides private access to AWS Services (S3, DynamoDB, CloudFormation, SSM) within VPC         
+13. VPC Flow Logs: can be setup at the VPC/Subnet/ENI level, for ACCEPT and REJECT traffic, helps to identify attacks, analyse using Athena (data will be in S3) or CloudWatch Log Insights          
+14. Bastion Host: public instance to SSH into, that has SSH connectivity to instances in private subnets          
+15. Site-to-Site VPN: setup a Customer Gateway on DC, a Virtual Private Gateway on VPC, and site-to-site over public internet          
+16. Direct Connect: setup a Virtual Private Gateway on VPC, and establish a direct private connection to an AWS Direct Connection Location (alternative to Site to Site VPN, more expensive but private connection)          
+17. Direct Connect Gateway: setup a Direct Connect to many VPC in different regions (not the same as VPC peering)           
+18. Internet Gateway Egress: like a NAT Gateway, but for IPv6          
+19. Private Link/VPC Endpoint Services:         
+-> connect services privately from your service VPC to customers VPC            
+-> doesnt need VPC peering, public internet, NAT gateway, route tables           
+-> must be used with Network Load Balancer and ENI         
+20. ClassicLink: connect EC2-Classic instances privately to your VPC          
+21. VPN CloudHub: hub-and-spoke VPN model to connect your sites           
+22. Transit Gateway: transitive peering connection for VPC, VPN & DX            
+
+(NOTE) Max CIDR size in AWS is `/16`         
+
+
+## Networking Costs in AWS           
+
+Networking Costs in AWS per GB - Simplified          
+
+We have regions and 2 AZ in this region.         
+Assuming we have an EC2 instance in the first AZ.         
+Any traffic going into your EC2 instances are free.         
+Assuming we have a second EC2 instance in the same AZ.      
+Any traffic between your 2 EC2 instances are free if using private IP         
+
+Now we have an EC2 instance in another AZ. Using Public and Elastic IP will cost $0.02/GB          
+If using private IP, $0.01/GB         
+
+If you want to use your instances communiate faster and cheaper, use private IP as much as possible.           
+
+Now considering we have another region. Interregion traffic is $0.02/GB              
+
+-> use private IP instead of public IP for good savings and better network performance.        
+-> use same AZ for maximum savings (at the cost of high availability)             
+
+(EXAM) we have RDS database, and we want to create read replica and do some analytics. How do we create the read replica for the cheapest amount of money.         
+-> if we create the read replica in the same AZ, then you will not be charged for replicating from 1 DB to another DB in terms of network cost.        
+
+<img src="images/network_cost_1.png" width="700">             
+
+**Minimizing egress traffic network cost**            
+
+Egress traffic: outbound traffic (from AWS to outside)           
+Ingress traffic: inbound traffic - from outside to AWS (typically free)         
+
+Try to keep as much internet traffic within AWS to minimise costs           
+
+Say we have a database, then we have a user in a corporate data center and we run an application in our corporate data center.        
+That application is doing a query to the database and retrieving 100 MB of data from the DB.         
+The application do some analytics and return only 50KB data to user.           
+
+In this case the Egress traffic is very high.        
+
+Alternatively, we move the application into AWS Cloud. If we keep the data in the same AZ, then DB query data transfer is going to be free.         
+
+**Direct Connect location that are co-located in the same AWS region result in lower cost for egress network**      
+
+<img src="images/network_cost_2.png" width="700">             
+
+S3 Data Transfer Pricing - Analysis for USA            
+
+1. S3 ingress: free        
+2. S3 to Internet: $0.09/GB         
+3. S3 Transfer Acceleration:         
+-> faster transfer time (50 to 500% better)        
+-> additional cost on top of Data Transfer Pricing: + $0.04/GB to $0.08/GB         
+4. S3 to CloudFront: $0.00/GB            
+5. CloudFront to Internet: $0.085 per GB (slightly cheaper)           
+-> caching capability (lower latency)           
+-> reduce costs associated with S3 Requests Pricing (7x chpear with CloudFront)              
+6. S3 Cross Region Replication: S0.02/GB           
+
+<img src="images/network_cost_usa.png" width="700">            
+
+Pricing: NAT Gateway vs Gateway VPC Endpoint            
+
+We have a VPC in the region, and we have 2 private subnets with 2 different types of EC2 instances. And they both want to access data into an Amazon S3 bucket.             
+One way to do so is to use public internet        
+To do so we set up a public subnets which has a NAT Gateway.        
+For the subnet to be public we need to have a route into an Internet Gateway.       
+And then we have a direct connectivity from the EC2 instance through the NAT Gateway and through the Internet Gateway into the internet.       
+From the internet we access the data in your S3 bucket.           
+The prices associated is in Green.          
+
+Another way to do it is through VPC endpoint to access our data in S3 privately. The price is in Blue. So it could be cheaper.         
+
+<img src="images/network_cost_3.png" width="700">           
+
+## IPv6 for VPC           
+
+IPv4 cannot be disabled for your VPC and subnets          
+You can enable IPv6 (they are public IP addresses) to operate in dual-stack mode:          
+-> e.g. `2001:0db8:0000:0000:0000:ff00:0042:8329`          
+-> supports ~2^128 IPv6 addresses (vs 2^32 IPv4)         
+
+Your EC2 instances would get at least a private internal IPv4 and a public IPv6         
+
+They can communicate using either IPv4 and IPv6         
+
+IPv6 Troubleshooting       
+
+1. IPv4 cannot be disabled for your VPC and subnets        
+2. So if you cannot launch an instance in your subnet        
+-> it is not because it cannot acquire an IPv6 (the space is very large)        
+-> it is because there is no available IPv4 in your subnet you defined        
+3. Solution: create a new IPv4 CIDR in your subnet          
+
+# Disaster Recovery & Migrations           
+
 
 
 
