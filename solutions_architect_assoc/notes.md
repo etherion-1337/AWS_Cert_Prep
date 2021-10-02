@@ -7604,9 +7604,28 @@ Disaster Recovery Overview
 
 **RPO and RTO**             
 
+RPO
 
+Basically how often you run backups, or how back in time can you recover.            
+When a disaster strike, the time between the RPO and the disaster is going to be a data loss.         
+e.g. if you back up every hour, and the disaster strike then you can go back in time for an hour and so you will loss one hour of data.        
+So the RPO can be 1 hour or less.       
+Basically RPO is how much the data loss are you willing to accept in case of a disaster happens.         
+
+RTO        
+
+When you recover from disaster, how much downtime you application has.        
+So sometimes it is ok to have 24 hours of downtime.        
+
+Basically optimising for RPO and RTO does drives some solution architecture decisions.        
+Usually the smaller these 2 quantities to be, the higher the cost.        
 
 <img src="images/rpo_rto.png" width="700">        
+
+**Disaster Recovery Strategies**           
+
+1. Backup and Restore          
+
 
 <img src="images/dr_strat.png" width="700">             
 
