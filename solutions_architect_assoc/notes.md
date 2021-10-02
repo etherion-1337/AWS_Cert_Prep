@@ -7590,6 +7590,33 @@ IPv6 Troubleshooting
 
 ## Disaster Recovery in AWS         
 
+Disaster Recovery Overview            
+
+1. Any event that has a negative impact on a company's business continuity or finances is a disaster           
+2. DR is about preparing for and recovering from a disaster        
+3. What kind of DR we can do on AWS ?          
+-> On-premise to On-premise: traditional DR, and very expensive (e.g. we have a data center in California and another data center in Seattle)           
+-> On-premise to AWS Cloud: hybrid recovery (on-premise as the main data center, if any disaster, use the Cloud)             
+-> AWS Cloud Region A to AWS Cloud Region B: full Cloud DR             
+4. (EXAM) Need to define and understnad two key terms:           
+-> RPO: Recovery Point Objective           
+-> RTO: Recovery Time Objective            
+
+**RPO and RTO**             
 
 
+
+<img src="images/rpo_rto.png" width="700">        
+
+<img src="images/dr_strat.png" width="700">             
+
+<img src="images/backup_restore.png" width="700">             
+
+<img src="images/dr_pilotlight.png" width="700">             
+
+<img src="images/dr_warm.png" width="700">            
+
+<img src="images/dr_multi_site.png" width="700">            
+
+<img src="images/dr_multi_region.png" width="700">  
 
