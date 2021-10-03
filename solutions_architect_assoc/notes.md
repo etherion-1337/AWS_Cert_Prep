@@ -7732,6 +7732,53 @@ When I want to failover I will be able to go full production scale again in anot
 
 ## Database Migration Service (DMS)             
 
+Say you want to migrage a database from your on-premise systems to the AWS Cloud.            
+In this case you should use DMS.               
+
+1. Quick and securely migrate databases to AWS, resilient and self healing            
+2. The source database remains available during the migration.            
+3. Supports:        
+-> Homogeneous migrations: e.g. Oracle to Oracle            
+-> Heterogenous migration: e.g. Microsoft SQL Server to Aurora          
+4. Supports Continuous Data Replication using CDC (Change Data Capture)         
+5. You must create an EC2 instance to perform the replication tasks.          
+
+Your source database is maybe on-premise. And then you running EC2 instance that has the DMS software and it will pull the data from the source database and continuously put into the target database.          
+
+<img src="images/aws_dms.png" width="400">            
+
+**DMS Sources and Targets**             
+
+(EXAM) Don't have to remember them all         
+
+1. Sources:           
+-> On-premise and EC2 instances databases: Oracle, MS SQL Server, MySQL, MariaDB, PostgreSQL, MongoDB, SAP, DB2            
+-> Azure: Azure SQL Database          
+-> RDS: all including Aurora             
+-> S3         
+
+2. Targets:            
+-> On-Premise and EC2 instances databases: Oracle, MS SQL Server, MySQL, MariaDB, PostgreSQL, SAP           
+-> RDS           
+-> Redshift        
+-> DynamoDB       
+-> S3           
+-> ElasticSEarch Service                 
+-> Kinesis Data Streams         
+-> DocumentDB             
 
 
+**AWS Schema Conversion Tool (SCT)**               
 
+What if the source database and the target database do not have the same engine?           
+We need to use the SCT.           
+
+1. Convert your Database's SChema from one engine to another             
+2. e.g. OLTP: (SQL Server or Oracle) to MySQL, PostgreSQL, Aurora         
+3. e.g. OLAP: (Teradata or Oracle) to Amazon Redshift             
+
+The idea is that the source database has a different engine than the target data base. In the middle we have DMS
+
+<img src="images/aws_sct.png" width="700">            
+
+<img src="images/aws_dms_cr.png" width="700">          
