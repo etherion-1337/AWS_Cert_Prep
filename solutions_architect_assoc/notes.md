@@ -7959,3 +7959,99 @@ If you want to ensure that an event notification is sent for every successful wr
 
 ## Caching Strategies in AWS           
 
+This is a typical solution architecture showing below.        
+
+We have CloudFront in front of an API Gateway, which is in front of our application logic. Our application stores and uses data from the database and maybe you will use an internal cache such as Redis, Memcached and DAX.             
+That's for the dynamic route/content.       
+
+Maybe we also have an aesthetic content route in which our client goes through a CloudFront and the CloudFront will source data from S3.         
+
+1. CloudFront: they are doing caching at the edge. That means that they are doing caching as close as possible to our users. This means that if we enable caching in CloudFront, and the users do hit the cache, then they get a response right way and it is very quick. But because it is at the edge, there is a chance that things have changed in the backend, and hence the content at the edge is outdated. So we can use a TTL to make sure the cache is often renewed.          
+So we have a balancing act on how much more to cache at the edge vs how much we want to cache in the app logic.          
+
+2. API Gateway: It also has some caching capabilities, so it doesn't have to be used with CloudFront. The API Gateway is a regional service, and so in case we do use the cache at the API Gateway, then the cache will be regional.          
+This means that where there is going to be abit of networking lying between the clients and the API Gateway, if the cache is hit here.            
+
+3. App logic: Usually does not do any caching. But it will do caching in a cache that we could use such as Redis, Memcached or DAX if we have DynamoDB.          
+The idea here is that we don't want to repeatedly hit our database, which does not have any caching capability. The frequent queries or the complex queries, the result is stored into a shared cache that can be accessed by your app logic more easily.               
+
+4. Database (e.g. S3): no caching capability.                       
+
+As we move along this line of caching, the more we move alongside, the more there is going to be computation to cost and it is going to be a latency.             
+
+<img src="images/cache_strat.png" width="700">              
+
+Good question to ask:         
+1. where do you want to cache content ?          
+2. how do you want to cache content ?           
+3. how long you want to cache content ?         
+4. are we ok with some latency ?           
+5. which content actually do we want to be cached ?            
+
+## Blocking an IP Address in AWS                
+
+When a request comes from the client and goes all the way to your application, what exactly happened from the security POV ?             
+
+**Blocking an IP address**               
+
+e.g. we have an EC2 instance, in a security group, in a VPC and that instance has a public IP so it is publicly accessible.                 
+Our client want to get into the EC2 instance.            
+Say you want to block that client.        
+First line of defense is Network ACL in our VPC, which is at a VPC level. And in this NACL, we can create a deny rule for this client IP address. Quick, simple and cheap solution.          
+Then for EC2's security group, we cannot have deny rules we can only have allow rules. So if we know that only a small subset of authorised clients can access our EC2 instance, it is good to define just a subset of IP in our security group to allow our clients.          
+If our application is global, we don't know all the IP addresses that will access our applications. So the security group here will not very helpful.         
+Finally you could run an optional firewall software on your EC2 to block from within your software.        
+If the request has already reached your EC2 instance, then it will have to processed and it will be a CPU cost to process that request.               
+
+<img src="images/block_ip.png" width="700">             
+
+**Blocking an IP address - with an ALB**               
+
+Now we introduce an Application Load Balancer.          
+So this ALB is defined within our VPC and we still have our EC2 instance.         
+Now we have two security groups: we have the ALB security group and the EC2 security group            
+In this case our Load Balancer in this architecture is going to be in between our clients and our EC2 and it will do something called **Correction Termination**.          
+So the client actually connects to the ALB which will terminate the connection and intiate a new connection from the ALB into our EC2 instance.            
+In this case, our EC2 security group must be configured to allow the security group of ALB, because the EC2 instance can be deployed in a private subnet with a private IP and the source of the traffic it sees comes from the ALB, not the client.            
+So from EC2's perspective, we should only allow the security group of the ALB.            
+For the ALB security group we need to allow the clients and we can configure it if we know the IP range of the clients.        
+If global application we have to allow everything.         
+So the first line of defence is going to be the NACL.              
+
+<img src="images/block_ip_alb.png" width="700">             
+
+**Blocking an IP address - with an NLB**               
+
+For Network Load Balancer, there is no Correction Termination.          
+The traffic actually goes through our NLB and there is no such thing as a security group for a NLB.         
+The traffic is passed which means the client's IP is going through all the way to our EC2 instance.          
+Even if our EC2 instance sits within a private subnet and has a private IP.           
+If we know the source IPs of all the clients, we can define it in the EC2 security group.           
+But if we are trying to deny one IP address for our clients, the only line of defense here is our NACL.             
+
+<img src="images/block_ip_nlb.png" width="700">              
+
+**Blocking an IP address - ALB + WAF**              
+
+We have ALB and something we can do to deny an IP is to intall Web Application Firewall (WAF).           
+This WAF is going to be a bit more expensive because it is an additional service.             
+But in WAF we can do some complex filtering on IP address and we can establish rules that will count the requests to prevent a lot of requests going on at the same time from the clients.             
+
+So WAF is not a service between your client and your ALB, it is a service we install on the ALB.          
+
+<img src="images/block_ip_alb_waf.png" width="700">              
+
+**Blocking an IP address - ALB, CloudFront WAF**            
+
+Similarly if we use CloudFront in front of the ALB, CloudFront sits outside our VPC.         
+ALB needs to allow all the CloudFront's public IPs coming from the edge location and there is a list online.           
+ALB does not see the client's IP, but the CloudFront public IP.         
+So the NACL, which sits at VPC level is not helpful at all, because it cannot help us block the client IP address.             
+If we want to block clients from CloudFront we have 2 possibilities:         
+1. Say we are attacked by a country, we can use CloudFront's Geo Restriction           
+2. Or there is one specific IP that annoys us, we can again use WAF.              
+
+<img src="images/block_ip_alb_cf_waf.png" width="700">           
+
+## High Performance Computing (HPC) on AWS             
+
