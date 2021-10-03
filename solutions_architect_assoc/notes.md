@@ -7885,3 +7885,74 @@ In AWS Backup we create Backup Plans where we setup the frequency etc.
 We then assign AWS resources that we want to backup and automatically backed up to S3.                
 
 <img src="images/aws_backup.png" width="700">                      
+
+# More Solution Architectures                 
+
+## Event Processing in AWS       
+
+**Lambda, SNS and SQS**         
+
+1. The first one is to use SQS + Lambda.        
+
+The events are going to be inserted into SQS queue. And the Lambda service is going to poll the SQS queue and in case there are issues, it is going to put back the message into SQS. And try and retry to poll it (could lead to infinite loop).          
+If there is a big problem, we will send the message into Dead Letter Queue (DLQ) after a certain number of tries.          
+
+2. SQS FIFO + Lambda            
+
+The message is going to be processed in order. In case one message does not go through, it is going to be blocking the whole process if there is a problem.          
+In this case we have to send the message to DLQ.               
+
+3. SNS + Lambda         
+
+SNS is a service and the message goes through with it and the message is sent asynchronously to Lambda.          
+In case you cannot process that message, Lambda going to retry internally.            
+Message will be discarded after a few tries (e.g. 3) or send to DLQ, but this time is at Lambda service level to send that message into SQS Queue.         
+
+With SQS, the DLQ is setup on the SQS side, but for Lambda, the DLQ is setup at the Lambda side.            
+
+<img src="images/lambda_sns_sqs.png" width="700">              
+
+**Fan Out Pattern: Deliver to multiple SQS**           
+
+How to deliver data to multiple SQS queues ?            
+
+1. Option 1:         
+
+We have our application, and it has the AWS SDK installed on it, and we have say 3 SQS queues we would like to deliver a message onto. We can write our application to first send a message to the first queue, and then send a message to the second queue, and then send again to the third queue.         
+It will work but not reliable. If our application crushes after we send a message to the second queue, the third queue will never receive the last message and the contend of each queue will be different.            
+
+2. Option 2 (fan out pattern):               
+
+Combine your SQS queue with an SNS topic. Our SQS queues are going to be subscribers of our SNS topic.          
+Anytime we send a message to the SNS topic it will be sent by the SNS service into all of other SQS queues.            
+
+<img src="images/fanout_sqs.png" width="700">             
+
+**S3 Events**           
+
+We can combine these with adventing on S3.        
+
+We have events happening in our S3 buckets, and we want to react to them happening in real time.           
+We can react to `S3:ObjectCreated`, `S3:ObjectRestore` , etc.           
+We can even have a filter to just able to react to certain name in particular (e.g. `*.jpg`)           
+
+Use case: generate thumbnails of images uploaded to S3 in real time.                            
+
+e.g. we upload an object into S3 bucket and we can react in 3 dfferent ways.             
+
+1. The first one is to SNS. So we can send a notification directly into an SNS topic thanks to S3 events.            
+2. We can send a message into a SQS queue.            
+3. We can asynchronously invoke a Lambda function.              
+
+(EXAM) These are the only 3 possible destinations for your Amazon S3 events. But we can do alot of things downstream.         
+
+If it is SNS, we can fan out and send to multiple SQS queue.          
+If we have SQS queue, we can also create a Lambda function (or EC2 instance), to read the messages. If our Lambda function fails, the message remains in our SQS queue, which can be processed by another application.                     
+If Lambda, we can do whatever we want. If our Lambda fails, since it is asynchronous invocation, then we can define a DLQ (at the Lambda service level), which will send to SQS for later processing.           
+
+We can create as many "S3 events" as desired        
+S3 event notifications typically deliver events in seconds but can sometimes take a minute or longer          
+If two writes are made to a single non-versioned object at the same time, it is possible that only a single event notification will be sent.               
+If you want to ensure that an event notification is sent for every successful write, you can enable versioning on your bucket.            
+
+<img src="images/s3_events.png" width="700">           
