@@ -7956,3 +7956,6 @@ If two writes are made to a single non-versioned object at the same time, it is 
 If you want to ensure that an event notification is sent for every successful write, you can enable versioning on your bucket.            
 
 <img src="images/s3_events.png" width="700">           
+
+## Caching Strategies in AWS           
+
