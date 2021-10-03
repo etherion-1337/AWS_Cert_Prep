@@ -7625,17 +7625,113 @@ Usually the smaller these 2 quantities to be, the higher the cost.
 **Disaster Recovery Strategies**           
 
 1. Backup and Restore          
+2. Pilot Light           
+3. Warm Standby           
+4. Hot Site/Multi Site Approach          
 
+If you rank these strategies, all will have different RTO.            
+Back and restore will have the slowest RTO, while the rest has a faster RTO (less downtime) but will cost more money            
 
 <img src="images/dr_strat.png" width="700">             
 
+**Backup and Restore (High RPO)**              
+
+This means that you have a corporate data center and your AWS Cloud.          
+e.g. you have a S3 bucket, so if you want to back up your data over time, maybe we can use AWS Storage Gateway or have some lifecycle policy, put data into Glacier for cost optimisation purposes.         
+Or once a week we send a ton of data into Glacier using AWS Snowball.         
+If we using Snowball, your RPO is going to be about 1 week (since you send the Snowball device once a week).        
+
+If you are using the AWS Cloud instead, if you schedule regular snapshots and you back them up then you RPO is going to be (maybe) 24 hrs or 1 hr based on how frequently you create these snapshots.           
+
+When you have a disaster strike and you want to restore all your data. Then you can use AMIs to recreate EC2 instances and spin your applications or you can restore straight from a snapshot and recreate your Amazon RDS database.            
+This can take a lot of time as well to restore so you get a high RTO as well.              
+
+The reason here is that it is quite cheap to do backup and restore. We don't manage infrastructure in the middle, we just recreate infrastructure when we need it.           
+
+The only cost we have is the cost of storing these backups.        
+
+Summary: Backup and Restore is very easy, quite cheap but you get high RPO and high RTO               
+
 <img src="images/backup_restore.png" width="700">             
+
+**Disaster Recovery - Pilot Light**            
+
+1. A small version of the app is always running in the cloud          
+2. Useful for the critical core (pilot light)           
+3. Very similar to Backup and Restore         
+4. Faster than Backup and Restore as critical systems are already up         
+-> when you recover you just need to add on all the other systems that are not as critical           
+
+e.g. you are your corporate data center (server and database). In AWS Cloud, maybe you are going to do continuous data replication from your critical database into RDS.          
+The RDS is always running. The EC2 instance, they are not critical just yet (what is important is the data).          
+In case you have a disaster happening, Route53 will allow you fail over from your server on your data center, recreate that EC2 instance in the Cloud, and make it up and running.         
+But your RDS database is already running.            
+
+We get a lower RPO and lower RTO. In this case just the RDS database is running, the rest is not and EC2 instances only are brought up when you do a DR.            
+
+Pilot Light is a very popular choice, it is *ONLY* for critical core assistance.                  
 
 <img src="images/dr_pilotlight.png" width="700">             
 
+**Warm Standby**             
+
+1. Full system is up and running, but at minimum size           
+2. Upon disaster, we can scale it to production load         
+
+(e.g.) we have our corporate data center. We have the Reverse Proxy, app server and Master DB. Currently our Route53 is pointing the DNS to our corporate data center.              
+In the Cloud, we will still have our data replication to a RDS slave database that is running.          
+We have an EC2 ASG but running at minimum capacity that is currently talking to our corporate data center database.          
+And we have an ELB ready to go.          
+If a disaster strikes, we can use Route53 to failover to the ELB and we can use the failover to also change where our application is getting our data from (maybe now it is going to get from the RDS slave now).             
+
+This is more costly thing to do because we already have an ELB and EC2 ASG running at anytime.          
+We can decrease RPO and RTO doing that.          
+
 <img src="images/dr_warm.png" width="700">            
+
+**Multi Site/Hot Site Approach**                 
+
+1. Very low RTO (minutes or seconds) but very expensive         
+2. Full Production Scale in running AWS and On Premise           
+
+(e.g.) We have full production scale at both corporate data center and in AWS Cloud.           
+With data replication happening. Here we have hot site already running, your Route53 can route request to both your corporate data center and the AWS Cloud. This is called an active, active type of setup.             
+The failover can happen, your EC2 can failover to your RDS Slave database if neede be.          
+
+Cost alot of money.          
 
 <img src="images/dr_multi_site.png" width="700">            
 
-<img src="images/dr_multi_region.png" width="700">  
+**All AWS Multi Region**            
+
+If you want to go ALL Cloud, it will be the same kind of architecture. It will be a multi region so maybe we could use Aurora here.        
+So we have a master database in a region and then we have Aurora Global database that is being replicated to another region as slave.             
+When I want to failover I will be able to go full production scale again in another region if need to.              
+
+<img src="images/dr_multi_region.png" width="700">               
+
+**Disaster Recovery Tips**             
+1. Backup         
+-> EBS Snapshots, RDS automated backups/Snapshots, etc         
+-> regular pushes to S3/S3IA/Glacier, Lifecycle Polify, Cross Region Replication         
+-> from on-premise: Snowball or Storage Gateway        
+2. High Availability        
+-> use Route53 to migrate DNS over from Region to Region        
+-> RDS multi-AZ, ElastiCache multi-AZ, EFS, S3          
+-> Site to Site VPN as a recovery from Direct Connect         
+3. Replication       
+-> RDS Replication (Cross Region), AWS Aurora + Global Databases        
+-> Database replication from on-premise to RDS        
+-> Storage Gateway        
+4. Automation        
+-> CloudFormation/Elastic Beanstalk to re-create a whole new environment        
+-> Recover/Reboot EC2 instances with CloudWatch if alarms fail          
+-> AWS Lambda functions for customized automations          
+5. Chaos testing          
+-> Netflix has a "simian-army" randomly terminating EC2             
+
+## Database Migration Service (DMS)             
+
+
+
 
