@@ -7776,9 +7776,112 @@ We need to use the SCT.
 1. Convert your Database's SChema from one engine to another             
 2. e.g. OLTP: (SQL Server or Oracle) to MySQL, PostgreSQL, Aurora         
 3. e.g. OLAP: (Teradata or Oracle) to Amazon Redshift             
+4. (EXAM) You do not need to use SCT if you are migraing the same DB engine           
+-> e.g. On-Premise PostgreSQL => RDS PostgreSQL              
+-> the DB engine is still PostgreSQL (RDS is the platform)             
 
-The idea is that the source database has a different engine than the target data base. In the middle we have DMS
+The idea is that the source database has a different engine than the target data base. In the middle we have DMS and also it is running SCT. 
 
 <img src="images/aws_sct.png" width="700">            
 
+**DMS - Continuous Replication**            
+
+You have your Oracle DB (source) in the corporate date center. We have RDS for MySQL DB as the target in AWS.           
+We have 2 different kind of DB engine. So in this case we have to use SCT.               
+We setup a server with AWS SCT installed (on-premise, this is best practice).            
+We will do the schema conversion into our RDS.           
+Then we can setup a DMS instance, that will do the full load and the Change Data Capture (CDC) to have continuous replication.               
+So it will perform the data migration by reading the database on-premise, and inserting the data into your private subnet.            
+
 <img src="images/aws_dms_cr.png" width="700">          
+
+## On-Premises Strategies with AWS                 
+
+You need to know about the services that AWS offers at the high level to do On-Premise strategy with Cloud.             
+
+1. Ability to download Amazon Linux 2 AMI as a VM (.iso format)          
+-> you can load this iso image into common software that create VM: VMWare, KVM, VirtualBox (Oracle VM), Microsoft Hyper-V             
+-> this allows you to run Amazon Linux 2 on your own on-premise infrastructure             
+2. VM Import/Export              
+-> migrate existing VMs and applications into EC2           
+-> create a DR repository strategy for your on-premise VMs             
+-> Can export back the VMs from EC2 to on-premise          
+3. AWS Application Discovery Service             
+-> this is a servce that allows you to gather information about your on-premise servers to plan a migration          
+-> gives you server utilisation and dependency mappings            
+-> track with AWS Migration Hub            
+4. AWS Database Migration Service (DMS)            
+-> replicate On-Premise => AWS, AWS => AWS, AWS => On-Premise            
+-> works with various database technologies (Oracle, MySQL, DynamoDB, etc.)           
+5. AWS Server Migration Service (SMS)                
+-> this is for incremental replication of on-premise live servers to AWS          
+
+## DataSync - Overview              
+
+1. It is used to move large amount of dta from on-premise to AWS            
+2. Can synchronize to: Amazon S3 (any storage classes - including Glacier), Amazon EFS, Amazon FSx for Windows.         
+3. Move data from your NAS or file system via **NFS** or **SMB** protocol.            
+4. Replication tasks can be scheduled hourly, daily, weekly. (i.e. not continuous, it is scheduled)          
+5. Leverage the DataSync agent to connect to your systems           
+6. Can setup a bandwidth limit            
+
+e.g. Use DataSync to connect NFS/SMB protocol server into AWS (either S3 or EFS or FSx for windows)                   
+We have the NFS/SMB server on-premise. And we are going to install the AWS DataSync on-premise.           
+It will connect to your server using either the NFS or the SMB protocol. And then communicate using an encrypted connection into the DataSync service.                
+And the DataSync service can send the data to multiple places. It can send the data into S3 bucket of any storage classes, and also can send to an EFS file system or FSx file server.               
+
+<img src="images/datasync_1.png" width="700">                  
+
+Use case: EFS to EFS DataSync                  
+You want to synchronise an EFS file system across two regions. So we are going to have our first EFS file system in the first region and then a destination region.          
+In this case we are going to create an EC2 instance with the DataSync agent and connec to our EFS drive on the resource.              
+The DataSync Service endpoint on the other destination will synchronise the data into other EFS file system.            
+
+<img src="images/datasync_2.png" width="700">                
+
+## Transferring Large Datasets into AWS              
+
+Here we describe to you all the way you can transfer a large amount of data into AWS and which one is going to be the most appropriate based on the constraints you have.            
+
+e.g. Transfer 200TB of data in the Cloud. We have a 100 Mbps internet connection          
+1. Over the internet/Site-toSite VPN:            
+-> immediate to setup        
+-> will take 200(TB)x1000(GB)x(1000MB)x8(Mb)/100 Mbps = 16,000,000s = 185 days              
+2. Over Direct Connect 1 Gbps:         
+-> Long for the one-time setup (over a month)            
+-> will take 200(TB)x1000(GB)x8(Gb)/1 Gbps = 1,600,000s = 18.5 days             
+3. Over Snowball:          
+-> will take 2 to 3 snowballs in parallel              
+-> takes about 1 week for the end-to-end transfer        
+-> can be combined with DMS (if it is a database)                    
+4. For on-going replication/transfer: site-to-site VPN or DX with DMS or DataSync              
+
+## AWS Backup - Overview             
+
+1. Fully managed backup service              
+2. Centrally manage and automate backups across AWS services            
+3. No need to create custom scripts and manual processes               
+4. Supported services:           
+-> Amazon FSx        
+-> Amazon EFS          
+-> Amazon DynamoDB         
+-> Amazon EC2           
+-> Amazon EBS        
+-> Amazon RDS (all DBs engines)             
+-> Amazon Aurora              
+-> AWS Storage Gateway (Volume Gateway)             
+5. Supports cross-region backups          
+6. Supports cross-account backups            
+7. Supports Point-in-Time Recovery (PITR) for supported services            
+8. On-demand and Scheduled backups          
+9. Tag-based backup policies (e.g. tagged EC2 instances or EBS volume)           
+10. You create backup policies known as **Backup Plans**             
+-> Backup frequency (every 12 hours, daily, weekly, monthly, cron expression)           
+-> Backup window        
+-> Transition to Cold Storage (Never, Days, Weeks, Months, Years)          
+-> Retention Period (Always, Days, Weeks, Months, Years)            
+
+In AWS Backup we create Backup Plans where we setup the frequency etc.            
+We then assign AWS resources that we want to backup and automatically backed up to S3.                
+
+<img src="images/aws_backup.png" width="700">                      
