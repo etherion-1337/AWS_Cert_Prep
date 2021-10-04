@@ -8055,3 +8055,69 @@ If we want to block clients from CloudFront we have 2 possibilities:
 
 ## High Performance Computing (HPC) on AWS             
 
+1. The cloud is the perfect place to perform HPC.          
+2. You can create a very high number of resources in no time          
+3. You can speed up time to results by adding more resources         
+4. You can pay only for the systems you have used          
+
+Use case for HPC:        
+1. perform genomics         
+2. computational chemistry         
+3. financial risk modeling         
+4. weather prediction          
+5. machine learning         
+6. deep learning         
+7. autonomous driving           
+
+Which services help perform HPC ?          
+
+**Data Management & Transfer**             
+1. AWS Direct Connect:            
+-> move GB/s of data to the cloud, over a private secure network           
+2. Snowball & Snowmobile        
+-> move PB of data to the cloud       
+3. AWS DataSync            
+-> move large amount of data between on-premise and S3, EFS,FSx for Windows          
+
+**Compute and Networking**             
+1. EC2 Instances:           
+-> CPU optimised, GPU optimised instances           
+-> Spot Instances/Spot Fleets for cost savings + Auto Scaling           
+2. EC2 Placement Groups: **Cluster** for good network performance         
+
+<img src="images/aws_hpc.png" width="700">               
+
+3. EC2 Enhanced Networking (SR-IOV)            
+-> higher bandwidth, higher PPS (packet per second), lower latency          
+-> (EXAM) Option 1 (most recent and popular): **Elastic Network Adapter (ENA)** up to 100 Gbps          
+-> Option 2: Intel 82599 VF up to 10 Gbps - LEGACY           
+
+4. Elastic Fabric Adapter (EFA): distributed computation         
+-> improved ENA for **HPC**, only works for **Linux**            
+-> great for inter-node communications, **tightly coupled workloads**           
+-> leverages Message Passing Interface (MPI) standard (it will bypass the underlying Linux OS to provide even lower-latency and more reliable transport)                         
+
+**Storage**              
+1. Instance-attached storage:          
+-> EBS: scale up to 256,000 IOPS with io2 Block Express        
+-> Instance Store: scale to millions of IOPs, linked to EC2 instance, low latency        
+
+2. Network storage:        
+-> Amazon S3: large blob, not a file system        
+-> Amazon EFS: scale IOPS based on total size, or use provisioned IOPS         
+-> Amazon FSx for Lustre (dedicated to HPC):             
+--> HPC optimised distributed file system, millions of IOPS           
+--> backed by S3        
+
+**Automation and Orchestration**                
+1. AWS Batch           
+-> AWS Batch supports multi-node parallel jobs, which enables you to run single jobs that span multiple **EC2** instances.           
+-> Easily schedule jobs and launch EC2 instances accordingly         
+
+2. AWS ParallelCluster        
+-> open source cluster management tool to deploy HPC on AWS         
+-> configure with text files        
+-> automate creation of VPC, Subnet, cluster type and instance types       
+
+## EC2 Instance High Availability             
+
