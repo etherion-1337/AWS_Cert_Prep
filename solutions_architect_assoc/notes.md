@@ -8121,3 +8121,80 @@ Which services help perform HPC ?
 
 ## EC2 Instance High Availability             
 
+**Creating a highly available EC2 instance**            
+
+EC2 instance is launced in 1 AZ by default.          
+
+e.g. we have a public EC2 instance that is running a web server, and we want to be able to access the web server. So what we will do is that we will attach an Elastic IP to that EC2 instance, so our users can access our website directly through this Elastic IP.         
+
+Now we can have a standby EC2 instance, just in case things go wrong, that make our EC2 instance highly available.         
+We need to be able to failover to our standby EC2 instance. How do we know if something goes wrong ?          
+We need monitoring in place, and we can create a CloudWatch Event or a CloudWatch alarm, based on an event we know.           
+The CloudWatch alarm can watch out for CPU usage over 100% or any EC2 instance termination.           
+From the Alarm or the CloudWatch Events, you could trigger a Lambda function.        
+The Lambda function can issue API calls to start the instance if it hasn't been started yet.               
+It can issue API call to attach the Elastic IP to the standby instance.            
+It will detach the Elastic IP from the first instance (Elastic IP can only be attached to one instance at a time)                
+
+<img src="images/ha_ec2.png" width="700">              
+
+**Creating a highly available EC2 instance with an Auto Scaling Group**             
+
+We have an ASG in 2 AZ, and our user is going to talk to our application using an Elastic IP because it makes things a little bit simpler.          
+
+We say the minimum amount of instance is 1, maximum is 1, and we want 1 desired, and we specified it in 2 AZ.             
+The EC2 instance maybe in the first AZ or second AZ.           
+We can specifiy in the User Data upon spinning out the EC that the Elastic IP address attachment is based on tag.          
+This User Data will issue API calls and will be attached to our Public EC2 instance, and our users will be able to talk to our web server.            
+If this instance is being terminated, the ASG will terminate the first instance and create a replacement EC2 instance in another AZ. The second EC2 instance will attach the Elastic IP to it specified in User Data.        
+In this case we don't need CloudWatch Event or Alarm.                        
+The ASG will create new EC2 instance once one of the EC2 instance is being terminated.             
+
+We need to make sure that the EC2 instance has an instance rolem that allow API calls to attach the Elastic IP.         
+
+<img src="images/ha_ec2_asg.png" width="700">                       
+
+**Creating a highly available EC2 instance with ASG+EBS**               
+
+Our EC2 instance can be stateful and have an EBS volume.           
+In this case, we have an EBS volume attached to our EC2 instance.            
+EBS volume is locked into a specific AZ.        
+If our EC2 instance is being terminated, the ASG can use lifecycle hooks to create a script to take that EBS volume and create an EBS Snapshot from it.            
+The ASG will be launching a replacement EC2 instance, by properly defining the lifecycle hooks on launch event, we can create an EBS volume out of this EBS Snapshot into the correct AZ and attach it to the replacement EC2 instance.            
+Then the Elastic IP address can then be attached to the replacement EC2 instance.         
+
+<img src="images/ha_ec2_asg_ebs.png" width="700">      
+
+## Bastion Host High Availability            
+
+We have a VPC and we have 2 AZ. In each AZ there are public subnet and private subnet.           
+The whole idea of Bastion host is we want to be able to SSH into our EC2 instances that sits in a private subnet.              
+To do so our clients, which is in public internet needs to access a bastion host being deployed in the public subnet. We will do SSH into the Bastion Host on port 22. And from the Bastion host we will do SSH into the private subnet.            
+We can also use the Bastion Host SSH into another AZ's private subnet.          
+We want to make the Bastion Host highly available.          
+We can create another bastion host (it is basically EC2 instance) in another AZ.       
+Once we have 2 Bastion Host, how do we make our clients talk to one Bastion Host or another one ?         
+
+We can create a Network Load Balancer. The NLB will just transit the TCP level (layer 4), into the Bastion Host in each AZ. The NLB can be deployed into 2 different public subnet.       
+By connecting the the NLB, which is a fixed IP, we can directly connect to the NLB in the first AZ and then gets rerouted to the bastion host.          
+New clients can also be connected to the NLB in the second AZ, which will be directly connecting to the bastion host in the second AZ, which then connects to the EC2 instance behind them.              
+
+Because we have Bastion Host, we cannot use an Application Load Balancer becasue ALB works for HTTP layer but SSH is lower level at TCP.            
+
+HA option for the Bastion Host:          
+1. run 2 across 2 AZ, with NLB             
+2. run 1 across 2 AZ with 1 ASG 1:1:1             
+
+Routing to the Bastion Host:        
+1. if 1 bastion host, use an elastic IP with ec2 user-data script to access it           
+2. if 2 bastion host, use an NLB (layer 4) deployed in multiple AZ        
+3. if NLB, the bastion hosts can live in the private subnet directly         
+
+NoteL CANNOT use ALB as the ALB is layer 7 (HTTP protocol)                    
+
+<img src="images/bastion_ha.png" width="700">              
+
+# Other Services              
+
+## CICD Introduction               
+
