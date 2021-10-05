@@ -8208,7 +8208,7 @@ NoteL CANNOT use ALB as the ALB is layer 7 (HTTP protocol)
 6. Deployed often       
 7. Happier developer, as they are unblocked          
 
-<img src="images/aws_ci.png" width="700">             
+<img src="images/aws_ci.png" width="500">             
 
 **Continuous Deliver**           
 
@@ -8225,7 +8225,7 @@ As developer you push code often, the Build Server (such as CodeBuild) will get 
 Then every time that is a passing build, you may want to deploy this through deployment server (using CodeDeploy).           
 Then we get our application server which can be updated to later version after each build.             
 
-<img src="images/aws_cd.png" width="700">            
+<img src="images/aws_cd.png" width="500">            
 
 **AWS Technology Stack for CICD**             
 
@@ -8237,4 +8237,42 @@ You need to orchestrate all these tools one after another, you will need a pipel
 
 <img src="images/aws_cicd_stack.png" width="700">              
 
-## 
+## CloudFormation Intro
+
+CloudFormation is a declarative way of outlining your AWS Infrastructure, for any resources (most of them are supported)                           
+
+For example, within a CloudFormation template, you say:                
+-> I want a security group                
+-> I want two EC2 Instances using this security group                 
+-> I want an S3 bucket                
+-> I want a load balancer (ELB) in front of these machines                     
+
+Then CloudFormation creates those for you, in the **right order**, with the **exact configuration** that you specify.             
+
+Note that CloudFormation template can be supplied in `.yaml` format.           
+
+We can delete the stack in CloudFormation, it will automatically figure the order of which resources to be deleted. No need to go to individual services to delete resources (e.g. EC2 instance)
+
+**Benefits of AWS CloudFormation**:                      
+1. Infrastructure as code                  
+No resources are created manually, which is excellent for control (we will never ever create resources manually, like in this course so far)                     
+Changes to the infrastructure are reviewed through code (great way to operate in cloud)                  
+2. Cost               
+Each resources within the stack is tagged with an identifier so you can easily see how much a stack costs you                  
+You can estimate the costs of your resources using the CloudFormation template                        
+Saving strategy: e.g. in Dev, you could automation delete of templates at 5pm and recreated at 8am safely.                                    
+3. Productivity                     
+Ability to destroy and re-create an infrastructure on the cloud on the fly             
+Automated generation of Diagram for your templates                      
+Declarative programming (no need to figure out ordering and orchestration)                 
+4. Don't re-invent the wheel                 
+Leverage existing templates on the web               
+Leverage the documentation                    
+5. Supports (almost) all AWS resources:                     
+Everything we see in this course is supported              
+You can use "custom resources" for resources that are not supported              
+
+CloudFormation Stack Designer:              
+we can see all the resources and the relations between components                   
+
+(exam), CloudFormation is going to be used when we have infrastructure as code, when we need to repeat architecture in a different environment / region / AWS account. 
