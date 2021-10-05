@@ -8239,11 +8239,20 @@ You need to orchestrate all these tools one after another, you will need a pipel
 
 ## CloudFormation Intro
 
+Currently we have been doing alot of manual work
+All this manual work will be very touge to reproduce:         
+-> in another region       
+-> in another AWS account         
+-> within the same region if everything was deleted         
+Great if we have our infrastructure as code.           
+That code would be deployed and create/update/delte our infrastructure          
+
 CloudFormation is a declarative way of outlining your AWS Infrastructure, for any resources (most of them are supported)                           
 
 For example, within a CloudFormation template, you say:                
 -> I want a security group                
--> I want two EC2 Instances using this security group                 
+-> I want two EC2 Instances using this security group               
+-> I want 2 Elastic IPs for these EC2 machines              
 -> I want an S3 bucket                
 -> I want a load balancer (ELB) in front of these machines                     
 
@@ -8255,7 +8264,8 @@ We can delete the stack in CloudFormation, it will automatically figure the orde
 
 **Benefits of AWS CloudFormation**:                      
 1. Infrastructure as code                  
-No resources are created manually, which is excellent for control (we will never ever create resources manually, like in this course so far)                     
+No resources are created manually, which is excellent for control (we will never ever create resources manually, like in this course so far)            
+The code can be version controlled for example using git                     
 Changes to the infrastructure are reviewed through code (great way to operate in cloud)                  
 2. Cost               
 Each resources within the stack is tagged with an identifier so you can easily see how much a stack costs you                  
@@ -8265,14 +8275,53 @@ Saving strategy: e.g. in Dev, you could automation delete of templates at 5pm an
 Ability to destroy and re-create an infrastructure on the cloud on the fly             
 Automated generation of Diagram for your templates                      
 Declarative programming (no need to figure out ordering and orchestration)                 
-4. Don't re-invent the wheel                 
+4. Separation of concern: create many stacks for many apps, and many layers. e.g.:                  
+VPC stacks          
+Network stacks         
+App stacks         
+5. Don't re-invent the wheel                 
 Leverage existing templates on the web               
 Leverage the documentation                    
-5. Supports (almost) all AWS resources:                     
+6. Supports (almost) all AWS resources:                     
 Everything we see in this course is supported              
 You can use "custom resources" for resources that are not supported              
 
 CloudFormation Stack Designer:              
 we can see all the resources and the relations between components                   
 
-(exam), CloudFormation is going to be used when we have infrastructure as code, when we need to repeat architecture in a different environment / region / AWS account. 
+(exam), CloudFormation is going to be used when we have infrastructure as code, when we need to repeat architecture in a different environment / region / AWS account.             
+
+How CloudFormation Works           
+1. Template have to be uploaded in S3 and then referenced in CloudFormation           
+2. To update a template, we can't edit previous ones. We have to re-upload a new version of the template to AWS          
+3. Stacks are identified by a name         
+4. Deleting a stack deletes every single artifact that was created by CloudFormation           
+
+Deploying CloudFormation Templates          
+1. Manual way:        
+-> editing templates in the CloudFormation Designer         
+-> Using the console to input parameters, etc        
+2. Automated way:         
+-> editing templates in a YAML file          
+-> using the AWS CLI to deploy the templates           
+-> recommended way when you fully want to automate your flow          
+
+CloudFormation Building Blocks            
+**Templates components**:         
+1. Resources: your AWS resources declared in the template (MANDATORY)            
+2. Parameters: dynamic inputs for your template             
+3. Mappings: the static variables for your template           
+4. Outputs: references to what has been created         
+5. Conditionals: list of conditions to perform resource creation         
+6. Metadata           
+**Templates helpers**:        
+1. References        
+2. Functions         
+
+(EXAM) Don't have to remember all these, just remember your CloudFormation templates most importantly has resources, paramters and outputs.            
+
+Note: This is an introduction to CloudFormation.            
+1. can take over 3 hours to properly learn and master CloudFormation         
+2. The exam expect you to understand how to read CloudFormation          
+
+
