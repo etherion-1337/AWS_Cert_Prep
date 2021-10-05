@@ -8198,3 +8198,43 @@ NoteL CANNOT use ALB as the ALB is layer 7 (HTTP protocol)
 
 ## CICD Introduction               
 
+**Continuous Integration**           
+
+1. Developers push the code to a code repository often (Github/AWS CodeCommit/Bitbucket etc.)              
+2. A testing/build server checks the code as soon as it is pushed (AWS CodeBuild/Jenkins CI etc.)        
+3. The developer gets feedback about the tests and checks that have passed/failed          
+4. Find bugs early, fix bugs         
+5. Deliver faster as the code is tested           
+6. Deployed often       
+7. Happier developer, as they are unblocked          
+
+<img src="images/aws_ci.png" width="700">             
+
+**Continuous Deliver**           
+
+1. Ensure that the software can be released reliably whenever needed         
+2. Ensure deployments happen often and are quick          
+3. Shift away from "one release every 3 months" to "5 releases a day"         
+4. That usually means automated deployment          
+-> AWS CodeDeploy        
+-> Jenkinns CD        
+-> Spinnaker           
+-> etc       
+
+As developer you push code often, the Build Server (such as CodeBuild) will get the code, build and test.          
+Then every time that is a passing build, you may want to deploy this through deployment server (using CodeDeploy).           
+Then we get our application server which can be updated to later version after each build.             
+
+<img src="images/aws_cd.png" width="700">            
+
+**AWS Technology Stack for CICD**             
+
+1. Store code: we have AWS CodeCommit, similar to Github          
+2. Build and test: we have AWS CodeBuild, similar to Jenkins CI           
+3. Deploy and provisioning: AWS Elastic Beanstalk or manage your own EC2 instance Fleet using CloudFormation. To deploy to the EC2 fleet, you can use AWS CodeDeploy.               
+
+You need to orchestrate all these tools one after another, you will need a pipeline orchestrator, This is called AWS CodePipeline.                
+
+<img src="images/aws_cicd_stack.png" width="700">              
+
+## 
