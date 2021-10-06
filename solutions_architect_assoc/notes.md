@@ -8546,4 +8546,97 @@ How does it work ?
 -> obtain advice: get videos and documentations, generate reports, see the results in a dashboard         
 
 ## 1st pillar: Operational Excellence            
+                  
+Includes the ability to run and monitor systems to deliver business value and to continually improve supporting processes and procedures                       
 
+Design Principles:                    
+-> **perform operations as code** - Infrastructure as code (i.e. CloudFormation)                
+-> **annotate documentation** - automate the creation of annotated documentation after every build                   
+-> **make frequent, small, reversible changes** - so that in case of any failure, you can reverse it                    
+-> **refine operations procedures frequently** - and ensure that team members are familiar with it                 
+-> **anticipate failure**                
+-> **learn from all operational failures**                               
+
+e.g. transcribe in terms of AWS services                           
+<img src="images/op_exe.png" width="700">                       
+
+1. Use **CloudFormation** to prepare for everything (as infrastructure as code)              
+2. **Config** can be used to check for compliance of your **CloudFormation** templates                 
+3. Use **CloudFormation** to automate the operation                   
+4. Use **CloudTrail** to track all the API codes that are done                
+5. **CloudWatch** to track the performance over time of your stack                
+6. **X-Ray** trace API calls / HTTP requests to make sure they are working correctly (point to us where goes wrong)               
+7. Since we allow evolution, all the CICD tools are to be used: **CodeBuild, CodeCommit, CodeDeploy, CodePipeline**                           
+
+(exam) not needed for any of these services breakdown, just educative purposes.                     
+
+## 2nd Pillar: Security                  
+
+Includes the ability to protect information, systems and assets, while delivering business value through risk assessments and mitigation strategies                        
+
+Design Priciples:                            
+-> **implement a strong identity foundation** - centralize privilege management and reduce (or even eliminate) reliance on long-term credentials - Principle of Least Privilege - IAM                           
+-> **enable traceability** - integrate logs and metrics with systems to automatically respond and take action           
+-> **apply security at all layers** - like edge netowrk, VPC, subnet, load balancer, every instance, operating system and application                    
+-> **automate security best practices** - DO NOT do security manually                  
+-> **protect data in transit and at rest** - encryption, tokenization, and access control                  
+-> **keep people away from data** - reduce or eliminate the need for direct access or manual processing of data                   
+-> **prepare for security events** - run incident response simulations and use tools with automation to increase your speed for detection, investigation, and recovery                
+
+e.g. transcribe to AWS service:                  
+<img src="images/pillar_security.png" width="700">             
+
+1. Use **IAM** and **AWS-STS** (for generating temporary credentials), **MFA-token**, **AWS Organization**                  
+2. **Config** for compliance, **CloudTrail** looks at API calls that look suspicious, **CloudWatch** for metrics and may go out of the norm                       
+3. **CloudFront** is great first line of defence for DDoS attack, **VPC** to secure your network and make sure we set the right ACLs, **Shield** to protect your AWS account from DDoS, **WAS** and **Inspector** to look at the security of our EC2 instances                         
+4. **KMS** to encrypt all the data at rest, **S3** has tons of encryption mechanism, **ELB** etc all has their own encryptions                      
+5. **IAM** if there is an account being compromised we can remove the account, **CloudFormation** if someone deletes your entire infrastructure we can get it back to running state, **CloudWatch Events** can send us alert if someone delete something                      
+
+## 3rd Pillar: Reliability                     
+
+Ability of a system to recover from infrastructure or service disruptions, dynamically acquire computing resources to meet demand, and mitigate disruptions such as misconfigurations or transient network issues.                          
+
+Design Priciples:                   
+-> **test recovery procedures** - use automation to simulate different failures or to recreate scenarios that led to failures before                    
+-> **automatically recover from failure** - anticipate and remediate failures before they occur                   
+-> **scale horizontally to increase aggregate system availability** - distribute requests across multiple, smaller resources to ensure that they don't share a common point of failure                      
+-> **stop guessing capacity** - maintain the optimal level to satisfy demand without over or under provisioning - use auto scaling                    
+-> **manage change in automation** - use autnomation to make changes to infrastructure                     
+
+e.g. transcribe to AWS service:                 
+<img src="images/pillar_reliability.png" width="700">                        
+
+1. **IAM** make sure noone have too many rights to wreak havoc on your account, **VPC** for really strong fundation for networking, set/monitor service limit through **Service Limits**, **Trusted Advisor** allow us to look at these service limits.                                     
+2. **Auto Scaling** is great way to scale, **CloudWatch** is great for looking at metrics for your databases and applications                      
+3. Use **Backups** to back up data all along the way, **CloudFormation** to recreate the whole infrastructure, **S3** to backup all your data, use **Route 53** (DNS system) change route to another application stack                     
+
+## 4th Pillar: Performance Efficiency                         
+
+Includes the ability to use computing resources efficiently to meet system requirements, and to maintain that efficiency as demand changes and technologies evolve                         
+
+Design Principles:                      
+-> **democratize advanced technologies** - advanced technologies become services and hence you can focus more on product development                     
+-> **go global in minutes** - easy deployment in multiple regions                       
+-> **use serverless architecture** - avoid burden of managing the servers (everything scales for you, golden state)                 
+-> **experiment more often** - easy to carry out comparative testing                       
+-> **Mechanical sympathy** - be aware of all AWS services                     
+
+e.g. transcribe to AWS services:                      
+<img src="images/pillar_perform.png" width="700">                  
+
+Note that CloudFront cache content at edge, so new updates might take awhile to get updated for all your users.                  
+
+## 5th Pillar: Cost Optimization                      
+
+Includes the ability to run systems to deliver business value at the lowest price point                        
+
+Design Principles:                  
+-> **adopt a consumption mode** - pay only for what you use                  
+-> **measure overall efficiency** - use CloudWatch                     
+-> **stop spending money on data center operations** - AWS does the infrastructure part and enables customers to focus on organization projects                        
+-> **analyze and attribute expenditure** - accurate identification of system usage and costs, helps measure return on investment (ROI) - make sure to use tags                
+-> **use managed and application level services to reduce cost of ownership** - as managed services operate at cloud scale, they can offer a lower cost per transaction or service                       
+
+
+e.g. transcribe to AWS services:                    
+<img src="images/pillar_cost.png" width="700">     
