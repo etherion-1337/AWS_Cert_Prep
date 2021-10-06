@@ -8324,4 +8324,22 @@ Note: This is an introduction to CloudFormation.
 1. can take over 3 hours to properly learn and master CloudFormation         
 2. The exam expect you to understand how to read CloudFormation          
 
+When we delete CloudFormation stack, everything created by CloudFormation will be deleted.           
+
+## CloudFormation - Extra          
+
+**CloudFormation - StackSets**           
+
+1. It allows you to create or delete stacks across **multiple accounts and regions** with a single operation          
+2. Administrator account to create StackSets        
+3. Trusted accounts to create, update, delete stack instances from StackSets        
+4. When you update a stack set, *all* associated stack instances are updated throughout all accounts and regions.            
+
+e.g. We have the admin account where we define our StackSets and it is going to deploy into the Account A in us-east-1 but also in Account A in ap-south-1, and Account B in eu-west-2.           
+
+(EXAM) Anytime we see deploying a CloudFormation stack globally or across accounts, think no more than just StackSets. Don't think any scripts or anything custom.                                
+
+<img src="images/cf_stackset.png" width="500">         
+
+## Step Functions & SWF             
 
