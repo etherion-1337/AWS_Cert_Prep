@@ -8493,3 +8493,57 @@ Here's a quick cheat-sheet to remember all these services:
 17. SSO (Single Sign On): One login managed by AWS to log in to various business SAML 2.0-compatible applications (office 365 etc)              
 
 
+# WhitePapers and Architecture - AWS Certified Solution Architect Associate                 
+
+## Well Architected Framework Overview + Well Architected Tool         
+
+**Well Architected Framework - General Guiding Principles**                       
+
+1. Stop guessing your capacity needs           
+-> use auto scaling and scale on actual demand on your system is going to be                                      
+2. Test your systems at production scale          
+-> since in the cloud, we can add/remove resources easily                          
+-> make sure your system is ready when you actually publish to your customers                                      
+3. Automate to make architectural experimentation easier               
+-> infrastructure as code: easily create architecture on different account / region                 
+4. Allow for evolutionary architecture              
+-> need to design based on changing requirements                 
+5. Drive architectures using data               
+-> look at the actual usage/pattern/queries, then decide which services to be used in the architecture               
+6. Improve through game days                  
+-> e.g. simulate applications for flash sale days and this will stress your system                     
+
+**AWS Cloud Best Practices - Design Principles**          
+
+1. Scalability: vertical & horizontal              
+2. Disposable Resources: servers should be disposable & easily configured               
+-> back up data / architecture, should be able to recreate/reconfigure architecture easily                     
+3. Automation: serverless, Infrastructure as a Service, Auto Scaling, ...                
+4. Loose Coupling:                  
+-> *Monolith* are applications that do more and more over time, become bigger: hard to maintain/scale               
+-> intead we should break it down into smaller, loosely coupled components                   
+-> a change or a failuer in one component should not cascade to other components                
+5. think in terms of Service, not Servers:               
+-> don't use just EC2: EC2 would be used to translate from on-premises to the cloud.                   
+-> think in terms of services: use managed services, databases, serverless, etc.                         
+
+**5 Pillars for Well Architected Framework**:              
+1. Operational Excellence                    
+2. Security                  
+3. Reliability                   
+4. Performance Efficiency                    
+5. Cost Optimization                         
+
+They are not something to balace/trade-off, they are in synergy.                         
+
+**Well Architected Tool**         
+
+Free tool to **review your architectures** against 5 pillars Well-Architected Framework and **adopt architectural best practices**                         
+
+How does it work ?                      
+-> select your workload and answer questions                
+-> review your answers against the 5 pillars                    
+-> obtain advice: get videos and documentations, generate reports, see the results in a dashboard         
+
+## 1st pillar: Operational Excellence            
+
