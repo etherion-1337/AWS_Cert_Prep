@@ -8343,3 +8343,42 @@ e.g. We have the admin account where we define our StackSets and it is going to 
 
 ## Step Functions & SWF             
 
+**AWS Step Functions**           
+
+1. Build serverless visual workflow to orchestrate your (a lot of) Lambda Functions        
+2. (EXAM) Represent flow as JSON **state machine**           
+3. Features: sequence, parallel, conditions, timeouts, error handling, etc.         
+4. Can also integrate with EC2, ECS, On premise servers, API Gateway         
+5. Maximum execution time of 1 year         
+6. Possibility to implement human approval feature        
+7. Use cases:        
+-> order fulfillment         
+-> data processing        
+-> web applications        
+-> any workflow          
+
+**Visual workflow in Step Functions**             
+
+1. You are going to create a JSON state machine and it is going to give you a nice graph.          
+-> all these small boxes maybe a Lambda Function            
+2. When you actually start a job, you can see it as it happens, going through the chart.             
+3. When it is done, we can see the completed path it took            
+
+<img src="images/step_func_visual.png" width="700">             
+
+**AWS SWF - Simple Workflow Service**           
+(slightly older service)             
+
+1. Coordinate work amongst applications         
+2. Code runs on EC2 (not serverless)        
+3. 1 year max runtime         
+4. Concept of "activity step" and "decision step"          
+5. Has built-in "human intervention" step            
+
+e.g. order fulfilment from web to warehouse to deliver           
+
+**Step Functions is recommended to be used for new applications, except:**         
+-> if you need external signals to intervene in the process       
+-> if you need child processes that return values to parent processes        
+
+(EXAM) if you see SWF and Step Functions in the same question, just ask these questions above. But most likely it is going to be Step Functions.           
