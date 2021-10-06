@@ -8381,4 +8381,115 @@ e.g. order fulfilment from web to warehouse to deliver
 -> if you need external signals to intervene in the process       
 -> if you need child processes that return values to parent processes        
 
-(EXAM) if you see SWF and Step Functions in the same question, just ask these questions above. But most likely it is going to be Step Functions.           
+(EXAM) if you see SWF and Step Functions in the same question, just ask these questions above. But most likely it is going to be Step Functions.          
+
+## EMR           
+
+1. EMR = Elastic MapReduce           
+2. EMR helps creating **Hadoop cluster (Big Data)** to analyze and process vast amount of data         
+3. The clusters can be made of hundreds of EC2 instances        
+4. Supports Apache Spark, HBase, Presto, Flink          
+5. Auto-scaling and integrated with Spot instances         
+6. Use cases: data processing, machine learning, web indexing, big data            
+
+(EXAM) If you see Hadoop/Spark/Big Data processing, think EMR                
+
+## OpsWorks            
+
+*Chef* and *Puppet* (3rd party tools) help you perform server configuration automatically, or repetitive actions.                  
+They work great with EC2 & On-Premises VM              
+AWS OpsWorks = Managed Chef & Puppet               
+**It is an alternative to AWS SSM**           
+But only provision **standard AWS resources**:              
+EC2 Instances, Databases, Load Balancer, EBS volumes ...                  
+
+(EXAM) OpsWorks are simple to reason about, anytime you see **chef** or **Puppet**, you need to think about OpsWorks             
+
+**Quick word on Chef/Puppet**              
+1. They help with managing configuration as code            
+2. Helps in having consistent deployments         
+3. Works with Linux/Windows          
+4. Can automate: user accounts, cron, ntp, packages, services            
+5. They leverge "Recipes" or "Manifests" (basically code to apply)                   
+6. Chef/Puppet have similarities with SSM/Beanstalk/CloudFormation but they are open-source tools that work cross-cloud             
+
+It is quite similar to the 3-tier web application where we use Beanstalk to deploy our application.               
+The only reason why we would use OpsWorks in AWS if we already are using Chef and Puppets before migrating to AWS, and we want to reuse our Chef and Puppet templates to work on AWS.              
+
+## AWS Workspaces         
+
+1. Managed, Secure Cloud Desktop          
+2. Great to eliminate management of on-premise VDI (Virtual Desktop Infrastructure)         
+3. On Demand, pay by usage          
+4. Secure, Encrypted, Network Isolation         
+5. Integrated with Microsoft Active Directory         
+-> if you use the Microsoft AD to access the VDI, then you can use the same accout to access your seucre cloud desktop with WorkSpaces            
+
+You as a user can get a desktop provisioned through WorkSpaces. From the desktop which is a secure connection from you and desktop, maybe you can access securely your corporate data center infrastructure or AWS Cloud.             
+
+<img src="images/aws_workspace.png" width="700">              
+
+(EXAM) when we use WorkSpaces, usually when you see words like VDI e.g. how do you place a VDI infrastructure where WorkSpaces is the answer. Secure Log, and stop/replacement of VDI.           
+
+## AppSync              
+
+1. Store and sync data across mobile and web app in real-time          
+2. **Make use of GraphQL (mobile technology from Facebook)**        
+3. Client code can be generated automatically          
+4. Integrations with DynamoDB/Lambda          
+5. Real-time subscriptions            
+6. Offline data synchronisation (replaces Cognito Sync)         
+7. Fine Grained Security              
+
+(EXAM) when you see synchronizing data between mobile and webapp in real time, it is going to be either Cognito Sync or AppSync. If you see GraphQL on AWS, then it is AppSync.       
+
+## Cost Explorer           
+
+This is a billing service, common use case include EC2 usage optimisations.                      
+
+1. Visualise, understand, and manage your AWS costs and usage over time           
+2. Create custom reports that analyze cost and usage data          
+3. Analyze your data at a high level: total costs and usage across all accounts           
+4. Or Monthly, Hourly, resource level granularity          
+5. Choose an optimal **Saving Plan** (to lower prices on your bill)            
+6. **Forecast usage up to 12 months based on previous usage**           
+
+## AWS Extra Services CheatSheet      
+
+Here's a quick cheat-sheet to remember all these services:
+
+1. CodeCommit: service where you can store your code. Similar service is GitHub          
+
+2. CodeBuild: build and testing service in your CICD pipelines             
+
+3. CodeDeploy: deploy the packaged code onto EC2 and AWS Lambda            
+
+4. CodePipeline: orchestrate the actions of your CICD pipelines (build stages, manual approvals, many deploys, etc)             
+
+5. CloudFormation: Infrastructure as Code for AWS. Declarative way to manage, create and update resources.              
+
+6. ECS (Elastic Container Service): Docker container management system on AWS. Helps with creating micro-services.                
+
+7. ECR (Elastic Container Registry): Docker images repository on AWS. Docker Images can be pushed and pulled from there             
+
+8. Step Functions: Orchestrate / Coordinate Lambda functions and ECS containers into a workflow               
+
+9. SWF (Simple Workflow Service): Old way of orchestrating a big workflow.                 
+
+10. EMR (Elastic Map Reduce): Big Data / Hadoop / Spark clusters on AWS, deployed on EC2 for you               
+
+11. Glue: ETL (Extract Transform Load) service on AWS              
+
+12. OpsWorks: managed Chef & Puppet on AWS               
+
+13. ElasticTranscoder: managed media (video, music) converter service into various optimized formats               
+
+14. Organizations: hierarchy and centralized management of multiple AWS accounts              
+
+15. Workspaces: Virtual Desktop on Demand in the Cloud. Replaces traditional on-premise VDI infrastructure              
+
+16. AppSync: GraphQL as a service on AWS               
+
+17. SSO (Single Sign On): One login managed by AWS to log in to various business SAML 2.0-compatible applications (office 365 etc)              
+
+
