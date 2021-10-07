@@ -8588,7 +8588,7 @@ e.g. transcribe to AWS service:
 
 1. Use **IAM** and **AWS-STS** (for generating temporary credentials), **MFA-token**, **AWS Organization**                  
 2. **Config** for compliance, **CloudTrail** looks at API calls that look suspicious, **CloudWatch** for metrics and may go out of the norm                       
-3. **CloudFront** is great first line of defence for DDoS attack, **VPC** to secure your network and make sure we set the right ACLs, **Shield** to protect your AWS account from DDoS, **WAS** and **Inspector** to look at the security of our EC2 instances                         
+3. **CloudFront** is great first line of defence for DDoS attack, **VPC** to secure your network and make sure we set the right ACLs, **Shield** to protect your AWS account from DDoS, **WAF** and **Inspector** to look at the security of our EC2 instances                         
 4. **KMS** to encrypt all the data at rest, **S3** has tons of encryption mechanism, **ELB** etc all has their own encryptions                      
 5. **IAM** if there is an account being compromised we can remove the account, **CloudFormation** if someone deletes your entire infrastructure we can get it back to running state, **CloudWatch Events** can send us alert if someone delete something                      
 
@@ -8606,7 +8606,7 @@ Design Priciples:
 e.g. transcribe to AWS service:                 
 <img src="images/pillar_reliability.png" width="700">                        
 
-1. **IAM** make sure noone have too many rights to wreak havoc on your account, **VPC** for really strong fundation for networking, set/monitor service limit through **Service Limits**, **Trusted Advisor** allow us to look at these service limits.                                     
+1. **IAM** make sure no one have too many rights to wreak havoc on your account, **VPC** for really strong fundation for networking, set/monitor service limit through **Service Limits** (now called **Service Quotas**), **Trusted Advisor** allow us to look at these service limits.                                     
 2. **Auto Scaling** is great way to scale, **CloudWatch** is great for looking at metrics for your databases and applications                      
 3. Use **Backups** to back up data all along the way, **CloudFormation** to recreate the whole infrastructure, **S3** to backup all your data, use **Route 53** (DNS system) change route to another application stack                     
 
@@ -8637,6 +8637,56 @@ Design Principles:
 -> **analyze and attribute expenditure** - accurate identification of system usage and costs, helps measure return on investment (ROI) - make sure to use tags                
 -> **use managed and application level services to reduce cost of ownership** - as managed services operate at cloud scale, they can offer a lower cost per transaction or service                       
 
-
 e.g. transcribe to AWS services:                    
-<img src="images/pillar_cost.png" width="700">     
+<img src="images/pillar_cost.png" width="700">             
+
+## AWS Trusted Advisor Overview            
+
+We would like to have a high-level account assessment, no need to install anything              
+
+**Analyze your AWS accounts and privdes recommendation** (it will analyze 5 types of problems on your account):          
+1. cost optimisation            
+2. performance              
+3. security (free)           
+4. fault tolerance              
+5. service limits (free)               
+
+Two tiers:            
+1. Core Checks and recommendations - all customers (Security, Service Limits only it seems)            
+-> can enable weekly email notification from the console           
+2. Full Trusted Advisor - Available for **Business & Enterprise** support plans                  
+-> ability to set CloudWatch alarms when reaching limits               
+-> **programmatic access using AWS Support API**                     
+
+Trusted Advisor Checks Example:             
+1. Cost Optimization:          
+-> low utilisation EC2 instances, idel load balancer, under-utilized EBS volumes                 
+-> reserved instances & savings plans optimizations               
+2. Performance:                
+-> high utilization EC2 instance, CloudFront CDN optimization           
+-> EC2 to EBS throughput optimization, Alias records recommendations                 
+3. Security:         
+-> MFA enabled on Root Account, IAM key rotation, exposed Access Keys                 
+-> S3 Bucket permissions for public access, security groups with unrestricted ports           
+4. Fault Tolerance:              
+-> EBS snapshots age, AZ Balance              
+-> ASG/RDS multi-AZ or not, ELB configuration, etc            
+5. Service Limits                
+
+## Examples of Architecture - AWS Certified Solution Architect Associate               
+
+We have explored the most important architectural patterns:          
+1. classic: EC2, ELB, RDS, ElasticCache etc         
+2. serverless: S3, Lambda, DynamoDB, CloudFront, API Gateway etc               
+
+If you want to see more architecture, there are 2 links on AWS:            
+1. `https://aws.amazon.com/architecture/`             
+2. `https://aws.amazon.com/solutions/`               
+
+# Preparing for the Exam           
+
+## Exam Tips         
+
+If a solution seems feasible but highly complicated, it is probably wrong           
+
+
