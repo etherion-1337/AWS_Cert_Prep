@@ -466,7 +466,48 @@ Spot instances: the hotel allows people to bid for the empty rooms and the highe
 Dedicated: we book entire building of the resort.        
 
 An example of cost comparison using m4.large instance:    
-<img src="images/m4_large.png" width="700">   
+<img src="images/m4_large.png" width="700">         
+
+## Spot Instances & Spot Fleet    
+
+Can get a discount of up to 90% compared to On-Demand          
+
+Define **max spot price** and get the instance while **current spot price < max**              
+-> the hourly spot price varies based on offer and capacity             
+-> if the current spot price > your max price you can choose to **stop** or **terminate** your instance with a 2 minutes grace period              
+Other strategy: **Spot Block**            
+-> "block" spot instance during a specified time frame (1 to 6 hours) without interruptions                
+-> in rare situations, the instance may be reclaimed             
+
+Used for batch jobs, data analysis, or workloads that are resilient to failures.               
+Not great for critical jobs or databases                
+
+How do we terminate a spot instance ?                 
+
+<img src="images/terminate_spot.png" width="700">                          
+
+Consider a spot request: we are defining how many instances we want, maximum price we are willing to pay, launching specifications (AMI etc) and when our request is *valid from* and *valid until* and **request type**.             
+There are 2 types of request types: **one-time request** or **persistent request**                
+
+If it is a **one-time request**, as soon as your spot request is fulfiled, our instances are going to be launched and then the spot request **GOES AWAY**. If it is a **persistent**, this means that we want these requested instance as long as the spot request is valid from to valid until. This means that if the instances do get stopped/interrupted, then our spot requests will go back into action. AWS will restart spot instances for us when the conditions are met.                
+
+We can only cancel Spot Instance requests that are open, active or disabled.               
+Cancelling a spot request DOES NOT terminate instances (its our responsibility to terminate these spot instances).             
+We must first cancel a spot request, and then terminate the associated spot instances, else the spot request will re-start the instances.                 
+
+**Spot Fleets**                  
+Spot Fleets = set of Spot Instances + (optional) On-demand Instances                  
+The Spot Fleets will try to meet the target capacity with price constraints               
+-> define possible launch pools: instance type (m5.large), OS, AZ               
+-> we can have multiple launch pools, so that the fleet can choose. The fleet can choose the best and most appropriate launch pool for you                  
+-> Spot Fleet stops launching instances when reaching capacity or max cost            
+
+Strategies to allocate Spot Instances (EXAM):                
+-> lowestPrice: from the pool with the lowest price (cost optimization, short workload)           
+-> diversified: distributed across all pools (great for availability, long workloads)               
+-> capacityOptimized: pool with the optimal capacity for the number of instances                 
+
+Spot Fleets allow us to automatically request Spot Instances with the lowest price, i.e. Spot Fleet gives us an extra saving based on spot instances because it is smart enough to choose the right spot instance pools to allow us to get the maximum amount of savings.          
 
 # EC2 - Solution Architect Associate Level             
 
@@ -525,46 +566,6 @@ If your machine is stopped and then started, the public IP can change
 
 We can find the Elastic IP in the EC2 console (under Network & Security), and we can allocate a new IP address from Amazon's pool of IPv4 addresses. By doing this we can create an IP address we own now, and this can be allocated to a specific EC2 instance. Now if we stop and restart an EC2 instance with an Elastic IP, (the public IPv4 is going to be the same as the Elastic IP associated to this EC2 instance), the Public IPv4 will remain the same.                
 
-## Spot Instances & Spot Fleet    
-
-Can get a discount of up to 90% compared to On-Demand          
-
-Define **max spot price** and get the instance while **current spot price < max**              
--> the hourly spot price varies based on offer and capacity             
--> if the current spot price > your max price you can choose to **stop** or **terminate** your instance with a 2 minutes grace period              
-Other strategy: **Spot Block**            
--> "block" spot instance during a specified time frame (1 to 6 hours) without interruptions                
--> in rare situations, the instance may be reclaimed             
-
-Used for batch jobs, data analysis, or workloads that are resilient to failures.               
-Not great for critical jobs or databases                
-
-How do we terminate a spot instance ?                 
-
-<img src="images/terminate_spot.png" width="700">                          
-
-Consider a spot request: we are defining how many instances we want, maximum price we are willing to pay, launching specifications (AMI etc) and when our request is *valid from* and *valid until* and **request type**.             
-There are 2 types of request types: **one-time request** or **persistent request**                
-
-If it is a **one-time request**, as soon as your spot request is fulfiled, our instances are going to be launched and then the spot request **GOES AWAY**. If it is a **persistent**, this means that we want these requested instance as long as the spot request is valid from to valid until. This means that if the instances do get stopped/interrupted, then our spot requests will go back into action. AWS will restart spot instances for us when the conditions are met.                
-
-We can only cancel Spot Instance requests that are open, active or disabled.               
-Cancelling a spot request DOES NOT terminate instances (its our responsibility to terminate these spot instances).             
-We must first cancel a spot request, and then terminate the associated spot instances, else the spot request will re-start the instances.                 
-
-**Spot Fleets**                  
-Spot Fleets = set of Spot Instances + (optional) On-demand Instances                  
-The Spot Fleets will try to meet the target capacity with price constraints               
--> define possible launch pools: instance type (m5.large), OS, AZ               
--> we can have multiple launch pools, so that the fleet can choose. The fleet can choose the best and most appropriate launch pool for you                  
--> Spot Fleet stops launching instances when reaching capacity or max cost            
-
-Strategies to allocate Spot Instances (EXAM):                
--> lowestPrice: from the pool with the lowest price (cost optimization, short workload)           
--> diversified: distributed across all pools (great for availability, long workloads)               
--> capacityOptimized: pool with the optimal capacity for the number of instances                 
-
-Spot Fleets allow us to automatically request Spot Instances with the lowest price, i.e. Spot Fleet gives us an extra saving based on spot instances because it is smart enough to choose the right spot instance pools to allow us to get the maximum amount of savings.           
 
 ## EC2 Placement Groups
 
