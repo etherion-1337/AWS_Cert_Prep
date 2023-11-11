@@ -32,10 +32,16 @@ They are connected with high bandwidth, ultra-low latency networking
 They are linked together and form a region                 
 
 **AWS Points of Presence (Edge Locations)**                             
-Amazon has 216 Points of Presence (205 Edge Locations & 11 Regional Caches) in 84 cities across 42 countries.               
+Amazon has 400+ Points of Presence (400+ Edge Locations & 10+ Regional Caches) in 90+ cities across 40+ countries.               
 Content is delivered to end users with lower latency                
 
-From Global Infrastrucutre, we can see which services are available within region.               
+From Global Infrastrucutre, we can see which services are available within region.            
+
+Most of AWS services are region-scoped, only a few are Global services, below are some examples:      
+1. Identity and Access Management (IAN)
+2. Route 53 (DNS service)
+3. CloudFront (Content Delivery Network)
+4. WAF (Web Application Firewall)
 
 # IAM & AWS CLI           
 
