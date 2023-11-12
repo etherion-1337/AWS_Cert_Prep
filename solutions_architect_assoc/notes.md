@@ -263,15 +263,17 @@ The EC2 User Data Script runs with the root user (any command you have will have
 2. Choose region (e.g. closest to you)
 3. Go to `Instances` on the right panel and `Launch Instance`
 4. Choose Amazon Machine Image (AMI), we can choose from Quick Start and select Amazon Linux 2 AMI (64-bit x86) which is free-tier eligible.          
-5. Choose an Instance Type (e.g. t2.micro for free tier), note that we are launching the instances in a default VPC (if we don't change the settings)          
-6. Configure Instance Details: Under `User Data` we can run a user data which is only run at the first boot of the instance. (an example script is given, which is going to launch a web server onto our EC2 instance and write a file to it)
-7. Add Storage (check `Delete on Termination`)
-8. Add tags
-9. Configure Security Group: create a new security group and Add Rule (HTTP, port 80)
-10. Review and launch (will be prompted to use a key pair (for SSH)) 
-11. Create a new key-pair (public-private key) and download the key pair
+5. Choose an Instance Type (e.g. t2.micro for free tier), note that we are launching the instances in a default VPC (if we don't change the settings)      
+6. Set up key pair (if using SSH). The SSH rule will be added into Security Group setting below.      
+7. Add Storage (`Delete on Termination` is default to be Yes)
+8. Configure Instance Details: Under `User Data` we can run a user data which is only run at the first boot of the instance. (an example script is given, which is going to launch a web server onto our EC2 instance and write a file to it)
+9. Add tags
+10. Configure Security Group: create a new security group and Add Rule (HTTP, port 80)
+11. Review and launch (will be prompted to use a key pair (for SSH)) 
 
 We can then use the public IPv4 address to access the website. To stop the instance, we can right click the instance and `Stop Instance`. To get rid of the instance, choose `Terminate Instance`.       
+
+On an EBS-backed instance, the default action is for the root EBS volume to be deleted when the instance is terminated. Storage on any local drives will be lost.
 
 Note that if we stop an instance and restart it again, the public IPv4 **is going to change**. The private IPv4 will not change.        
 
@@ -282,6 +284,15 @@ m5.2Xlarge
 m: **instance class**, in this case a general purpose instance         
 5: **generation** of the instance (AWS improves them over time)         
 2xlarge: **size** within the instance class         
+
+There are currently 7 types of EC2 instances class/types (2023):             
+1. General purpose         
+2. Compute Optimized
+3. Memory Optimized
+4. Accelerated Computing
+5. Storage Optimized
+6. Instance Features
+7. Measuring Instance Performance
 
 **For exam we need to know this**, for various EC2 Instance Types:              
 1. General Purpose        
@@ -300,7 +311,8 @@ Great for compute-intensive tasks that require high performance processors:
 -> High performance computing (HPC)            
 -> Scientific modeling and machine learning            
 -> Dedicated gaming servers               
-Currently all the Compute Optimized EC2 Instance start with `c`, e.g. c5 or c6.     
+Currently all the Compute Optimized EC2 Instance start with `c`, e.g. c5 or c6.    
+These servers have good CPU. 
 
 3. Memory Optimized                
 Fast performance for workloads that process large data sets in memory (RAM)       
@@ -309,7 +321,7 @@ Use cases includes:
 -> Distributed web scale cache stores                
 -> In-memory databases optimzed for BI           
 -> Applications performing real-time processing of big unstructured data                   
-These instances starts with `r`.             
+These instances starts with `r` and `z`.             
 
 4. Storage Optimized                      
 Great for storage-intensive tasks that require high, sequential read and write access to large data sets on local storage     
@@ -320,6 +332,8 @@ Use cases include:
 -> Data warehousing applications                 
 -> Distributed file systems           
 These instance starts with `i`, `d` or `h1`.        
+
+website to compare EC2 instances: `https://instances.vantage.sh/`
 
 ## Security Groups & Classic Ports Overview
 
