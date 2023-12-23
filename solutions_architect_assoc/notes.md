@@ -413,45 +413,54 @@ There is another way to connect to an EC2 Instance directly from AWS. We can cli
 
 After we connect to our EC2 Instance (via EC2 Connect) with our user, if we perform something like `aws iam list-users`, the CLI will prompt us to configure AWS to get our credentials. We can use `aws configure` to enter AWS Access Key ID and Secret Access Key but it is very bad practice. We can attach a Role to this instance (for example a Role with `IAMReadOnlyAccess` could allow us to run `aws iam list-users` without inputing credential again)                
 
-## EC2 Instance Launch Types
+## EC2 Instance Purchasing Options
 
 EC2 Instances purchasing options:         
 1. On-Demand Instances: short workload, predictabel pricing     
 Sometimes we will need to use the serve for a long time and we can get some cost saving through:        
-2. Reserved(**minimum 1 year**): 3 types       
+2. Reserved (1 and 3 years):             
 -> Reserved Instances: long workload (e.g. database)       
--> Convertible Reserved Instances: long workload with flexible instances       
--> Scheduled Reserved Instances: example, every Thurs 3-6 pm     
+-> Convertible Reserved Instances: long workload with flexible instances    
+3. Savings Plans (1 and 3 years): commitment to an amount of usage (in dollars) instead of instance type, long workload.       
 3. Spot Instances: short workloads, cheap, can lose instances (less reliable)      
 4. Dedicated Host: book an entire physical server, control instance placement        
+5. Capacity Reservations: reserve capacity in a specific AZ for any duration      
 
 Exam will ask you question and expect us to find the best of EC2 for various situations for cost saving or comply with some rules.    
 
 **EC2 On Demand**:      
 We pay for what we use:       
--> Linux machine: billing per second, after the first minute         
--> All other OS: billing per hour when instance is running      
+-> Linux or Windows: billing per second, after the first minute         
+-> All other OS: billing per hour      
 Has the *highest* cost but no upfront payment      
 No long-term commitment        
 
 Recommended for **short-term** and **un-interrupted workloads**, where you cannot predict how the application will behave.      
 
 **EC2 Reserved Instances**:       
-Up to 75% discount compared to On-Demand.        
+Up to 72% discount compared to On-Demand.        
 Reservation period: 1 year = + discount | 3 years = +++ discount (ONLY 1 or 3 years, not any time in between)       
-Purchasing options: no upfront | partial upfront = + discount | All upfront = ++ discount        
-Reserve a specific instance type (t2.micro etc)      
-
+Purchasing options: no upfront = + discount | partial upfront = ++ discount | All upfront = +++ discount        
+Reserve a specific instance type (t2.micro etc)     
+To be more specific, you reserve a specific instance attributes (instance type, region, tenancy, OS)     
+Reserved Instance's scope: Regional or Zonal (reserve capacity in an AZ)            
 Recommended for steady-state usage applications (think database)        
+You can buy and sell in the Reserved Instance Marketplace
 
 Convertible Reserved Instnace:      
--> can change the EC2 instance type (e.g. t2.large to c3.large)        
--> up to 54% discount      
+-> can change the EC2 instance type (e.g. t2.large to c3.large)      
+-> can also change the instance family, OS, scope and tenancy            
+-> up to 66% discount      
 
-Scheduled Reserved Instances       
--> launch within specific time window you reserve          
--> require a fraction of day / week / month      
--> still commitment over 1 to 3 years      
+**EC2 Savings Plans**        
+Get a discount based on long-term usage (up to 72%, same as Reserved Instance)        
+Commit to a certain type of usage (e.g. $10/hour for 1 or 3 years)         
+Usage beyond EC2 Saving Plans is billed at the On-Demand price         
+Locked to a specific instance family and AWS region (e.g. M5 in us-east-1)          
+Flexible across:
+-> instance size (e.g. m5.xlarge, m5.2xlarge)         
+-> OS      
+-> Tenancy (Host, Dedicated, Default)          
 
 **EC2 Spot Instances**:       
 Provides the highest discount, can get up to 90% compared to On-Demand      
@@ -466,9 +475,11 @@ Not suitable for critical jobs or databases.
 **EC2 Dedicated Hosts**:         
 An Amazon EC2 Dedicated Host is a physical server with EC2 instances capacity fully dedicated to your use. Dedicated Hosts can help you address **compliance requirements** and reduce costs by allowing you to **use your existing server-bound software licenses**.       
 
-These hosts are going to be allocated for a 3-year period reservation.      
-More expensive     
+Purchasing Options:    
+-> On-Demand: pay per second for active Dedicated Host        
+-> Reserved: 1 or 3 years (No Upfront, Partial Upfront, All Upfront)        
 
+They are the most expensive option in EC2 because you actually reserve a physical server.          
 Useful for software that have complicated licensing model (BYOL - Bring Your Own License)    
 Or for companies that have strong regulatory or complicance needs.        
 Since AWS shares all their server with everyone, this will ensure no one is using the server except you.      
@@ -477,13 +488,26 @@ Since AWS shares all their server with everyone, this will ensure no one is usin
 These are for EC2 Instances running on hardware that is dedicated to you.        
 May share hardware with other instances in the same account.         
 No control over instance placement (hardware control). So this is more like a software-version of Dedicated Host.           
-<img src="images/dedicated_host.png" width="700">      
+<img src="images/dedicated_host.png" width="700">        
+
+**EC2 Capacity Reserverions**:          
+Reserve **On-Demand** instances capacity in a specific AZ for any duration.      
+You always have access to EC2 capacity when you need it.         
+No time commitment (create or cancel anytime)       
+No billing discounts       
+Combine with Regional Reserved Instances and Saving Plans to benefit from billing discounts.           
+You are charged at On-Demand rate whether you run instances or not       
+
+Suitable for short=term, uninterrupted workloads that needs to be in a specific AZ.         
+
 
 Which purchasing option is right for me ?       
 On-Demand: coming and staying in resort whenever we like, we pay full price.           
-Reserved: like planning ahead and if we plan to stay for a long time, we may get a good discount.        
+Reserved: like planning ahead and if we plan to stay for a long time, we may get a good discount.       
+Saving Plans: pay a certain amount per hour for certain period and stay in any room type          
 Spot instances: the hotel allows people to bid for the empty rooms and the highest bidder keeps the room. You can get kick out at any time.       
-Dedicated: we book entire building of the resort.        
+Dedicated Host: we book entire building of the resort.        
+Capacity Reservations: you book a room for a period with full price even you don't stay in it         
 
 An example of cost comparison using m4.large instance:    
 <img src="images/m4_large.png" width="700">         
